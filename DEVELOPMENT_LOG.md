@@ -18,8 +18,8 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 | `index.html` | The entire app: HTML + CSS + JS in one file. No build step, no dependencies. |
 | `manifest.json` | PWA manifest (name "Kuro Watchlist", standalone, dark theme colour). |
 | `sw.js` | Service worker, cache name `kuro-vN` (bump on each release). Network-first for same-origin GETs, falls back to cache offline. Does not touch cross-origin requests (AniList). |
-| `icon.svg` | App icon (purple/pink gradient play button). Favicon and manifest. |
-| `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` | PNG copies of the icon for installs. The first two match `icon.svg`; the maskable and Apple ones fill the whole square with the gradient (bigger play triangle, inside the maskable safe circle) because Android/iOS cut the shape themselves. Drawn once with Pillow from the SVG's shapes; redraw them if `icon.svg` changes. |
+| `logo-source.webp` | The owner's panda logo (1254x1254, dark round emblem). Source for all icons; not loaded by the app. |
+| `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png`, `favicon-32.png` | Icons made from `logo-source.webp` with Pillow, on the logo's own background colour `#000107`. The maskable one shrinks the emblem to 80% so Android's shape crop keeps the whole ring. `icon-192.png` is also the header logo. Remake all of them if the logo changes. |
 | `.claude/launch.json` | Dev-server config for Claude Code's preview (`kuro` = `python -m http.server 5188`; `kuro-alt` = port 5189 for when 5188 is busy). Not copied automatically between machines — recreate if missing. |
 | `DEVELOPMENT_LOG.md` | This file. |
 | `CLAUDE.md` | Standing instructions for Claude Code in this project. |
@@ -210,3 +210,12 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html` `<head>`: PNG favicon fallback (192) next to the SVG one; `apple-touch-icon` now points to the PNG (iOS ignores SVG there).
 - `sw.js`: the PNGs added to the cached app shell; cache bumped to `kuro-v8`.
 - Tested on localhost: every manifest icon loads at its declared size, Apple icon 180x180, all four PNGs in the `kuro-v8` cache, no console errors. Not tested: an actual install on Android/iOS (needs the owner's phone).
+
+### 2026-11-25 — Panda logo replaces the play-button icon
+- The owner supplied a panda logo (sunglasses, moon, blue ring) to use as the app logo. Kept as `logo-source.webp`.
+- Remade `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` (full image), `icon-maskable-512.png` (emblem at 80% on `#000107` so the ring survives Android's mask) and new `favicon-32.png` from it with Pillow.
+- Removed `icon.svg` (the old gradient play button) and every reference to it.
+- `index.html`: header logo is now the panda (`<img src="icon-192.png">`, 32px round) instead of the gradient square; favicons are `favicon-32.png` + `icon-192.png`.
+- `manifest.json`: PNG icons only; `background_color` `#000107` so the Android splash screen matches the logo.
+- `sw.js`: cache list updated (favicon added, SVG removed); cache bumped to `kuro-v9`. The icons are bigger now (detailed artwork, about 700 KB in total in the offline cache, versus about 30 KB before).
+- Tested on localhost: all manifest icons, Apple icon and favicon load at their declared sizes, header logo renders, all files in the `kuro-v9` cache, no console errors (apart from the 404 of a deliberate test request for the deleted `icon.svg`).
