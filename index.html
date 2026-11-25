@@ -142,6 +142,27 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 #toast{max-width:min(92vw,520px);width:max-content;display:flex;align-items:center;gap:12px;border-radius:16px}
 #toast .tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 #toast.act{pointer-events:auto}
+/* profile look */
+.iconbtn.me{border:2px solid var(--me,var(--accent))}
+.iconbtn .av{width:100%;height:100%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px}
+.prof .av{color:#fff}
+.pcard{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--r);border:1px solid var(--line);background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 35%,var(--card)),var(--card)) center/cover;margin-bottom:6px}
+.pcard .grow{flex:1;min-width:0}
+.pav{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none;border:3px solid var(--pc);display:grid;place-items:center;color:#fff;font-size:26px;font-weight:800}
+.pav.big{width:96px;height:96px;font-size:38px;margin:auto}
+.pname{font-size:19px;font-weight:800;overflow-wrap:anywhere}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.swatches button{width:32px;height:32px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px var(--line)}
+.swatches button.on{border-color:var(--text)}
+/* rating & notes */
+.rate{display:flex;gap:4px}
+.rate button{flex:1;min-width:0;max-width:42px;height:34px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:13px}
+.rate button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.notes{width:100%;min-height:70px;margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;outline:0;resize:vertical;font:inherit;color:inherit}
+.notes:focus{border-color:var(--accent)}
+.badge.mine{color:var(--accent2)}
+.set label.check{display:flex;gap:8px;align-items:center;font-weight:500;margin:6px 0 0}
+.set label.check input{accent-color:var(--accent);width:17px;height:17px}
 #toast .link{flex:none}
 /* this week */
 .wkday{margin:18px 0 8px;font-weight:700;color:var(--muted);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
@@ -250,7 +271,7 @@ nav.bottom{display:none}
     <div class="lbar">
       <input id="lq" type="search" placeholder="Filter my list…">
       <select id="lgenre"><option value="">All genres</option></select>
-      <select id="lsort"><option value="added">Recently added</option><option value="title">Title A–Z</option><option value="score">Score</option><option value="year">Year</option></select>
+      <select id="lsort"><option value="added">Recently added</option><option value="title">Title A–Z</option><option value="score">Score</option><option value="mine">My rating</option><option value="year">Year</option></select>
     </div>
     <div class="grid" id="lgrid"></div>
   </section>
@@ -305,6 +326,23 @@ let list=store.get(listKey(),{});          // id -> item
 const saveList=()=>{store.set(listKey(),list);updateCounts();scheduleSync()};
 const saveSettings=()=>store.set('kuro.settings',settings);
 const saveProfiles=()=>store.set('kuro.profiles',profiles);
+// Per-profile look, kept in this browser only (AniList has no place to store it):
+// kuro.prefs = {[userId|'guest']: {nick, pic (small JPEG data URL), picMode:'anilist'|'photo'|'initial', color, theme(reserved)}}
+let prefsAll=store.get('kuro.prefs',{});
+const prefKey=()=>me()?String(me().id):'guest';
+const myPrefs=()=>prefsAll[prefKey()]||{};
+const savePrefs=p=>{prefsAll[prefKey()]=p;store.set('kuro.prefs',prefsAll)};
+const PCOLORS=['#8b7bff','#ff6bd6','#38bdf8','#4ade80','#fbbf24','#f87171','#f97316','#a3a3c2'];
+// Display name and avatar for a profile (p = AniList profile or null for guest), honouring the user's customisation
+function look(p,pr=prefsAll[p?String(p.id):'guest']||{}){
+  const name=pr.nick||p?.name||'Guest';
+  const src=pr.picMode==='photo'&&pr.pic?pr.pic:pr.picMode!=='initial'&&p?.avatar?p.avatar:'';
+  const col=pr.color||PCOLORS[0];
+  return{name,col,custom:!!(pr.nick||pr.picMode||pr.color),
+    av:cls=>src?`<img class="${cls||''}" src="${esc(src)}" alt="">`:`<span class="av ${cls||''}" style="background:${esc(col)}">${esc([...name][0]||'?').toUpperCase()}</span>`};
+}
+// Hook for future themes: applies the active profile's look to the whole page
+function applyPrefs(){document.documentElement.style.setProperty('--me',myPrefs().color||PCOLORS[0]);document.documentElement.dataset.theme=myPrefs().theme||'dark'}
 function switchProfile(id,msg){store.set('kuro.active',id);try{if(msg)sessionStorage.setItem('kuro.toast',msg)}catch{}location.replace(location.pathname+location.search)}
 
 /* ---------- AniList ---------- */
@@ -398,7 +436,8 @@ function cardHTML(m,showProg){
   const pct=showProg&&m.episodes?Math.min(100,(e.progress||0)/m.episodes*100):0;
   return `<div class="card" data-id="${m.id}">
     <div class="cover" style="background-image:url('${esc(m.cover)}');background-color:${esc(m.color||'')}" data-open="${m.id}">
-      ${m.score?`<span class="badge ${scoreCls(m.score)}">★ ${(m.score/10).toFixed(1)}</span>`:''}
+      ${showProg&&e?.myScore&&settings.rate!==false?`<span class="badge mine">♥ ${e.myScore/10}</span>`
+        :m.score?`<span class="badge ${scoreCls(m.score)}">★ ${(m.score/10).toFixed(1)}</span>`:''}
       ${showProg&&ACTIVE.includes(e.status)&&nextInfo(e).out&&!(e.episodes&&e.progress>=e.episodes)
         ?`<button class="add plus" data-plus="${m.id}" aria-label="Mark episode ${(e.progress||0)+1} watched">+1</button>`
         :`<button class="add ${inList?'in':''}" data-add="${m.id}" aria-label="${inList?'In list':'Add to list'}">${inList?'✓':'+'}</button>`}
@@ -527,7 +566,7 @@ function renderList(){
   $('#subtabs').innerHTML=STATUSES.map(([k,l])=>`<button class="chip ${k===listStatus?'on':''}" data-ls="${k}">${l} · ${all.filter(x=>x.status===k).length}</button>`).join('');
   const q=norm($('#lq').value),g=$('#lgenre').value,s=$('#lsort').value;
   let items=all.filter(x=>x.status===listStatus&&(!g||x.genres?.includes(g))&&(!q||norm(x.title.english).includes(q)||norm(x.title.romaji).includes(q)));
-  items.sort((a,b)=>s==='title'?titleOf(a).localeCompare(titleOf(b)):s==='score'?(b.score||0)-(a.score||0):s==='year'?(b.year||0)-(a.year||0):b.added-a.added);
+  items.sort((a,b)=>s==='title'?titleOf(a).localeCompare(titleOf(b)):s==='score'?(b.score||0)-(a.score||0):s==='mine'?(b.myScore||0)-(a.myScore||0):s==='year'?(b.year||0)-(a.year||0):b.added-a.added);
   $('#lgrid').innerHTML=items.length?items.map(m=>cardHTML(m,true)).join(''):`<div class="empty" style="grid-column:1/-1">Nothing here yet.<br>Tap + on any anime in Discover to add it.</div>`;
 }
 $('#subtabs').onclick=e=>{const k=e.target.dataset.ls;if(k){listStatus=k;renderList()}};
@@ -571,6 +610,10 @@ function openModal(id,keep){
       <div class="desc">${esc(desc).replace(/\n/g,'<br>')}</div>
       <div class="seg" id="seg">${STATUSES.map(([k,l])=>`<button data-st="${k}" class="${e?.status===k?'on':''}">${l}</button>`).join('')}</div>
       ${e&&(ACTIVE.includes(e.status)||e.status==='paused')?`<div class="stepper"><button id="epm">−</button><b>Episode ${e.progress||0}${m.episodes?' / '+m.episodes:''}</b><button id="epp">+</button></div>`:''}
+      ${e&&settings.rate!==false?`<h3 class="sh">Your rating <span class="hint" style="text-transform:none;letter-spacing:0">· optional, tap again to clear</span></h3>
+        <div class="rate" id="rate">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button data-sc="${n}" class="${Math.round((e.myScore||0)/10)>=n?'on':''}" aria-label="Rate ${n} out of 10">${n}</button>`).join('')}</div>
+        <textarea id="notes" class="notes" maxlength="2000" placeholder="Your notes (optional)">${esc(e.notes||'')}</textarea>
+        ${me()?'<div class="hint">Rating and notes are saved to your AniList entry too, so anyone who can see your AniList list may see them.</div>':''}`:''}
       <h3 class="sh">Where to watch</h3>
       <div class="actions" id="wtwb"><span class="hint">Loading…</span></div>
       <h3 class="sh">Episodes <span class="hint" style="text-transform:none;letter-spacing:0">· tap an episode to mark it watched</span></h3>
@@ -586,6 +629,10 @@ function openModal(id,keep){
     </div>`;
   $('#scrim').classList.add('open');document.body.style.overflow='hidden';
   $('#mclose').onclick=closeModal;
+  if($('#rate'))$('#rate').onclick=ev=>{const n=+ev.target.dataset.sc;if(!n)return;
+    e.myScore=Math.round((e.myScore||0)/10)===n?0:n*10;e.updated=Date.now();saveList();refreshCards();
+    $$('#rate button').forEach(b=>b.classList.toggle('on',+b.dataset.sc<=e.myScore/10));toast(e.myScore?`Rated ${n}/10`:'Rating cleared')};
+  if($('#notes')){let nt;$('#notes').oninput=ev=>{clearTimeout(nt);nt=setTimeout(()=>{e.notes=ev.target.value;e.updated=Date.now();saveList()},700)}}
   $('#seg').onclick=ev=>{const s=ev.target.dataset.st;if(!s)return;addToList(id,s);
     if(s==='completed'&&m.episodes){list[id].progress=m.episodes;list[id].updated=Date.now();saveList()}refreshCards();openModal(id)};
   if($('#epp'))$('#epp').onclick=()=>step(id,1),$('#epm').onclick=()=>step(id,-1);
@@ -675,20 +722,24 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 /* ---------- settings ---------- */
 function openSettings(){
   $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" style="top:10px">✕</button>
-    <h2 style="margin:0 0 4px">Settings</h2>
+    <h2 style="margin:0 0 12px">Settings</h2>
+    ${(()=>{const p=me(),l=look(p);return `<div class="pcard" style="--pc:${esc(l.col)}${p?.banner?`;background-image:linear-gradient(transparent 30%,var(--card) 100%),url('${esc(p.banner)}')`:''}">
+      ${l.av('pav')}<div class="grow"><div class="pname">${esc(l.name)}</div>
+      <div class="hint" style="margin:0">${p?`AniList · ${esc(p.name)}`:'Guest · this browser only'} · ${Object.keys(list).length} anime</div></div>
+      <button class="btn sm" id="editProf">Edit profile</button></div>`})()}
     <label>Your Watch link (optional)</label>
     <input type="text" id="prov" value="${esc(settings.provider||'')}" placeholder="https://your-site/search?keyword={query}">
     <div class="hint">Adds a “Watch” button to each anime that opens this address, with <code>{query}</code> replaced by the title. Leave empty to hide the button; the official “Where to watch” links are always shown. Saved in this browser only. Only use an address you trust.</div>
-    <label>Profile</label>
+    <label>Accounts</label>
     <div class="hint" style="margin:0 0 6px">Sign in with AniList and your list follows you to any browser or device you sign in on. Without an account the list stays in this browser only.</div>
-    ${Object.values(profiles).map(p=>{const on=me()?.id===p.id;return `<div class="prof${on?' on':''}">
-      ${p.avatar?`<img src="${esc(p.avatar)}" alt="">`:`<span class="av">${esc(p.name[0]||'?')}</span>`}
-      <div class="grow"><b>${esc(p.name)}</b>${on?' <span class="tag">active</span>':''}
+    ${Object.values(profiles).map(p=>{const on=me()?.id===p.id,l=look(p);return `<div class="prof${on?' on':''}">
+      ${l.av()}
+      <div class="grow"><b>${esc(l.name)}</b>${on?' <span class="tag">active</span>':''}
         <div class="hint" style="margin:0">${!p.token?'Signed out of AniList, sign in again to sync':p.lastSync?'Last sync '+new Date(p.lastSync).toLocaleString():'Not synced yet'}</div></div>
       ${on&&p.token?`<button class="btn sm" id="syncNow">Sync now</button>`:''}
       ${!on?`<button class="btn sm" data-switch="${p.id}">Switch</button>`:''}
       <button class="btn sm danger" data-signout="${p.id}">Sign out</button></div>`}).join('')}
-    ${me()?`<div class="prof"><span class="av">?</span><div class="grow"><b>No account</b><div class="hint" style="margin:0">Guest list, this browser only</div></div><button class="btn sm" data-switch="">Switch</button></div>`:''}
+    ${me()?`<div class="prof">${look(null).av()}<div class="grow"><b>${look(null).custom?esc(look(null).name)+' (no account)':'No account'}</b><div class="hint" style="margin:0">Guest list, this browser only</div></div><button class="btn sm" data-switch="">Switch</button></div>`:''}
     ${clientId()?'':`<input type="text" id="cid" inputmode="numeric" placeholder="AniList Client ID" value="">`}
     <div class="actions" style="margin-top:8px"><button class="btn primary" id="conn">${me()&&!me().token?'Sign in again':Object.keys(profiles).length?'Add AniList account':'Sign in with AniList'}</button></div>
     <details class="hint" style="margin-top:8px"><summary>${IS_HOSTED?'Sign-in help':'AniList app setup'}${settings.clientId?' (Client ID '+esc(settings.clientId)+')':''}</summary>
@@ -696,23 +747,27 @@ function openSettings(){
       ${IS_HOSTED?`<div style="margin-top:6px">Advanced: to use your own AniList client instead of the built-in one, enter its Client ID (leave empty for the built-in one).</div>`
       :`<div style="margin-top:6px">One-time setup for this address: at anilist.co/settings/developer create a client, set its Redirect URL to <code>${esc(APP_URL)}</code>, and paste its Client ID here. Or just use the hosted app at <a href="${HOSTED_URL}">${HOSTED_URL}</a>, which needs no setup.</div>`}
       ${clientId()?`<div style="margin-top:6px"><input type="text" id="cid" inputmode="numeric" placeholder="${IS_HOSTED?'Built-in':'AniList Client ID'}" value="${esc(settings.clientId||'')}"></div>`:''}</details>
+    <label>Lists</label>
+    <label class="check"><input type="checkbox" id="rateOn" ${settings.rate!==false?'checked':''}> Show my rating and notes on each anime</label>
+    <div class="hint">Optional. Turning this off only hides them; nothing is deleted.</div>
     <label>Backup</label>
     <div class="actions"><button class="btn" id="exp">Export list</button><label class="btn" style="margin:0">Import list<input type="file" id="imp" accept="application/json" hidden></label></div>
     <div class="actions" style="margin-top:20px"><button class="btn primary" id="save">Save</button></div></div>`;
   $('#scrim').classList.add('open');
   $('#mclose').onclick=closeModal;
-  $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
+  $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;settings.rate=$('#rateOn').checked;refreshCards();const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
   $('#conn').onclick=()=>{const t=$('#cid')?.value.trim();if(t&&/^\d+$/.test(t))settings.clientId=t;else if(t==='')delete settings.clientId;saveSettings();
     const c=clientId();if(!c)return toast('Enter the numeric AniList Client ID (see AniList app setup)');
     location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+c+'&response_type=token'};
   if($('#syncNow'))$('#syncNow').onclick=async()=>{await sync(true);openSettings()};
+  $('#editProf').onclick=openProfileEditor;
   $$('[data-switch]').forEach(b=>b.onclick=()=>switchProfile(b.dataset.switch?+b.dataset.switch:null,b.dataset.switch?'Switched to '+profiles[b.dataset.switch].name:'Using the guest list'));
   $$('[data-signout]').forEach(b=>b.onclick=async()=>{
     const p=profiles[b.dataset.signout],on=me()?.id===p.id;
     if(on&&p.token)await sync(false);
     const left=on?unsynced():0;
     if(!confirm(`Sign out ${p.name} in this browser? Their list is kept on AniList and comes back when you sign in again.`+(left?`\n\n${left} change${left>1?'s have':' has'} not reached AniList yet and will be lost.`:'')))return;
-    delete profiles[p.id];saveProfiles();store.del('kuro.list.'+p.id);
+    delete profiles[p.id];saveProfiles();store.del('kuro.list.'+p.id);delete prefsAll[p.id];store.set('kuro.prefs',prefsAll); // photo/nickname too: a shared browser keeps nothing
     if(on)switchProfile(null,'Signed out '+p.name);else openSettings();
   });
   $('#exp').onclick=()=>{const{token,user,...safe}=settings;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({list,settings:safe},null,1)],{type:'application/json'}));a.download='kuro-watchlist.json';a.click()};
@@ -720,6 +775,49 @@ function openSettings(){
     // imported entries may come from another account: forget their AniList ids so they get pushed, not treated as removed
     for(const it of Object.values(j.list||{})){delete it.synced;delete it.entryId;it.updated=it.updated||Date.now()}
     Object.assign(list,j.list||{});if(j.settings){const{token,user,...s}=j.settings;settings={...settings,...s}}saveList();saveSettings();closeModal();refreshCards();toast('Imported')}catch{toast('Invalid file')}};
+}
+// Profile editor: picture (AniList / own photo / initial), nickname and colour. Stored in this browser only.
+function openProfileEditor(){
+  const p=me(),d={...myPrefs()};d.picMode=d.picMode||(p?.avatar?'anilist':'initial');
+  const draw=()=>{
+    const l=look(p,d);
+    $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" style="top:10px">✕</button>
+      <h2 style="margin:0 0 12px">Edit profile</h2>
+      <div class="pcard" style="--pc:${esc(l.col)};justify-content:center;flex-direction:column;text-align:center${p?.banner?`;background-image:linear-gradient(transparent 30%,var(--card) 100%),url('${esc(p.banner)}')`:''}">
+        ${l.av('pav big')}<div class="pname">${esc(l.name)}</div></div>
+      <label>Picture</label>
+      <div class="sub" style="flex-wrap:wrap">
+        ${p?.avatar?`<button class="chip ${d.picMode==='anilist'?'on':''}" data-pm="anilist">AniList picture</button>`:''}
+        <button class="chip ${d.picMode==='photo'?'on':''}" data-pm="photo">${d.pic?'My photo':'Upload photo'}</button>
+        <button class="chip ${d.picMode==='initial'?'on':''}" data-pm="initial">Initial</button>
+        ${d.pic?`<label class="chip" style="margin:0;font-weight:500;cursor:pointer">Change photo<input type="file" id="pfile" accept="image/*" hidden></label>`:''}
+      </div>
+      <input type="file" id="pfile0" accept="image/*" hidden>
+      <label>Colour</label>
+      <div class="swatches">${PCOLORS.map(c=>`<button data-col="${c}" class="${l.col===c?'on':''}" style="background:${c}" aria-label="Colour ${c}"></button>`).join('')}</div>
+      <div class="hint">Used for your initial and around your picture.</div>
+      <label>Display name</label>
+      <input type="text" id="nick" maxlength="30" value="${esc(d.nick||'')}" placeholder="${esc(p?.name||'Guest')}">
+      <div class="hint">Saved in this browser only. Your AniList name and picture are not changed. Themes for the whole app are coming later.</div>
+      <div class="actions" style="margin-top:20px"><button class="btn primary" id="psave">Save</button><button class="btn" id="pback">Cancel</button>
+        ${myPrefs().nick||myPrefs().picMode||myPrefs().color?'<button class="btn danger" id="preset">Reset</button>':''}</div></div>`;
+    $('#mclose').onclick=closeModal;$('#pback').onclick=openSettings;
+    $('#nick').oninput=e=>{d.nick=e.target.value.trim();$('.pcard .pname').textContent=d.nick||p?.name||'Guest'};
+    $$('[data-pm]').forEach(b=>b.onclick=()=>{const m=b.dataset.pm;if(m==='photo'&&!d.pic)return $('#pfile0').click();d.picMode=m;draw()});
+    $$('[data-col]').forEach(b=>b.onclick=()=>{d.color=b.dataset.col;draw()});
+    const pick=async e=>{const f=e.target.files[0];if(!f)return;try{d.pic=await squareJpeg(f,192);d.picMode='photo';draw()}catch{toast('Could not read that image')}};
+    $('#pfile0').onchange=pick;if($('#pfile'))$('#pfile').onchange=pick;
+    $('#psave').onclick=()=>{d.nick=$('#nick').value.trim();savePrefs(d);renderProfileBtn();openSettings();toast('Profile saved')};
+    if($('#preset'))$('#preset').onclick=()=>{savePrefs({});location.reload()};
+  };
+  draw();$('#scrim').classList.add('open');
+}
+// Crop an image file to a centred square and shrink it to a small JPEG data URL (stays in localStorage, never uploaded)
+function squareJpeg(file,size){
+  return new Promise((ok,fail)=>{const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{const s=Math.min(img.width,img.height),c=document.createElement('canvas');c.width=c.height=size;
+      c.getContext('2d').drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,size,size);URL.revokeObjectURL(url);ok(c.toDataURL('image/jpeg',.85))};
+    img.onerror=()=>{URL.revokeObjectURL(url);fail()};img.src=url});
 }
 $('#settingsBtn').onclick=openSettings;$('#navSet').onclick=openSettings;
 
@@ -734,8 +832,9 @@ function toast(t,undo){
 const SMAP={planning:'PLANNING',watching:'CURRENT',repeating:'REPEATING',paused:'PAUSED',completed:'COMPLETED',dropped:'DROPPED'};
 const RMAP=Object.fromEntries(Object.entries(SMAP).map(([k,v])=>[v,k]));
 const MEDIA_FIELDS=QUERY.slice(QUERY.indexOf('id idMal'),QUERY.lastIndexOf('}}}'));
-const COLL=`query($userId:Int){MediaListCollection(userId:$userId,type:ANIME){lists{entries{id mediaId status progress updatedAt media{${MEDIA_FIELDS}}}}}}`;
-const SAVE=`mutation($mediaId:Int,$status:MediaListStatus,$progress:Int){SaveMediaListEntry(mediaId:$mediaId,status:$status,progress:$progress){id}}`;
+// myScore (0-100, AniList scoreRaw / POINT_100) and notes are the user's own rating and notes
+const COLL=`query($userId:Int){MediaListCollection(userId:$userId,type:ANIME){lists{entries{id mediaId status progress score(format:POINT_100) notes updatedAt media{${MEDIA_FIELDS}}}}}}`;
+const SAVE=`mutation($mediaId:Int,$status:MediaListStatus,$progress:Int,$scoreRaw:Int,$notes:String){SaveMediaListEntry(mediaId:$mediaId,status:$status,progress:$progress,scoreRaw:$scoreRaw,notes:$notes){id}}`;
 const DEL=`mutation($id:Int){DeleteMediaListEntry(id:$id){deleted}}`;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function gql(query,variables,token=me()?.token){
@@ -747,6 +846,8 @@ async function gql(query,variables,token=me()?.token){
   return j.data;
 }
 const unsynced=()=>Object.values(list).filter(it=>!it.synced||it.updated>it.synced).length+(me()?.pendingDel?.length||0);
+const VIEWER_Q='{Viewer{id name avatar{large medium} bannerImage}}';
+const viewerInfo=v=>({id:v.id,name:v.name,avatar:v.avatar?.medium||'',avatarL:v.avatar?.large||v.avatar?.medium||'',banner:v.bannerImage||'',infoAt:Date.now()});
 let syncing=false,syncAgain=false,syncT;
 function scheduleSync(){if(!me()?.token)return;clearTimeout(syncT);syncT=setTimeout(()=>sync(false),2500)}
 async function sync(manual){
@@ -760,6 +861,8 @@ async function sync(manual){
       try{await gql(DEL,{id:p.pendingDel[0]})}catch(e){if(e.message==='AUTH'||e instanceof TypeError)throw e} // other errors: entry already gone
       p.pendingDel.shift();saveProfiles();await sleep(700);
     }
+    // AniList name / picture / banner, refreshed once a day
+    if(Date.now()-(p.infoAt||0)>864e5){Object.assign(p,viewerInfo((await gql(VIEWER_Q)).Viewer));saveProfiles();renderProfileBtn()}
     // 2. pull: newest change wins per entry
     const d=await gql(COLL,{userId:p.id});
     const remote={};
@@ -769,10 +872,11 @@ async function sync(manual){
       // remote wins if newer; on an equal time the local copy is unchanged since the last pull, so remote status is
       // authoritative (fixes entries that older versions stored as 'watching' for PAUSED/REPEATING)
       if(!loc||ms>(loc.updated||0)||(ms===loc.updated&&RMAP[e.status]&&RMAP[e.status]!==loc.status)){
-        list[e.mediaId]={...slim(e.media),status:RMAP[e.status]||'planning',progress:e.progress||0,added:loc?.added||ms||Date.now(),updated:ms,synced:Date.now(),entryId:e.id};
+        list[e.mediaId]={...slim(e.media),status:RMAP[e.status]||'planning',progress:e.progress||0,myScore:Math.round(e.score||0),notes:e.notes||'',added:loc?.added||ms||Date.now(),updated:ms,synced:Date.now(),entryId:e.id};
       }else{
         Object.assign(loc,freshMedia(e.media)); // fresh airing info, episode count etc.; does not count as a local change
         if(!loc.entryId)loc.entryId=e.id;
+        if(loc.myScore===undefined&&loc.notes===undefined){loc.myScore=Math.round(e.score||0);loc.notes=e.notes||''} // entries pulled before ratings existed
       }
     }
     // removed on another browser/device: drop entries that were in sync here but are gone on AniList
@@ -781,7 +885,10 @@ async function sync(manual){
     // 3. push local changes
     for(const it of Object.values(list)){
       if(it.synced&&it.updated<=it.synced)continue;
-      const r=await gql(SAVE,{mediaId:it.id,status:SMAP[it.status],progress:it.progress||0});
+      const v={mediaId:it.id,status:SMAP[it.status],progress:it.progress||0};
+      if(it.myScore!==undefined)v.scoreRaw=it.myScore||0; // never send a score/notes Kuro does not know, so AniList's are not wiped
+      if(it.notes!==undefined)v.notes=it.notes||'';
+      const r=await gql(SAVE,v);
       it.entryId=r.SaveMediaListEntry.id;it.synced=Date.now();store.set(listKey(),list);await sleep(700);
     }
     p.lastSync=Date.now();saveProfiles();
@@ -800,9 +907,9 @@ const authing=(async function handleAuth(){
   if(!tok)return false;
   history.replaceState(null,'',location.pathname+location.search);
   try{
-    const v=(await gql('{Viewer{id name avatar{medium}}}',{},tok)).Viewer;
+    const v=(await gql(VIEWER_Q,{},tok)).Viewer;
     const isNew=!profiles[v.id];
-    profiles[v.id]={...profiles[v.id],id:v.id,name:v.name,avatar:v.avatar?.medium||'',token:tok};saveProfiles();
+    profiles[v.id]={...profiles[v.id],...viewerInfo(v),token:tok};saveProfiles();
     const guest=store.get('kuro.list',{}),n=Object.keys(guest).length;
     if(isNew&&n&&confirm(`Add the ${n} title${n>1?'s':''} saved in this browser without an account to ${v.name}'s list?`)){
       const mine=store.get('kuro.list.'+v.id,{});
@@ -815,10 +922,10 @@ const authing=(async function handleAuth(){
 })();
 
 function renderProfileBtn(){
-  const p=me(),b=$('#settingsBtn');if(!p)return;
-  b.classList.add('me');b.title=p.name+(p.token?'':' (signed out, sign in again in Settings)');b.setAttribute('aria-label','Profile and settings');
-  b.innerHTML=p.avatar?`<img src="${esc(p.avatar)}" alt="">`:`<span>${esc(p.name[0]||'?')}</span>`;
-  b.classList.toggle('expired',!p.token);
+  const p=me(),b=$('#settingsBtn'),l=look(p);applyPrefs();
+  if(!p&&!l.custom)return; // plain guest: keep the gear icon
+  b.classList.add('me');b.title=l.name+(p&&!p.token?' (signed out, sign in again in Settings)':'');b.setAttribute('aria-label','Profile and settings');
+  b.innerHTML=l.av();b.classList.toggle('expired',!!p&&!p.token);
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return;refreshAiring();renderNext();if(me()?.token&&Date.now()-(me().lastSync||0)>60000)sync(false)});
 
