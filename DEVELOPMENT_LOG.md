@@ -17,9 +17,9 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 |---|---|
 | `index.html` | The entire app: HTML + CSS + JS in one file. No build step, no dependencies. |
 | `manifest.json` | PWA manifest (name "Kuro Watchlist", standalone, dark theme colour). |
-| `sw.js` | Service worker, cache name `kuro-v1`. Network-first for same-origin GETs, falls back to cache offline. Does not touch cross-origin requests (AniList). |
+| `sw.js` | Service worker, cache name `kuro-vN` (bump on each release). Network-first for same-origin GETs, falls back to cache offline. Does not touch cross-origin requests (AniList). |
 | `icon.svg` | App icon (purple/pink gradient play button). Used for favicon, apple-touch-icon and manifest. |
-| `.claude/launch.json` | Dev-server config for Claude Code's preview (`python -m http.server 5188`). Not copied automatically between machines — recreate if missing. |
+| `.claude/launch.json` | Dev-server config for Claude Code's preview (`kuro` = `python -m http.server 5188`; `kuro-alt` = port 5189 for when 5188 is busy). Not copied automatically between machines — recreate if missing. |
 | `DEVELOPMENT_LOG.md` | This file. |
 | `CLAUDE.md` | Standing instructions for Claude Code in this project. |
 | `HANDOVER_PROMPT.md` | Prompt to paste into Claude Code on a new machine. |
@@ -57,6 +57,7 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 - **Detail sheet:** score, format, episodes, status, season, studio, next episode air time, popularity, synopsis, in-app YouTube trailer (youtube-nocookie iframe), **Where to watch** (official services from AniList `externalLinks` of type STREAMING), **Episodes** list (titles/thumbnails/official links where AniList has `streamingEpisodes`, otherwise a numbered grid; tap an episode to set progress, tap the current one again to undo; long shows show a 60-episode window with "Show all"), AniList and MAL links, Remove.
 - **Next up:** strip at the top of Discover for Watching and Rewatching. Episodes that are out come first, with "N new" for airing shows you are behind on; episodes not out yet show "Ep N airs in 3h / Tue 17:00" (dimmed), sorted by air time. Airing info is refreshed by `refreshAiring()` (public AniList API, max every 30 min or when a stored air time has passed; works without an account) and on every sync.
 - **This week:** airing schedule from yesterday to 7 days ahead, grouped by day, with local air times. "My shows" = list entries not completed/dropped; "All popular" = everything airing with popularity >= 10k (non-adult). Rows show Watched ✓ / Out now (+ "N to catch up") / Airs in 3h / Upcoming, a +1 button for the next unwatched aired episode, and + to add shows not in the list. Uses AniList `airingSchedules` (public), cached 10 min (`loadWeek()` fetches, `drawWeek()` renders).
+- **Stats:** 4th tab (header and phone nav). Tiles: anime on list, episodes watched, time watched (episodes × AniList episode length), completed, your average rating. Bars: by status (tap opens that status in My List), top 8 genres, formats; "Most time spent" top 5 (tap opens the show); your ratings histogram 1–10. Computed from the active profile's list in `drawStats()`, nothing fetched. Completed shows count all episodes; genres/formats/time skip Plan to watch; shows without an episode length are left out of time (with a note). Rating parts hide when ratings are turned off in Settings.
 - **Rating and notes (optional):** in the detail sheet of list entries: 1-10 buttons (tap again to clear) and a notes box (autosaves). Synced to AniList (`scoreRaw`, `notes`). My List cards show ♥ your rating instead of the average; sort "My rating". Can be hidden in Settings → Lists.
 - **Profile look:** Settings opens with a profile card (AniList banner if any, picture, name, Edit profile). Editor: picture = AniList picture / uploaded photo (cropped to a square, shrunk to ~5 KB JPEG, stays in this browser) / coloured initial; 8 colours (ring and initial); display name. Works for the guest too. `look()` gives name and avatar HTML; `applyPrefs()` sets `--me`, `data-theme` and the `theme-color` meta.
 - **App themes (per profile):** Midnight (default), Sakura, Ocean, Forest, Sunset, AMOLED black, Light. Picked in Edit profile with live preview (Cancel/close reverts). Each theme is a `[data-theme=…]` block overriding the `:root` variables (`--bg … --accent2`, plus `--glass`, `--glass2`, `--glow1/2`, `--thumb`, `--hover`, `--desc`, `--on-accent` = text colour on accent fills). `THEMES` in the script lists id, name and swatch colours. A tiny inline script in `<head>` applies the saved theme before first paint. Rule for new CSS: no hard-coded colours except on top of cover art/banners (which stay dark with white text in every theme); use `var(--on-accent)` for text on accent backgrounds.
@@ -92,7 +93,8 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 
 - App is functional locally. Verified in a browser pane against live AniList data: Discover, filters, add to list, detail sheet, Where to watch, episode list/tap, Next up, scrollbars, punctuation-tolerant search.
 - Profiles (2026-11-25) verified in the browser pane: migration from the old layout, profile switching, guest list, settings UI on desktop and phone width, sync logic against a mocked AniList (queued delete, remote-removed entry dropped, local add pushed, remote add pulled), expired-token handling against the real AniList (it answers a bad token with HTTP 400 "Invalid token").
-- **Not verified:** a real AniList login/sync round trip, incl. the guest-list merge prompt on first sign-in (needs the owner's Client ID and a hosted Redirect URL); the in-app trailer player; the phone layout after the later features; Firefox scrollbar look.
+- Real AniList sign-in and sync on the hosted app in two browsers: confirmed working by the owner (2026-11-25).
+- **Not verified:** the guest-list merge prompt on first sign-in (not specifically reported on); the in-app trailer player; the phone layout after the later features; Firefox scrollbar look.
 - **Hosted** on GitHub Pages: https://michaelgon98.github.io/kuro-watchlist/ (public repo https://github.com/MichaelGon98/kuro-watchlist, branch `main`, root folder). Verified loading there with no console errors and the service worker registered.
 - The project folder is a git repo; commits use the GitHub noreply address (set in the repo's local git config). **To deploy: commit and `git push`**; Pages rebuilds in about a minute.
 
@@ -110,10 +112,9 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 
 ## 9. Next ideas (not started)
 
-- **Next step for profiles:** verify sign-in and sync end to end in two browsers on the hosted app (built-in Client ID 58014, Redirect URL set to the hosted address by the owner).
 - Jellyfin/Plex "Play from my library" button for anime the owner owns.
 - Theme follows the system light/dark setting (an "Auto" option); custom accent colour picker.
-- Stats page; quick +1 from the lock screen / notifications for new episodes.
+- Quick +1 from the lock screen / notifications for new episodes.
 - PNG icons (192/512) and maskable icon for installability.
 
 ## 10. Change Log
@@ -193,3 +194,13 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - Accessibility: an automated contrast scan of Discover, This week, Settings, Edit profile and the detail sheet in all 7 themes found white text on bright accents (Forest/Ocean/Sakura/Sunset/AMOLED, ratio 1.7-2.7) and a white "+" on light grey in Light; fixed with a per-theme `--on-accent` text colour (now 5-10:1) and a themed "+" button. Rescan: no issues.
 - Bug caught before release: a `//` comment added inside the one-line `closeModal()` commented out the rest of the function.
 - `sw.js`: cache bumped to `kuro-v6`.
+
+### 2026-11-25 — AniList sign-in verified on the live site
+- `DEVELOPMENT_LOG.md` only: the owner confirmed that signing in with AniList and syncing between two browsers works on the hosted app. Moved it from "Not verified" to verified in Current status and removed it from Next ideas. No code change.
+
+### 2026-11-25 — Stats page
+- `index.html`: new Stats view (`#v-stats`, `drawStats()`, `fmtTime()`, `watchedEps()`, `FORMATS`) with a Stats tab in the header and the phone nav. Tiles for anime on list, episodes watched, time watched, completed and average rating; bar lists for status, top genres and formats; "Most time spent" top 5; ratings histogram. Uses theme variables only (bars in `--accent`), so it works in all 7 themes.
+- `index.html`: `redrawList()` redraws My List or Stats after sync / airing refresh; `refreshCards()` uses it. Typing in the header search from Stats goes to Discover, as from This week.
+- `.claude/launch.json`: added `kuro-alt` (port 5189). The `kuro` config hard-codes 5188 in the Python command, so when another session holds 5188 the preview's automatic port switch starts nothing; both configs now have `autoPort:false`.
+- Tested on localhost: totals checked by hand against seeded data (56 episodes, 1 show without episode length noted), status row opens My List on that status, top-show row opens the detail sheet, rating parts hidden with ratings off, empty-list message, phone width with no sideways scroll, Light theme. No console errors.
+- `sw.js`: cache bumped to `kuro-v7`.
