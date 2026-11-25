@@ -320,12 +320,50 @@ details.hint summary{cursor:pointer}
 .t10tabs .chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .t10row{display:grid;grid-auto-flow:column;grid-auto-columns:max-content;gap:6px;overflow-x:auto;overflow-y:hidden;padding:4px 0 8px;margin-bottom:20px;scrollbar-width:thin}
 .t10{display:flex;align-items:flex-end}
-.t10 .rk{font-size:132px;font-weight:900;line-height:.78;letter-spacing:-6px;color:transparent;-webkit-text-stroke:3px var(--accent);margin-right:-22px;user-select:none;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 35%,transparent),transparent 80%);-webkit-background-clip:text;background-clip:text}
+.t10 .rk{--rkc:var(--accent);font-size:132px;font-weight:900;line-height:.78;letter-spacing:-4px;margin-right:-22px;user-select:none;color:color-mix(in srgb,var(--rkc) 16%,var(--bg));
+  text-shadow:3px 0 var(--rkc),-3px 0 var(--rkc),0 3px var(--rkc),0 -3px var(--rkc),2px 2px var(--rkc),-2px 2px var(--rkc),2px -2px var(--rkc),-2px -2px var(--rkc)}
 .t10 .card{width:140px;flex:none;position:relative;z-index:1;box-shadow:-8px 0 18px rgba(0,0,0,.45)}
 .t10 .card:hover{transform:none}
-.t10:first-child .rk{-webkit-text-stroke-color:#f5c542;background-image:linear-gradient(180deg,rgba(245,197,66,.4),transparent 80%)}
+.t10:first-child .rk{--rkc:#f5c542}
 .t10ld{color:var(--muted);font-size:13px;padding:30px 0}
+/* Hero spotlight: rotating trending banners; the page behind Discover takes the show's colour */
+@property --htint{syntax:'<color>';inherits:true;initial-value:transparent}
+#v-discover{position:relative;isolation:isolate;transition:--htint 1.2s ease}
+.htint{position:absolute;left:0;right:0;top:-16px;height:820px;z-index:-1;pointer-events:none;background:radial-gradient(50% 50% at 50% 28%,color-mix(in srgb,var(--htint) 30%,transparent),transparent)}
+.hero{position:relative;height:320px;border-radius:20px;overflow:hidden;margin-bottom:18px;border:1px solid var(--line);background:var(--card2);touch-action:pan-y}
+.hs{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .8s ease,visibility 0s .8s}
+.hs.on{opacity:1;visibility:visible;transition:opacity .8s ease,visibility 0s}
+.himg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.07);transition:transform 8s linear}
+.hs.on .himg{transform:scale(1)}
+.hs::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,8,14,.92),rgba(8,8,14,.55) 48%,rgba(8,8,14,.05) 85%),linear-gradient(0deg,rgba(8,8,14,.75),transparent 55%)}
+.hcon{position:absolute;z-index:1;left:28px;bottom:26px;max-width:min(560px,78%);color:#fff}
+.hk{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;background:var(--accent);color:var(--on-accent);padding:3px 10px;border-radius:999px}
+.ht{font-size:32px;font-weight:900;line-height:1.1;letter-spacing:-.02em;margin:10px 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 18px rgba(0,0,0,.55)}
+.hs.on .ht,.hs.on .hk,.hs.on .hm,.hs.on .hd,.hs.on .hb{animation:hup .7s cubic-bezier(.2,.8,.2,1) both}
+.hs.on .ht{animation-delay:.08s}.hs.on .hm{animation-delay:.14s}.hs.on .hd{animation-delay:.2s}.hs.on .hb{animation-delay:.26s}
+@keyframes hup{from{opacity:0;transform:translateY(14px)}}
+.hm{font-size:13px;color:#d4d3e2}
+.hd{font-size:13.5px;line-height:1.45;color:#c9c8d8;margin:8px 0 14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hb{display:flex;gap:8px;flex-wrap:wrap}
+.hb .btn{padding:9px 16px}
+.hadd{background:rgba(255,255,255,.14)!important;border-color:rgba(255,255,255,.2)!important;color:#fff;backdrop-filter:blur(8px)}
+.hdots{position:absolute;z-index:2;right:14px;bottom:14px;display:flex}
+.hdots button{box-sizing:content-box;width:8px;height:8px;border:6px solid transparent;background:rgba(255,255,255,.45);background-clip:padding-box;border-radius:999px;padding:0;transition:width .3s,background-color .3s}
+.hdots button[aria-current="true"]{width:22px;background-color:#fff}
+@media (max-width:760px){.hero{height:240px;border-radius:16px;margin-bottom:14px}.hcon{left:16px;right:16px;bottom:16px;max-width:none}.ht{font-size:22px;margin:8px 0 4px}.hd{display:none}.hb{margin-top:10px}.hdots{top:8px;bottom:auto;right:8px}}
+/* Detail sheet takes its glow from the show's cover colour */
+.modal:has(>.banner){--mbg:color-mix(in srgb,var(--mtint,var(--bg2)) 22%,var(--bg2));background:linear-gradient(var(--mbg) 140px,var(--bg2) 620px) local,var(--bg2);
+  border-color:color-mix(in srgb,var(--mtint,var(--line)) 45%,var(--line));box-shadow:0 0 100px -10px color-mix(in srgb,var(--mtint,transparent) 50%,transparent),0 20px 60px #0008}
+[data-theme=light] .modal:has(>.banner){--mbg:color-mix(in srgb,var(--mtint,var(--bg2)) 12%,var(--bg2))}
+.modal:has(>.banner) .banner::after{background:linear-gradient(transparent 20%,var(--mbg))}
+.modal:has(>.banner) .mcover{box-shadow:0 10px 30px #000a,0 0 0 1px color-mix(in srgb,var(--mtint,transparent) 60%,transparent),0 0 40px -6px var(--mtint,transparent)}
+/* Card motion: fade-in on first sight, shine under the mouse (tilt is set from JS) */
+.card.pre{opacity:0}
+.card.rev{animation:cardIn .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px) scale(.97)}}
+.cover::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.3),rgba(255,255,255,.07) 38%,transparent 62%)}
+@media (hover:hover){.card:hover .cover::before{opacity:1}}
 .nuc.nudge{width:300px}
 .nudge .ndx{flex:none;align-self:center;width:28px;height:28px;border-radius:50%;color:var(--muted);font-size:14px}
 .nudge .ndx:hover{background:var(--card2);color:var(--text)}
@@ -501,7 +539,7 @@ nav.bottom{display:none}
   .lsc{width:34px}
   .lrow{gap:10px}
   .hrow{grid-auto-columns:128px}
-  .t10 .rk{font-size:104px;-webkit-text-stroke-width:2.5px;margin-right:-18px}
+  .t10 .rk{font-size:104px;margin-right:-18px}
   .t10 .card{width:118px}
   .nuc.nudge{width:calc(100vw - 56px);max-width:340px}
   .snopts{margin-left:0;width:100%}
@@ -549,6 +587,8 @@ nav.bottom{display:none}
   <div class="offbar" id="offbar" role="status" hidden>📴 You're offline. Kuro shows what it has saved; your changes are kept and sync when you're back online.</div>
   <!-- DISCOVER -->
   <section id="v-discover">
+    <div class="htint" aria-hidden="true"></div>
+    <div class="hero" id="hero" hidden role="region" aria-roledescription="carousel" aria-label="Trending spotlight"></div>
     <button class="spin-cta" id="spinBtn"><span class="dice"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/></svg></span>
       <span><b>Random pick</b><small>Spin for something you haven't seen</small></span><span class="go" aria-hidden="true">Spin ›</span></button>
     <div class="seasonlinks" id="seasonLinks"></div>
@@ -1299,6 +1339,7 @@ let curModal=null,keepTop=null,details={},epAll=false;
 function openModal(id,keep){
   dlgFocus=dlgFocusKey();
   const m=cache[id]||list[id];if(!m)return;const e=list[id];
+  $('#modal').style.setProperty('--mtint',okHex(m.color)?m.color:''); // only used while the sheet has a .banner (CSS :has)
   keepTop=keep?$('#modal').scrollTop:null;curModal=id;if(!keep)epAll=false;
   const desc=(m.desc||'No synopsis available.').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'');
   const nxt=m.next?`Ep ${m.next.episode} · ${new Date(m.next.airingAt*1000).toLocaleString([], {weekday:'short',hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'})}`:'—';
@@ -1962,8 +2003,8 @@ async function pubQ(query,variables){ // public AniList query, returns data
 }
 const DAY=864e5;
 const agoLong=t=>{const d=(Date.now()-t)/DAY;return d<1.5?'yesterday':d<14?Math.round(d)+' days ago':d<60?Math.round(d/7)+' weeks ago':d<365?Math.round(d/30)+' months ago':'over a year ago'};
-function loadExtras(){drawSeasonLinks();drawNudges();loadRecs();loadRels();loadTop10()}
-function drawExtras(){drawNudges();drawRecs();drawRels();drawTop10()}
+function loadExtras(){drawSeasonLinks();drawNudges();loadRecs();loadRels();loadTop10();loadHero()}
+function drawExtras(){drawNudges();drawRecs();drawRels();drawTop10();drawHero()}
 
 /* ----- season chart: everything airing in a season, grouped by format ----- */
 const SEASONS=['WINTER','SPRING','SUMMER','FALL'];
@@ -2061,15 +2102,15 @@ function drawRecs(){
 /* ----- Top 10: AniList's trending / best-rated / most popular, with big rank numbers ----- */
 const T10_Q=`query($sort:[MediaSort]){Page(perPage:10){media(type:ANIME,isAdult:false,sort:$sort){${MEDIA_FIELDS}}}}`;
 const t10Data={};let t10Tab=(()=>{try{return localStorage.getItem('kuro.t10Tab')||'TRENDING_DESC'}catch{return'TRENDING_DESC'}})();
-async function loadTop10(){
-  const tab=t10Tab,d=t10Data[tab];drawTop10();
-  if(d&&(d.busy||Date.now()-d.at<36e5))return;
-  t10Data[tab]={...(d||{}),busy:true};
-  try{const ms=(await pubQ(T10_Q,{sort:[tab]})).Page.media.map(x=>{const m=slim(x);cache[m.id]=cache[m.id]||m;return m});
-    t10Data[tab]={at:Date.now(),items:ms}}
-  catch(e){t10Data[tab]={at:0,items:d?.items||null,err:e.message}}
-  if(tab===t10Tab)drawTop10();
+function fetchTop(sort){ // one AniList call per list per hour, shared by Top 10 and the hero
+  const d=t10Data[sort];
+  if(d?.items&&Date.now()-d.at<36e5)return Promise.resolve(d.items);
+  if(d?.p)return d.p;
+  const p=pubQ(T10_Q,{sort:[sort]}).then(r=>{const ms=r.Page.media.map(x=>{const m=slim(x);cache[m.id]=cache[m.id]||m;return m});t10Data[sort]={at:Date.now(),items:ms};return ms})
+    .catch(e=>{t10Data[sort]={at:0,items:d?.items||null,err:e.message};return t10Data[sort].items});
+  t10Data[sort]={...(d||{}),p};return p;
 }
+async function loadTop10(){const tab=t10Tab;drawTop10();await fetchTop(tab);if(tab===t10Tab)drawTop10()}
 function drawTop10(){
   document.querySelectorAll('[data-t10]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t10===t10Tab));
   const d=t10Data[t10Tab],row=$('#t10Row');
@@ -2079,6 +2120,68 @@ function drawTop10(){
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-t10]');if(!b)return;
   t10Tab=b.dataset.t10;try{localStorage.setItem('kuro.t10Tab',t10Tab)}catch{}$('#t10Row').scrollLeft=0;loadTop10()});
+
+/* ----- Hero spotlight: the top trending shows that have banner art, rotating every 7 s ----- */
+let heroI=0,heroT=null,heroHold=false,heroIds='';
+const heroItems=()=>(t10Data.TRENDING_DESC?.items||[]).filter(m=>m.banner).slice(0,6);
+const stillMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+async function loadHero(){drawHero();await fetchTop('TRENDING_DESC');drawHero()}
+function drawHero(){
+  const its=heroItems(),h=$('#hero'),all=t10Data.TRENDING_DESC?.items||[];
+  if(!its.length){h.hidden=true;$('#v-discover').style.removeProperty('--htint');return}
+  const ids=its.map(m=>m.id).join();if(ids!==heroIds){heroIds=ids;heroI=0}
+  heroI%=its.length;h.hidden=false;
+  h.innerHTML=its.map((m,i)=>{const on=i===heroI,inL=!!list[m.id];
+    const meta=[m.format?.replace('_',' '),m.year,m.episodes?m.episodes+' ep':null,m.score?'★ '+(m.score/10).toFixed(1):null,...(m.genres||[]).slice(0,2)].filter(Boolean).join(' · ');
+    const d=(m.desc||'').replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+    return `<div class="hs${on?' on':''}" role="group" aria-roledescription="slide" aria-label="${i+1} of ${its.length}: ${esc(titleOf(m))}"${on?'':' aria-hidden="true" inert'}>
+      <img class="himg" src="${esc(m.banner)}" alt="" decoding="async"${on?'':' loading="lazy"'}>
+      <div class="hcon"><span class="hk">🔥 #${all.indexOf(m)+1} trending</span><h2 class="ht">${esc(titleOf(m))}</h2><div class="hm">${esc(meta)}</div>
+        ${d?`<p class="hd">${esc(d)}</p>`:''}
+        <div class="hb"><button class="btn primary" data-open="${m.id}">Details</button><button class="btn hadd" data-add="${m.id}">${inL?'✓ In My List':'+ My List'}</button></div></div></div>`}).join('')
+    +(its.length>1?`<div class="hdots">${its.map((m,i)=>`<button data-hero="${i}" aria-label="Show ${esc(titleOf(m))}" aria-current="${i===heroI}"></button>`).join('')}</div>`:'');
+  $('#v-discover').style.setProperty('--htint',okHex(its[heroI].color)?its[heroI].color:'transparent');
+  heroTimer();
+}
+function heroGo(i){
+  const its=heroItems();if(its.length<2)return;heroI=(i+its.length)%its.length;
+  $$('#hero .hs').forEach((s,k)=>{const on=k===heroI;s.classList.toggle('on',on);s.inert=!on;on?s.removeAttribute('aria-hidden'):s.setAttribute('aria-hidden','true');
+    const im=s.querySelector('img');if(on&&im)im.loading='eager'});
+  $$('#hero [data-hero]').forEach((b,k)=>b.setAttribute('aria-current',k===heroI));
+  $('#v-discover').style.setProperty('--htint',okHex(its[heroI].color)?its[heroI].color:'transparent');
+}
+function heroTimer(){clearInterval(heroT);if(stillMotion())return; // no auto-advance for reduced motion
+  heroT=setInterval(()=>{if(document.hidden||heroHold||view!=='discover'||$('#scrim').classList.contains('open'))return;heroGo(heroI+1)},7000)}
+(()=>{const h=$('#hero');let x0=null;
+  h.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')heroHold=true});h.addEventListener('pointerleave',()=>heroHold=false);
+  h.addEventListener('focusin',()=>heroHold=true);h.addEventListener('focusout',()=>heroHold=false);
+  h.addEventListener('pointerdown',e=>{x0=e.clientX});
+  h.addEventListener('pointerup',e=>{if(x0==null)return;const dx=e.clientX-x0;x0=null;if(Math.abs(dx)>45){heroGo(heroI+(dx<0?1:-1));heroTimer()}});
+  h.addEventListener('click',e=>{const b=e.target.closest('[data-hero]');if(b){heroGo(+b.dataset.hero);heroTimer()}});
+})();
+
+/* ----- Card motion: cards fade in the first time a show scrolls into view; 3D tilt and shine under the mouse ----- */
+(()=>{
+  if(!('IntersectionObserver' in window))return;
+  const shown=new Set();
+  const io=new IntersectionObserver(es=>{let n=0;for(const en of es){if(!en.isIntersecting)continue;const c=en.target;io.unobserve(c);shown.add(c.dataset.id);
+    c.classList.remove('pre');c.style.animationDelay=Math.min(n++,8)*45+'ms';c.classList.add('rev');
+    c.addEventListener('animationend',()=>{c.classList.remove('rev');c.style.animationDelay=''},{once:true})}},{rootMargin:'0px 0px -20px 0px'});
+  new MutationObserver(ms=>{if(stillMotion()||document.hidden)return;
+    for(const mu of ms)for(const nd of mu.addedNodes){if(nd.nodeType!==1)continue;
+      for(const c of nd.matches('.card')?[nd]:nd.querySelectorAll('.card')){if(shown.has(c.dataset.id))continue;c.classList.add('pre');io.observe(c)}}
+  }).observe(document.querySelector('main'),{childList:true,subtree:true});
+  let tc=null;const untilt=c=>{if(c){c.style.transform='';c.style.removeProperty('--mx');c.style.removeProperty('--my')}};
+  document.addEventListener('pointermove',e=>{
+    if(e.pointerType!=='mouse'||stillMotion())return;
+    const c=e.target.closest?.('.card');if(c!==tc){untilt(tc);tc=c}if(!c||c.classList.contains('rev'))return;
+    const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    const lift=c.closest('.hrow,.t10row,#modal')?'':' translateY(-4px)';
+    c.style.transform=`perspective(800px) rotateX(${(-y*9).toFixed(2)}deg) rotateY(${(x*11).toFixed(2)}deg)${lift}`;
+    c.style.setProperty('--mx',((x+.5)*100).toFixed(1)+'%');c.style.setProperty('--my',((y+.5)*100).toFixed(1)+'%');
+  },{passive:true});
+  document.addEventListener('pointerout',e=>{if(tc&&!tc.contains(e.relatedTarget)){untilt(tc);tc=null}});
+})();
 
 /* ----- "From your shows": sequels and prequels of shows you watched that are not on your list.
    New announcements (not seen before) get a "New" badge, a toast and, when alerts are on, a notification. ----- */
