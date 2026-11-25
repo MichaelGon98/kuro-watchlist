@@ -1,4 +1,4 @@
-const C='kuro-v9',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
+const C='kuro-v10',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x))))));
 self.addEventListener('fetch',e=>{

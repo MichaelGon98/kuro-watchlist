@@ -109,12 +109,14 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 - Settings (Watch link, Client ID) and the profile look (photo, display name, colour) are per browser and do not sync: AniList has no place to store them. The owner has to re-enter their Watch link on the hosted site (it no longer comes as a default).
 - Kuro-only data beyond status and episode progress (e.g. the `added` date) is not stored on AniList, so a new browser shows AniList's update time as the added date.
 - Profiles only reach other browsers once the app is hosted at one fixed address (localStorage and the AniList Redirect URL are per address).
+- Accessibility was checked with the keyboard and the accessibility tree only, not with a real screen reader (NVDA/Narrator/TalkBack/VoiceOver). Covers are decorative (`alt=""`) on purpose: the title is always next to them.
 
 ## 9. Next ideas (not started)
 
 - Jellyfin/Plex "Play from my library" button for anime the owner owns.
 - Theme follows the system light/dark setting (an "Auto" option); custom accent colour picker.
 - Quick +1 from the lock screen / notifications for new episodes.
+- Settings synced per profile (needs somewhere to store them; AniList has no slot for app settings).
 
 ## 10. Change Log
 
@@ -219,3 +221,12 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `manifest.json`: PNG icons only; `background_color` `#000107` so the Android splash screen matches the logo.
 - `sw.js`: cache list updated (favicon added, SVG removed); cache bumped to `kuro-v9`. The icons are bigger now (detailed artwork, about 700 KB in total in the offline cache, versus about 30 KB before).
 - Tested on localhost: all manifest icons, Apple icon and favicon load at their declared sizes, header logo renders, all files in the `kuro-v9` cache, no console errors (apart from the 404 of a deliberate test request for the deleted `icon.svg`).
+
+### 2026-11-25 — Accessibility pass
+- **Keyboard:** every card, Next up / This week row, Stats status and top-show row, and episode row is now reachable with Tab and works with Enter/Space (`role="button" tabindex="0"` plus one global keydown handler for `[role=button]:not(button)`). On anime cards the title block is the focus target and comes before the +/+1 button in the Tab order (no nested buttons).
+- **Dialogs** (detail sheet, Settings, Edit profile): `#modal` is `role="dialog" aria-modal="true"`, named by its `<h2>` (the detail title is now an `<h2 id="mtitle">`). On open, focus moves into the dialog and header/main/nav become `inert`; on close, focus returns to what opened it, found again by selector if the page behind was redrawn (`openerSel()`). Redraws of an open dialog (status, rating, episode tap, theme/colour tiles) keep focus on the same control (`dlgFocusKey()`, `dlgRefocus()`, capture-phase click listener). Escape only acts when a dialog is open.
+- **Labels and states:** labels for the header search, list filter, genre and sort selects, all Discover filter fields (`for=`), Watch link, display name, Client ID, notes; Close buttons and the episode stepper have names. `aria-pressed` on genre chips, This week mode, list status chips, status buttons, rating buttons and episodes (watched); `aria-current="page"` on the active tab/nav button. The toast is a polite live region (`role="status"`), so "Added to…", "Synced ✓" and Undo are announced.
+- **Images:** covers and thumbnails are `<img loading="lazy" decoding="async" alt="">` via `pic()` instead of CSS backgrounds, so only covers near the screen download. The detail-sheet cover has `role="img"` with "Cover of …".
+- **CSS:** visible `:focus-visible` ring in the accent colour everywhere; `prefers-reduced-motion` turns off animations, transitions and the card lift.
+- Tested on localhost with real key presses: Enter on a card opens the sheet with focus inside and the page inert; Tab reaches Close with a visible ring; Space on "Watching" keeps focus there (aria-pressed true); Enter on episode 1 marks it watched and keeps focus on it; Escape closes and returns focus to the rebuilt card; Settings → Edit profile → theme/colour tiles keep focus; closing returns focus to the Settings button; all 24 Discover covers are lazy `<img>`s and load. No console errors.
+- `sw.js`: cache bumped to `kuro-v10`.

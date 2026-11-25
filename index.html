@@ -85,6 +85,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .card{background:var(--card);border-radius:var(--r);overflow:hidden;position:relative;border:1px solid var(--line);transition:transform .18s,border-color .18s;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-4px);border-color:var(--hover)}
 .cover{aspect-ratio:2/3;background:var(--card2) center/cover;position:relative;cursor:pointer}
+.cimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+img.nuimg,img.epth{object-fit:cover;display:block}
 .cover::after{content:"";position:absolute;inset:auto 0 0 0;height:55%;background:linear-gradient(transparent,rgba(11,11,18,.92))}
 .badge{position:absolute;z-index:2;top:8px;left:8px;background:rgba(11,11,18,.75);color:#fff;backdrop-filter:blur(6px);padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
 .badge.s{color:#4ade80}.badge.m{color:#fbbf24}.badge.l{color:#f87171} /* on a dark chip in every theme */
@@ -217,6 +219,12 @@ details.hint summary{cursor:pointer}
 #toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 24px);transform:translate(-50%,30px);background:var(--card2);border:1px solid var(--line);padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:80;font-weight:600}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* accessibility: visible keyboard focus everywhere, less motion when the system asks for it */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cinfo:focus-visible{outline-offset:4px;border-radius:6px}
+.modal:focus{outline:0}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.card:hover{transform:none}}
+
 /* stats */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:8px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
@@ -276,7 +284,7 @@ nav.bottom{display:none}
   <div class="logo"><img src="icon-192.png" alt="">Kuro</div>
   <div class="search" id="searchWrap">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-    <input id="q" type="search" placeholder="Search anime…" autocomplete="off">
+    <input id="q" type="search" placeholder="Search anime…" autocomplete="off" aria-label="Search anime">
   </div>
   <div class="tabs">
     <button class="tab" data-view="discover">Discover</button>
@@ -295,17 +303,17 @@ nav.bottom{display:none}
       <button class="btn ftoggle" id="ftoggle">⚙ Filters <span id="fcount"></span></button>
       <div class="fbody">
         <div class="frow">
-          <div class="field"><label>Sort</label><select id="f-sort">
+          <div class="field"><label for="f-sort">Sort</label><select id="f-sort">
             <option value="TRENDING_DESC">Trending</option><option value="POPULARITY_DESC">Most popular</option>
             <option value="SCORE_DESC">Top rated</option><option value="START_DATE_DESC">Newest</option>
             <option value="FAVOURITES_DESC">Most favourited</option></select></div>
-          <div class="field"><label>Format</label><select id="f-format"><option value="">Any</option><option>TV</option><option>TV_SHORT</option><option>MOVIE</option><option>OVA</option><option>ONA</option><option>SPECIAL</option></select></div>
-          <div class="field"><label>Status</label><select id="f-status"><option value="">Any</option><option value="RELEASING">Airing</option><option value="FINISHED">Finished</option><option value="NOT_YET_RELEASED">Upcoming</option></select></div>
-          <div class="field"><label>Season</label><select id="f-season"><option value="">Any</option><option value="WINTER">Winter</option><option value="SPRING">Spring</option><option value="SUMMER">Summer</option><option value="FALL">Fall</option></select></div>
-          <div class="field"><label>Year</label><select id="f-year"><option value="">Any</option></select></div>
-          <div class="field"><label>Min score: <span id="scoreV">0</span></label><input type="range" id="f-score" min="0" max="90" step="5" value="0"></div>
+          <div class="field"><label for="f-format">Format</label><select id="f-format"><option value="">Any</option><option>TV</option><option>TV_SHORT</option><option>MOVIE</option><option>OVA</option><option>ONA</option><option>SPECIAL</option></select></div>
+          <div class="field"><label for="f-status">Status</label><select id="f-status"><option value="">Any</option><option value="RELEASING">Airing</option><option value="FINISHED">Finished</option><option value="NOT_YET_RELEASED">Upcoming</option></select></div>
+          <div class="field"><label for="f-season">Season</label><select id="f-season"><option value="">Any</option><option value="WINTER">Winter</option><option value="SPRING">Spring</option><option value="SUMMER">Summer</option><option value="FALL">Fall</option></select></div>
+          <div class="field"><label for="f-year">Year</label><select id="f-year"><option value="">Any</option></select></div>
+          <div class="field"><label for="f-score">Min score: <span id="scoreV">0</span></label><input type="range" id="f-score" min="0" max="90" step="5" value="0"></div>
         </div>
-        <div class="chips" id="genreChips"></div>
+        <div class="chips" id="genreChips" role="group" aria-label="Genres"></div>
         <div class="fbottom"><span class="hint" id="resCount"></span><button class="link" id="reset">Reset filters</button></div>
       </div>
     </div>
@@ -315,17 +323,17 @@ nav.bottom{display:none}
 
   <!-- THIS WEEK -->
   <section id="v-week" style="display:none">
-    <div class="sub" id="wkmode"><button class="chip on" data-wk="mine">My shows</button><button class="chip" data-wk="all">All popular</button></div>
+    <div class="sub" id="wkmode" role="group" aria-label="Which shows"><button class="chip on" data-wk="mine" aria-pressed="true">My shows</button><button class="chip" data-wk="all" aria-pressed="false">All popular</button></div>
     <div id="wk"></div>
   </section>
 
   <!-- LIST -->
   <section id="v-list" style="display:none">
-    <div class="sub" id="subtabs"></div>
+    <div class="sub" id="subtabs" role="group" aria-label="List status"></div>
     <div class="lbar">
-      <input id="lq" type="search" placeholder="Filter my list…">
-      <select id="lgenre"><option value="">All genres</option></select>
-      <select id="lsort"><option value="added">Recently added</option><option value="title">Title A–Z</option><option value="score">Score</option><option value="mine">My rating</option><option value="year">Year</option></select>
+      <input id="lq" type="search" placeholder="Filter my list…" aria-label="Filter my list">
+      <select id="lgenre" aria-label="Genre"><option value="">All genres</option></select>
+      <select id="lsort" aria-label="Sort my list"><option value="added">Recently added</option><option value="title">Title A–Z</option><option value="score">Score</option><option value="mine">My rating</option><option value="year">Year</option></select>
     </div>
     <div class="grid" id="lgrid"></div>
   </section>
@@ -342,8 +350,8 @@ nav.bottom{display:none}
   <button id="navSet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Settings</button>
 </nav>
 
-<div class="scrim" id="scrim"><div class="modal" id="modal"></div></div>
-<div id="toast"></div>
+<div class="scrim" id="scrim"><div class="modal" id="modal" role="dialog" aria-modal="true" tabindex="-1"></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -436,14 +444,14 @@ let page=1,hasNext=false,loading=false,cache={},view='discover',listStatus='watc
 (function init(){
   const y=new Date().getFullYear()+1;
   for(let i=y;i>=1990;i--)$('#f-year').insertAdjacentHTML('beforeend',`<option>${i}</option>`);
-  $('#genreChips').innerHTML=GENRES.map(g=>`<button class="chip" data-g="${g}">${g}</button>`).join('');
+  $('#genreChips').innerHTML=GENRES.map(g=>`<button class="chip" data-g="${g}" aria-pressed="false">${g}</button>`).join('');
   $('#lgenre').insertAdjacentHTML('beforeend',GENRES.map(g=>`<option>${g}</option>`).join(''));
-  $('#genreChips').onclick=e=>{const g=e.target.dataset.g;if(!g)return;F.genres.has(g)?F.genres.delete(g):F.genres.add(g);e.target.classList.toggle('on');run()};
+  $('#genreChips').onclick=e=>{const g=e.target.dataset.g;if(!g)return;F.genres.has(g)?F.genres.delete(g):F.genres.add(g);e.target.setAttribute('aria-pressed',e.target.classList.toggle('on'));run()};
   for(const k of ['sort','format','status','season','year']) $('#f-'+k).onchange=e=>{F[k]=e.target.value;run()};
   $('#f-score').oninput=e=>$('#scoreV').textContent=e.target.value;
   $('#f-score').onchange=e=>{F.score=+e.target.value;run()};
   $('#reset').onclick=()=>{Object.assign(F,{sort:'TRENDING_DESC',format:'',status:'',season:'',year:'',score:0,q:''});F.genres.clear();
-    $('#q').value='';$$('.filters select').forEach(s=>s.selectedIndex=0);$('#f-score').value=0;$('#scoreV').textContent=0;$$('.chip.on').forEach(c=>c.classList.remove('on'));run()};
+    $('#q').value='';$$('.filters select').forEach(s=>s.selectedIndex=0);$('#f-score').value=0;$('#scoreV').textContent=0;$$('#genreChips .chip.on').forEach(c=>{c.classList.remove('on');c.setAttribute('aria-pressed','false')});run()};
   $('#ftoggle').onclick=()=>$('#filters').classList.toggle('open');
   let t;$('#q').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{
     if(view==='list'){$('#lq').value=e.target.value;renderList();return}
@@ -500,13 +508,13 @@ function cardHTML(m,showProg){
   const meta=[m.format?.replace('_',' '),m.year,m.episodes?m.episodes+' ep':null].filter(Boolean).join(' · ');
   const pct=showProg&&m.episodes?Math.min(100,(e.progress||0)/m.episodes*100):0;
   return `<div class="card" data-id="${m.id}">
-    <div class="cover" style="background-image:url('${esc(m.cover)}');background-color:${esc(m.color||'')}" data-open="${m.id}">
+    <div class="cover" style="background-color:${esc(m.color||'')}" data-open="${m.id}">${pic(m.cover,'cimg')}
       ${showProg&&e?.myScore&&settings.rate!==false?`<span class="badge mine">♥ ${e.myScore/10}</span>`
         :m.score?`<span class="badge ${scoreCls(m.score)}">★ ${(m.score/10).toFixed(1)}</span>`:''}
+      <div class="cinfo" role="button" tabindex="0"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)}${showProg&&(ACTIVE.includes(e.status)||e.status==='paused')?` · ep ${e.progress||0}`:''}</div></div>
       ${showProg&&ACTIVE.includes(e.status)&&nextInfo(e).out&&!(e.episodes&&e.progress>=e.episodes)
         ?`<button class="add plus" data-plus="${m.id}" aria-label="Mark episode ${(e.progress||0)+1} watched">+1</button>`
         :`<button class="add ${inList?'in':''}" data-add="${m.id}" aria-label="${inList?'In list':'Add to list'}">${inList?'✓':'+'}</button>`}
-      <div class="cinfo"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)}${showProg&&(ACTIVE.includes(e.status)||e.status==='paused')?` · ep ${e.progress||0}`:''}</div></div>
     </div>${showProg&&m.episodes?`<div class="prog"><i style="width:${pct}%"></i></div>`:''}</div>`;
 }
 document.addEventListener('click',e=>{
@@ -538,7 +546,7 @@ function renderNext(){
     const tot=x.episodes?' / '+x.episodes:'';
     const sub=n.out?`Next: Ep ${n.ep}${tot}${n.behind>1?` · <b class="new">${n.behind} new</b>`:''}`
       :n.nx?`Ep ${n.ep} airs ${esc(whenText(n.nx.airingAt))}`:`Ep ${n.ep} not aired yet`;
-    return `<div class="nuc${n.out?'':' soon'}" data-open="${x.id}"><div class="nuimg" style="background-image:url('${esc(x.cover)}')"></div><div class="grow"><div class="ctitle">${esc(titleOf(x))}</div><div class="cmeta">${sub}</div></div>${n.out?`<button class="plus" data-plus="${x.id}" aria-label="Mark episode ${n.ep} watched">+1</button>`:''}</div>`}).join('');
+    return `<div class="nuc${n.out?'':' soon'}" data-open="${x.id}">${pic(x.cover,'nuimg')}<div class="grow" role="button" tabindex="0"><div class="ctitle">${esc(titleOf(x))}</div><div class="cmeta">${sub}</div></div>${n.out?`<button class="plus" data-plus="${x.id}" aria-label="Mark episode ${n.ep} watched">+1</button>`:''}</div>`}).join('');
 }
 /* ---------- this week (airing schedule) ---------- */
 // Episodes airing from the start of yesterday (to catch up) to 7 days after today, from AniList's airingSchedules (public, no account needed).
@@ -589,12 +597,12 @@ function drawWeek(){
     else note='Out now';
     if(!e)act=`<button class="plus" data-add="${s.m.id}" aria-label="Add to list" style="background:var(--card2);border:1px solid var(--line);color:var(--text)">+</button>`;
     html+=`<div class="wkrow${aired?' past':''}" data-open="${s.m.id}"><span class="t">${new Date(s.at*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
-      <div class="nuimg" style="background-image:url('${esc(s.m.cover)}')"></div>
-      <div class="grow"><div class="ctitle">${esc(titleOf(s.m))}</div><div class="cmeta">Ep ${s.ep}${s.m.episodes?' / '+s.m.episodes:''} · ${note}</div></div>${act}</div>`;
+      ${pic(s.m.cover,'nuimg')}
+      <div class="grow" role="button" tabindex="0"><div class="ctitle">${esc(titleOf(s.m))}</div><div class="cmeta">Ep ${s.ep}${s.m.episodes?' / '+s.m.episodes:''} · ${note}</div></div>${act}</div>`;
   }
   $('#wk').innerHTML=html;
 }
-$('#wkmode').onclick=e=>{const k=e.target.dataset.wk;if(!k||k===wkMode)return;wkMode=k;$$('#wkmode .chip').forEach(c=>c.classList.toggle('on',c.dataset.wk===k));loadWeek()};
+$('#wkmode').onclick=e=>{const k=e.target.dataset.wk;if(!k||k===wkMode)return;wkMode=k;$$('#wkmode .chip').forEach(c=>c.setAttribute('aria-pressed',c.classList.toggle('on',c.dataset.wk===k)));loadWeek()};
 
 // Refresh airing info (next episode, episode count) for unfinished shows in the list, also without an account.
 // Uses the public AniList API, max once per 30 min unless a stored "next episode" time has passed.
@@ -629,7 +637,7 @@ function addToList(id,status){
 function updateCounts(){$('#cnt1').textContent=Object.keys(list).length}
 function renderList(){
   const all=Object.values(list);
-  $('#subtabs').innerHTML=STATUSES.map(([k,l])=>`<button class="chip ${k===listStatus?'on':''}" data-ls="${k}">${l} · ${all.filter(x=>x.status===k).length}</button>`).join('');
+  $('#subtabs').innerHTML=STATUSES.map(([k,l])=>`<button class="chip ${k===listStatus?'on':''}" data-ls="${k}" aria-pressed="${k===listStatus}">${l} · ${all.filter(x=>x.status===k).length}</button>`).join('');
   const q=norm($('#lq').value),g=$('#lgenre').value,s=$('#lsort').value;
   let items=all.filter(x=>x.status===listStatus&&(!g||x.genres?.includes(g))&&(!q||norm(x.title.english).includes(q)||norm(x.title.romaji).includes(q)));
   items.sort((a,b)=>s==='title'?titleOf(a).localeCompare(titleOf(b)):s==='score'?(b.score||0)-(a.score||0):s==='mine'?(b.myScore||0)-(a.myScore||0):s==='year'?(b.year||0)-(a.year||0):b.added-a.added);
@@ -637,6 +645,9 @@ function renderList(){
 }
 $('#subtabs').onclick=e=>{const k=e.target.dataset.ls;if(k){listStatus=k;renderList()}};
 ['#lq','#lgenre','#lsort'].forEach(s=>$(s).oninput=renderList);
+
+/* lazy-loaded cover/thumbnail: decorative (alt="") because the title is always next to it */
+const pic=(src,cls)=>src?`<img class="${cls}" src="${esc(src)}" loading="lazy" decoding="async" alt="">`:`<div class="${cls}"></div>`;
 
 /* ---------- stats view (computed from the active profile's list, nothing fetched) ---------- */
 const FORMATS={TV:'TV',TV_SHORT:'TV short',MOVIE:'Movie',OVA:'OVA',ONA:'ONA',SPECIAL:'Special',MUSIC:'Music'};
@@ -654,7 +665,7 @@ function drawStats(){
   const mean=rated.length?rated.reduce((s,x)=>s+x.myScore,0)/rated.length/10:0;
   const tile=(l,v,s)=>`<div class="tile"><small>${l}</small><b>${v}</b>${s?`<span>${s}</span>`:''}</div>`;
   const bars=(rows,attr)=>{const max=Math.max(1,...rows.map(r=>r.n));
-    return rows.map(r=>`<div class="brow"${attr?` data-ls="${r.k}"`:''} title="${esc(r.tip||`${r.l}: ${r.n}`)}"><span class="bl">${esc(r.l)}</span>
+    return rows.map(r=>`<div class="brow"${attr?` data-ls="${r.k}" role="button" tabindex="0"`:''} title="${esc(r.tip||`${r.l}: ${r.n}`)}"><span class="bl">${esc(r.l)}</span>
       <span class="bt"><i style="width:${r.n/max*100}%"></i></span><span class="bv">${r.n}</span></div>`).join('')};
   const count=(arr,key)=>{const c={};for(const x of arr)for(const k of [].concat(key(x)||[]))c[k]=(c[k]||0)+1;
     return Object.entries(c).sort((a,b)=>b[1]-a[1])};
@@ -681,7 +692,7 @@ function drawStats(){
     <div class="scols">
       <div><h2 class="sec" style="margin-top:22px">By status</h2><div class="spanel" id="stStatus">${bars(status,true)}</div></div>
       <div><h2 class="sec" style="margin-top:22px">Top genres</h2><div class="spanel">${genres.length?bars(genres):'<div class="hint" style="padding:8px 4px">Start watching something to see your genres.</div>'}</div></div>
-      ${top.length?`<div><h2 class="sec" style="margin-top:22px">Most time spent</h2><div class="spanel">${top.map(({x,m})=>`<div class="toprow" data-id="${x.id}"><div class="nuimg" style="background-image:url('${esc(x.cover)}')"></div><span class="t">${esc(titleOf(x))}</span><span class="v">${fmtTime(m)}</span></div>`).join('')}</div></div>`:''}
+      ${top.length?`<div><h2 class="sec" style="margin-top:22px">Most time spent</h2><div class="spanel">${top.map(({x,m})=>`<div class="toprow" data-id="${x.id}" role="button" tabindex="0">${pic(x.cover,'nuimg')}<span class="t">${esc(titleOf(x))}</span><span class="v">${fmtTime(m)}</span></div>`).join('')}</div></div>`:''}
       ${formats.length?`<div><h2 class="sec" style="margin-top:22px">Formats</h2><div class="spanel">${bars(formats)}</div></div>`:''}
     </div>
     ${hist}
@@ -693,7 +704,7 @@ $('#stats').onclick=e=>{const r=e.target.closest('[data-ls]');if(r){listStatus=r
 /* ---------- views ---------- */
 function setView(v){
   view=v;for(const k of ['discover','week','list','stats'])$('#v-'+k).style.display=v===k?'':'none';
-  $$('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  $$('[data-view]').forEach(b=>{b.classList.toggle('on',b.dataset.view===v);b.dataset.view===v?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
   $('#q').placeholder=v==='list'?'Search my list…':'Search anime…';
   if(v==='list')renderList();
   if(v==='stats')drawStats();
@@ -708,16 +719,17 @@ const hasProvider=()=>/^https?:\/\/.+/i.test(settings.provider||'');
 function watchUrl(m){return settings.provider.replace('{query}',encodeURIComponent(titleOf(m))).replace('{romaji}',encodeURIComponent(m.title.romaji))}
 let curModal=null,keepTop=null,details={},epAll=false;
 function openModal(id,keep){
+  dlgFocus=dlgFocusKey();
   const m=cache[id]||list[id];if(!m)return;const e=list[id];
   keepTop=keep?$('#modal').scrollTop:null;curModal=id;if(!keep)epAll=false;
   const desc=(m.desc||'No synopsis available.').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'');
   const nxt=m.next?`Ep ${m.next.episode} · ${new Date(m.next.airingAt*1000).toLocaleString([], {weekday:'short',hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'})}`:'—';
   const stat=(l,v)=>`<div class="stat"><small>${l}</small><b>${esc(v||'—')}</b></div>`;
   $('#modal').innerHTML=`
-    <div class="banner" style="background-image:url('${esc(m.banner||m.cover)}')"><button class="close" id="mclose">✕</button></div>
+    <div class="banner" style="background-image:url('${esc(m.banner||m.cover)}')"><button class="close" id="mclose" aria-label="Close">✕</button></div>
     <div class="mbody">
-      <div class="mtop"><div class="mcover" style="background-image:url('${esc(m.cover)}')"></div>
-        <div><div class="mtitle">${esc(titleOf(m))}</div><div class="msub">${esc(m.title.romaji!==titleOf(m)?m.title.romaji:'')}</div>
+      <div class="mtop"><div class="mcover" role="img" aria-label="Cover of ${esc(titleOf(m))}" style="background-image:url('${esc(m.cover)}')"></div>
+        <div><h2 class="mtitle" id="mtitle">${esc(titleOf(m))}</h2><div class="msub">${esc(m.title.romaji!==titleOf(m)?m.title.romaji:'')}</div>
         <div class="chips" style="margin-top:8px">${(m.genres||[]).map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div></div></div>
       <div class="stats">
         ${stat('Score',m.score?(m.score/10).toFixed(1)+' / 10':'')}${stat('Format',m.format?.replace('_',' '))}
@@ -727,11 +739,11 @@ function openModal(id,keep){
       </div>
       <div id="trailer"></div>
       <div class="desc">${esc(desc).replace(/\n/g,'<br>')}</div>
-      <div class="seg" id="seg">${STATUSES.map(([k,l])=>`<button data-st="${k}" class="${e?.status===k?'on':''}">${l}</button>`).join('')}</div>
-      ${e&&(ACTIVE.includes(e.status)||e.status==='paused')?`<div class="stepper"><button id="epm">−</button><b>Episode ${e.progress||0}${m.episodes?' / '+m.episodes:''}</b><button id="epp">+</button></div>`:''}
+      <div class="seg" id="seg" role="group" aria-label="List status">${STATUSES.map(([k,l])=>`<button data-st="${k}" class="${e?.status===k?'on':''}" aria-pressed="${e?.status===k}">${l}</button>`).join('')}</div>
+      ${e&&(ACTIVE.includes(e.status)||e.status==='paused')?`<div class="stepper"><button id="epm" aria-label="One episode back">−</button><b aria-live="polite">Episode ${e.progress||0}${m.episodes?' / '+m.episodes:''}</b><button id="epp" aria-label="One episode forward">+</button></div>`:''}
       ${e&&settings.rate!==false?`<h3 class="sh">Your rating <span class="hint" style="text-transform:none;letter-spacing:0">· optional, tap again to clear</span></h3>
-        <div class="rate" id="rate">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button data-sc="${n}" class="${Math.round((e.myScore||0)/10)>=n?'on':''}" aria-label="Rate ${n} out of 10">${n}</button>`).join('')}</div>
-        <textarea id="notes" class="notes" maxlength="2000" placeholder="Your notes (optional)">${esc(e.notes||'')}</textarea>
+        <div class="rate" id="rate">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button data-sc="${n}" class="${Math.round((e.myScore||0)/10)>=n?'on':''}" aria-pressed="${Math.round((e.myScore||0)/10)===n}" aria-label="Rate ${n} out of 10">${n}</button>`).join('')}</div>
+        <textarea id="notes" class="notes" maxlength="2000" placeholder="Your notes (optional)" aria-label="Your notes">${esc(e.notes||'')}</textarea>
         ${me()?'<div class="hint">Rating and notes are saved to your AniList entry too, so anyone who can see your AniList list may see them.</div>':''}`:''}
       <h3 class="sh">Where to watch</h3>
       <div class="actions" id="wtwb"><span class="hint">Loading…</span></div>
@@ -806,10 +818,10 @@ function epsHTML(id,d){
   if(keys.length){
     for(let k=from;k<=to;k++){
       const s=meta[k],t=(s?.title||'').replace(/^\s*Episode\s*\d+\s*[-–:]?\s*/i,'')||'Episode '+k;
-      h+=`<div class="ep ${k<=prog?'done':''}" data-ep="${k}"><div class="epth" style="${s&&okUrl(s.thumbnail)?`background-image:url('${esc(s.thumbnail)}')`:''}"></div><div class="epm"><b>${k}</b> ${esc(t)}</div>${s&&okUrl(s.url)?`<a class="epw" href="${esc(s.url)}" target="_blank" rel="noopener" title="Watch on ${esc(s.site)}">▶</a>`:''}<span class="tick">${k<=prog?'✓':''}</span></div>`;
+      h+=`<div class="ep ${k<=prog?'done':''}" data-ep="${k}">${pic(s&&okUrl(s.thumbnail)?s.thumbnail:'','epth')}<div class="epm" role="button" tabindex="0" aria-pressed="${k<=prog}"><b>${k}</b> ${esc(t)}</div>${s&&okUrl(s.url)?`<a class="epw" href="${esc(s.url)}" target="_blank" rel="noopener" title="Watch on ${esc(s.site)}">▶</a>`:''}<span class="tick">${k<=prog?'✓':''}</span></div>`;
     }
   }else{
-    h+='<div class="epg">';for(let k=from;k<=to;k++)h+=`<button class="epc ${k<=prog?'done':''}" data-ep="${k}">${k}</button>`;h+='</div>';
+    h+='<div class="epg">';for(let k=from;k<=to;k++)h+=`<button class="epc ${k<=prog?'done':''}" data-ep="${k}" aria-pressed="${k<=prog}" aria-label="Episode ${k}">${k}</button>`;h+='</div>';
   }
   if(win)h+=`<button class="btn" id="epall" style="margin-top:8px">Show all ${n} episodes</button>`;
   return h;
@@ -818,7 +830,7 @@ function fillDetails(id){
   loadDetails(id).then(d=>{
     if(curModal!==id||!$('#eps'))return;
     if(!d){$('#wtwb').innerHTML=$('#eps').innerHTML='<span class="hint">Couldn’t load details. Check your connection.</span>';return}
-    $('#wtwb').innerHTML=wtwHTML(d);$('#eps').innerHTML=epsHTML(id,d);
+    $('#wtwb').innerHTML=wtwHTML(d);$('#eps').innerHTML=epsHTML(id,d);dlgRefocus();
     if(keepTop!=null)$('#modal').scrollTop=keepTop;
   });
 }
@@ -836,17 +848,59 @@ $('#modal').addEventListener('click',ev=>{
   if(row&&curModal&&!ev.target.closest('a'))epTap(curModal,+row.dataset.ep);
 });
 $('#scrim').onclick=e=>{if(e.target.id==='scrim')closeModal()};
-addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#scrim').classList.contains('open'))closeModal()});
+// role="button" divs (cards, rows, episodes) work with Enter and Space like real buttons
+document.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches?.('[role=button]:not(button)')&&!e.repeat){e.preventDefault();e.target.click()}
+});
+// Dialog focus: on open, remember what had focus, make the page behind inert and move focus into the dialog;
+// on close, give focus back. Redraws of an open dialog (status, rating, episode taps) keep focus on the same control.
+const bgEls=()=>[$('header'),$('main'),$('nav.bottom')];
+let dlgOpener=null,dlgOpenerSel='',dlgFocus=null;
+// A selector that finds the opener again after the page behind was redrawn (e.g. a status change rebuilds the cards)
+function openerSel(o){
+  const r=o?.closest?.('[data-open],[data-id],[data-ls],[data-view]'),box=o?.closest?.('[id]');if(!r||!box)return '';
+  const k=['open','id','ls','view'].find(k=>k in r.dataset);
+  return `#${CSS.escape(box.id)} [data-${k}="${CSS.escape(r.dataset[k])}"]`+(r===o?'':' .'+o.classList[0]);
+}
+function dlgFocusKey(){
+  const a=document.activeElement,md=$('#modal');if(!a||a===md||!md.contains(a))return null;
+  if(a.id)return '#'+a.id;
+  const r=a.closest('[data-st],[data-sc],[data-ep],[data-col],[data-th]');if(!r)return null;
+  const k=['st','sc','ep','col','th'].find(k=>k in r.dataset);
+  return `[data-${k}="${CSS.escape(r.dataset[k])}"]`+(r===a?'':' .'+a.classList[0]);
+}
+function dlgRefocus(){if(!dlgFocus)return;const el=$('#modal').querySelector(dlgFocus);if(el){el.focus({preventScroll:true});dlgFocus=null}}
+// Clicks that redraw the dialog synchronously (theme/colour tiles, Settings ↔ Edit profile): remember the control just before
+let dlgClick=null;
+$('#modal').addEventListener('click',()=>{dlgClick=dlgFocusKey();setTimeout(()=>dlgClick=null)},true);
+function dlgSync(){
+  const md=$('#modal'),h=md.querySelector('h2');if(h){h.id=h.id||'dlgTitle';md.setAttribute('aria-labelledby',h.id)}
+  if(!dlgFocus&&dlgClick){dlgFocus=dlgClick;dlgClick=null;dlgRefocus();dlgFocus=null} /* one try only */
+  else dlgRefocus();if(!md.contains(document.activeElement))md.focus({preventScroll:true});
+}
+new MutationObserver(()=>{
+  if($('#scrim').classList.contains('open')){
+    if(dlgOpener===null){dlgOpener=document.activeElement;dlgOpenerSel=openerSel(dlgOpener);bgEls().forEach(x=>x&&(x.inert=true))}
+    dlgSync();
+  }else if(dlgOpener!==null){
+    bgEls().forEach(x=>x&&(x.inert=false));dlgFocus=null;
+    let o=dlgOpener;dlgOpener=null;
+    if(!o?.isConnected&&dlgOpenerSel)try{o=document.querySelector(dlgOpenerSel)}catch{o=null}
+    if(o&&o!==document.body)o.focus({preventScroll:true});
+  }
+}).observe($('#scrim'),{attributes:true,attributeFilter:['class']});
+new MutationObserver(()=>{if($('#scrim').classList.contains('open'))dlgSync()}).observe($('#modal'),{childList:true});
 
 /* ---------- settings ---------- */
 function openSettings(){
-  $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" style="top:10px">✕</button>
+  $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
     <h2 style="margin:0 0 12px">Settings</h2>
     ${(()=>{const p=me(),l=look(p);return `<div class="pcard" style="--pc:${esc(l.col)}${p?.banner?`;background-image:linear-gradient(transparent 30%,var(--card) 100%),url('${esc(p.banner)}')`:''}">
       ${l.av('pav')}<div class="grow"><div class="pname">${esc(l.name)}</div>
       <div class="hint" style="margin:0">${p?`AniList · ${esc(p.name)}`:'Guest · this browser only'} · ${Object.keys(list).length} anime</div></div>
       <button class="btn sm" id="editProf">Edit profile</button></div>`})()}
-    <label>Your Watch link (optional)</label>
+    <label for="prov">Your Watch link (optional)</label>
     <input type="text" id="prov" value="${esc(settings.provider||'')}" placeholder="https://your-site/search?keyword={query}">
     <div class="hint">Adds a “Watch” button to each anime that opens this address, with <code>{query}</code> replaced by the title. Leave empty to hide the button; the official “Where to watch” links are always shown. Saved in this browser only. Only use an address you trust.</div>
     <label>Accounts</label>
@@ -859,13 +913,13 @@ function openSettings(){
       ${!on?`<button class="btn sm" data-switch="${p.id}">Switch</button>`:''}
       <button class="btn sm danger" data-signout="${p.id}">Sign out</button></div>`}).join('')}
     ${me()?`<div class="prof">${look(null).av()}<div class="grow"><b>${look(null).custom?esc(look(null).name)+' (no account)':'No account'}</b><div class="hint" style="margin:0">Guest list, this browser only</div></div><button class="btn sm" data-switch="">Switch</button></div>`:''}
-    ${clientId()?'':`<input type="text" id="cid" inputmode="numeric" placeholder="AniList Client ID" value="">`}
+    ${clientId()?'':`<input type="text" id="cid" inputmode="numeric" aria-label="AniList Client ID" placeholder="AniList Client ID" value="">`}
     <div class="actions" style="margin-top:8px"><button class="btn primary" id="conn">${me()&&!me().token?'Sign in again':Object.keys(profiles).length?'Add AniList account':'Sign in with AniList'}</button></div>
     <details class="hint" style="margin-top:8px"><summary>${IS_HOSTED?'Sign-in help':'AniList app setup'}${settings.clientId?' (Client ID '+esc(settings.clientId)+')':''}</summary>
       To add a second account, log out on anilist.co first, otherwise AniList signs you straight back in as the current one.
       ${IS_HOSTED?`<div style="margin-top:6px">Advanced: to use your own AniList client instead of the built-in one, enter its Client ID (leave empty for the built-in one).</div>`
       :`<div style="margin-top:6px">One-time setup for this address: at anilist.co/settings/developer create a client, set its Redirect URL to <code>${esc(APP_URL)}</code>, and paste its Client ID here. Or just use the hosted app at <a href="${HOSTED_URL}">${HOSTED_URL}</a>, which needs no setup.</div>`}
-      ${clientId()?`<div style="margin-top:6px"><input type="text" id="cid" inputmode="numeric" placeholder="${IS_HOSTED?'Built-in':'AniList Client ID'}" value="${esc(settings.clientId||'')}"></div>`:''}</details>
+      ${clientId()?`<div style="margin-top:6px"><input type="text" id="cid" inputmode="numeric" aria-label="AniList Client ID" placeholder="${IS_HOSTED?'Built-in':'AniList Client ID'}" value="${esc(settings.clientId||'')}"></div>`:''}</details>
     <label>Lists</label>
     <label class="check"><input type="checkbox" id="rateOn" ${settings.rate!==false?'checked':''}> Show my rating and notes on each anime</label>
     <div class="hint">Optional. Turning this off only hides them; nothing is deleted.</div>
@@ -900,7 +954,7 @@ function openProfileEditor(){
   const p=me(),d={...myPrefs()};d.picMode=d.picMode||(p?.avatar?'anilist':'initial');
   const draw=()=>{
     const l=look(p,d);
-    $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" style="top:10px">✕</button>
+    $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
       <h2 style="margin:0 0 12px">Edit profile</h2>
       <div class="pcard" style="--pc:${esc(l.col)};justify-content:center;flex-direction:column;text-align:center${p?.banner?`;background-image:linear-gradient(transparent 30%,var(--card) 100%),url('${esc(p.banner)}')`:''}">
         ${l.av('pav big')}<div class="pname">${esc(l.name)}</div></div>
@@ -918,7 +972,7 @@ function openProfileEditor(){
       <label>App theme</label>
       <div class="themes">${THEMES.map(([k,n,bg,a1,a2])=>`<button data-th="${k}" class="${(d.theme||'dark')===k?'on':''}" aria-label="${n} theme">
         <i style="background:${bg}"><b style="background:linear-gradient(135deg,${a1},${a2})"></b></i>${n}</button>`).join('')}</div>
-      <label>Display name</label>
+      <label for="nick">Display name</label>
       <input type="text" id="nick" maxlength="30" value="${esc(d.nick||'')}" placeholder="${esc(p?.name||'Guest')}">
       <div class="hint">Saved in this browser only. Your AniList name and picture are not changed. Each profile keeps its own theme.</div>
       <div class="actions" style="margin-top:20px"><button class="btn primary" id="psave">Save</button><button class="btn" id="pback">Cancel</button>
