@@ -243,27 +243,52 @@ details.hint summary{cursor:pointer}
 .rp .switch input::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.2s}
 .rp .switch input:checked{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
 .rp .switch input:checked::after{left:20px;background:var(--on-accent)}
-.reel-wrap{position:relative;margin:14px -4px 6px;height:186px;overflow:hidden;border-radius:14px;background:var(--card);border:1px solid var(--line);
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
-.reel{display:flex;gap:10px;padding:14px 0;will-change:transform}
-.reel.go .rt img{filter:blur(1.5px)}
-.rt{flex:none;width:106px;height:158px;border-radius:12px;overflow:hidden;background:var(--card2);transition:transform .35s,box-shadow .35s}
-.rt img{width:100%;height:100%;object-fit:cover;display:block;transition:filter .4s}
-.rt.win{transform:scale(1.08);box-shadow:0 0 0 3px var(--accent),0 0 32px color-mix(in srgb,var(--accent) 70%,transparent)}
-.reel-mark{position:absolute;top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px;background:linear-gradient(var(--accent),var(--accent2));box-shadow:0 0 14px var(--accent);border-radius:2px;pointer-events:none}
-.reel-mark::before,.reel-mark::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border:8px solid transparent}
+.reel-wrap{position:relative;margin:14px -4px 10px;height:196px;overflow:hidden;border-radius:14px;background:var(--card);border:1px solid var(--line);transition:box-shadow .4s,border-color .4s}
+.reel-wrap::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,var(--card) 0,transparent 16%,transparent 84%,var(--card) 100%)}
+.reel-wrap.spinning{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 28px color-mix(in srgb,var(--accent) 45%,transparent);animation:wrapPulse .5s ease-in-out infinite alternate}
+@keyframes wrapPulse{to{box-shadow:0 0 0 1px var(--accent2),0 0 40px color-mix(in srgb,var(--accent2) 55%,transparent)}}
+.reel-wrap.flash::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(circle at 50% 50%,color-mix(in srgb,#fff 70%,transparent),transparent 60%);animation:flash .7s ease-out forwards}
+@keyframes flash{from{opacity:1}to{opacity:0}}
+.reel{display:flex;gap:10px;padding:19px 0;will-change:transform}
+.rt{flex:none;width:106px;height:158px;border-radius:12px;overflow:hidden;background:var(--card2);position:relative;transition:transform .45s cubic-bezier(.3,1.5,.5,1),box-shadow .45s,opacity .45s,filter .45s}
+.rt img{width:100%;height:100%;object-fit:cover;display:block;filter:blur(var(--blur,0px))}
+.rt.q{display:grid;place-items:center;font-size:44px;font-weight:800;color:color-mix(in srgb,var(--muted) 60%,transparent);border:2px dashed var(--line);background:var(--card)}
+.reel.idle .rt{animation:bob 3s ease-in-out infinite}
+.reel.idle .rt:nth-child(odd){animation-delay:-1.5s}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.reel-wrap.landed .rt:not(.win){opacity:.35;filter:grayscale(.7)}
+.rt.win{transform:scale(1.12);z-index:2;box-shadow:0 0 0 3px var(--accent),0 0 40px color-mix(in srgb,var(--accent) 80%,transparent)}
+.rt.win::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 48%,transparent 66%);background-size:250% 100%;animation:sheen 1.1s .15s ease-out both}
+@keyframes sheen{from{background-position:120% 0}to{background-position:-60% 0}}
+.reel-mark{position:absolute;z-index:2;top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px;background:linear-gradient(var(--accent),var(--accent2));box-shadow:0 0 14px var(--accent);border-radius:2px;pointer-events:none;transition:transform .08s}
+.reel-mark.tick{transform:scaleX(2.2)}
+.reel-mark::before,.reel-mark::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border:9px solid transparent}
 .reel-mark::before{top:0;border-top-color:var(--accent)}.reel-mark::after{bottom:0;border-bottom-color:var(--accent2)}
-.rp-msg{color:var(--muted);text-align:center;padding:60px 10px}
-.rp-out{min-height:20px}
-.rp-card{position:relative;display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-top:6px;animation:rise .45s ease both}
-@keyframes rise{from{opacity:0;transform:translateY(12px)}}
-.rp-card img{width:88px;aspect-ratio:2/3;object-fit:cover;border-radius:10px;flex:none}
-.rp-card h3{margin:2px 0 4px;font-size:18px;line-height:1.2}
-.rp-why{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
-.rp-card .actions{margin-top:10px}
-.burst{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:5}
-.burst i{position:absolute;width:8px;height:8px;border-radius:2px;animation:pop2 .9s ease-out forwards}
-@keyframes pop2{from{transform:translate(0,0) rotate(0);opacity:1}to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+.reel-wrap:not(.spinning):not(.landed) .reel-mark{animation:markGlow 1.6s ease-in-out infinite alternate}
+@keyframes markGlow{to{box-shadow:0 0 26px var(--accent2)}}
+.rp-msg{color:var(--muted);text-align:center;padding:66px 10px;width:100%}
+/* the result area keeps one fixed size, empty or filled, so nothing shifts */
+.rp-out{height:182px}
+.rp-card{position:relative;display:flex;gap:14px;align-items:flex-start;height:100%;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;overflow:hidden}
+.rp-card.in{animation:rise .5s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.97)}}
+.rp-card img,.rp-card .qcov{width:88px;height:132px;object-fit:cover;border-radius:10px;flex:none}
+.rp-card .qcov{display:grid;place-items:center;font-size:40px;font-weight:800;color:var(--muted);border:2px dashed var(--line)}
+.rp-card.ph{border-style:dashed;align-items:center}
+.rp-card .txt{min-width:0;flex:1}
+.rp-card h3{margin:2px 0 4px;font-size:18px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rp-why{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-card .chips{flex-wrap:nowrap;overflow:hidden;margin-top:8px}
+.rp-card .actions{margin-top:10px;flex-wrap:nowrap}
+.burst{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:4}
+.burst i{position:absolute;width:9px;height:9px;border-radius:2px;animation:pop2 1.2s cubic-bezier(.15,.8,.3,1) forwards}
+.burst i:nth-child(3n){width:6px;height:12px;border-radius:3px}
+@keyframes pop2{from{transform:translate(0,0) rotate(0) scale(1.2);opacity:1}to{transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(.6);opacity:0}}
+#rpSpin{min-width:150px;justify-content:center;font-size:16px;padding:13px 26px}
+#rpSpin:not(:disabled){animation:spinGlow 1.8s ease-in-out infinite alternate}
+@keyframes spinGlow{to{box-shadow:0 0 24px color-mix(in srgb,var(--accent) 60%,transparent)}}
+@media (max-width:760px){.rp-out{height:206px}.rp-card .chips{display:none}}
 
 /* stats */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:8px}
@@ -1266,57 +1291,97 @@ function rpChoose(items){
   pool=pool.slice(0,24);const tot=pool.reduce((s,it)=>s+it.w,0);let r=Math.random()*tot;
   for(const it of pool){r-=it.w;if(r<=0)return it}return pool[pool.length-1];
 }
+const RP_PH=`<div class="rp-card ph"><div class="qcov">?</div><div class="txt"><div class="rp-why">Your pick lands here</div>
+  <h3>Press Spin to find your next anime</h3><div class="cmeta">Something you haven't watched yet</div></div></div>`;
+var rpIdle=[]; // the covers shown before a spin; the spin reel starts with these so nothing jumps
 function openRandom(){
   $('#modal').innerHTML=`<div class="mbody rp" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
     <h2 style="margin:0 0 2px">Random pick</h2>
-    <div class="hint" style="margin:0">Something you haven't watched yet. Spin again as often as you like.</div>
+    <div class="hint" style="margin:0">Something you haven't watched yet. Spin as often as you like.</div>
     <label class="switch"><input type="checkbox" id="rpExplore" ${settings.rpExplore?'checked':''}> Surprise me: go outside my usual picks</label>
-    <div class="reel-wrap" aria-hidden="true"><div class="reel" id="reel"><div class="rp-msg" style="width:100%">Ready</div></div><i class="reel-mark"></i></div>
-    <div class="rp-out" id="rpOut" aria-live="polite"></div>
+    <div class="reel-wrap" id="reelWrap" aria-hidden="true"><div class="reel idle" id="reel">${'<div class="rt q">?</div>'.repeat(9)}</div><i class="reel-mark"></i></div>
+    <div class="rp-out" id="rpOut" aria-live="polite">${RP_PH}</div>
     <div class="actions" style="justify-content:center;margin-top:12px"><button class="btn primary" id="rpSpin">Spin</button></div></div>`;
   $('#scrim').classList.add('open');document.body.style.overflow='hidden';
   $('#mclose').onclick=closeModal;
-  $('#rpExplore').onchange=e=>{settings.rpExplore=e.target.checked;saveSettings();rpSpin()};
+  $('#rpExplore').onchange=e=>{settings.rpExplore=e.target.checked;saveSettings();rpPrepare()};
   $('#rpSpin').onclick=rpSpin;
-  rpSpin();
+  rpPrepare();
 }
+// Load the pool for the current mode and show some of its covers, centred, without spinning
+async function rpPrepare(){
+  const reel=$('#reel');if(!reel||rpBusy)return;
+  $('#reelWrap').classList.remove('landed');$('#rpOut').innerHTML=RP_PH;$('#rpSpin').textContent='Spin';
+  let items=[];try{items=await rpBuild(!!settings.rpExplore)}catch{}
+  if(!reel.isConnected||rpBusy)return;
+  if(!items.length){rpIdle=[];reel.innerHTML='<div class="rt q">?</div>'.repeat(9);rpCentre(reel,4);return}
+  rpIdle=[...items].sort(()=>Math.random()-.5).slice(0,9);
+  reel.className='reel idle';reel.innerHTML=rpIdle.map(it=>`<div class="rt"><img src="${esc(it.m.cover)}" alt="" decoding="async"></div>`).join('');
+  rpCentre(reel,4);
+}
+const RT_W=106+10;
+const rpX=(reel,i)=>-(i*RT_W+53-reel.parentElement.clientWidth/2);
+function rpCentre(reel,i){reel.style.transition='none';reel.style.transform=`translateX(${rpX(reel,i)}px)`}
 async function rpSpin(){
-  if(rpBusy)return;rpBusy=true;const btn=$('#rpSpin'),reel=$('#reel'),out=$('#rpOut');btn.disabled=true;out.innerHTML='';
+  if(rpBusy)return;rpBusy=true;
+  const btn=$('#rpSpin'),reel=$('#reel'),wrap=$('#reelWrap'),out=$('#rpOut'),mark=wrap.querySelector('.reel-mark');btn.disabled=true;const label=btn.textContent;btn.textContent='Spinning…';
   let items;
-  try{reel.style.transition='none';reel.style.transform='none';reel.innerHTML='<div class="rp-msg" style="width:100%">Shuffling the deck…</div>';
-    items=await rpBuild(!!settings.rpExplore)}
-  catch(e){if(reel.isConnected)reel.innerHTML=`<div class="rp-msg" style="width:100%">⚠ ${esc(e.message)}</div>`;rpBusy=false;btn.disabled=false;return}
+  try{items=await rpBuild(!!settings.rpExplore)}
+  catch(e){out.innerHTML=`<div class="rp-card ph"><div class="qcov">!</div><div class="txt"><div class="rp-why">Couldn't load picks</div><h3>${esc(e.message)}</h3></div></div>`;rpBusy=false;btn.disabled=false;btn.textContent=label;return}
   if(!reel.isConnected){rpBusy=false;return}
-  if(!items.length){reel.innerHTML='<div class="rp-msg" style="width:100%">No new picks found. Try the other mode.</div>';rpBusy=false;btn.disabled=false;return}
+  if(!items.length){out.innerHTML=`<div class="rp-card ph"><div class="qcov">?</div><div class="txt"><div class="rp-why">Nothing new found</div><h3>Try the other mode with the switch above</h3></div></div>`;rpBusy=false;btn.disabled=false;btn.textContent=label;return}
   const win=rpChoose(items);rpSeen.add(win.m.id);
-  const others=items.filter(it=>it!==win).sort(()=>Math.random()-.5);
-  const tiles=[];const WI=30;for(let i=0;i<WI+6;i++)tiles.push(i===WI?win:(others.length?others[i%others.length]:win));
-  reel.innerHTML=tiles.map((it,i)=>`<div class="rt${i===WI?' target':''}"><img src="${esc(it.m.cover)}" alt="" decoding="async"></div>`).join('');
-  const T=106+10,wrap=reel.parentElement.clientWidth,jitter=(Math.random()-.5)*60;
-  const x=-(WI*T+53-wrap/2);
+  // reel: the idle covers first (so the start matches what is on screen), then a long shuffled run, the winner, a few after it
+  const others=items.filter(it=>it!==win).sort(()=>Math.random()-.5),start=rpIdle.length?rpIdle:[];
+  const WI=start.length+64,tiles=[...start];
+  for(let i=start.length;i<WI+6;i++)tiles.push(i===WI?win:(others.length?others[i%others.length]:win));
+  const startIdx=start.length?4:0;
+  wrap.classList.remove('landed');out.innerHTML=RP_PH;
+  reel.className='reel';reel.innerHTML=tiles.map((it,i)=>`<div class="rt${i===WI?' target':''}"><img src="${esc(it.m.cover)}" alt="" decoding="async"></div>`).join('');
+  rpCentre(reel,startIdx);void reel.offsetWidth;
+  const x0=rpX(reel,startIdx),x=rpX(reel,WI),over=-(18+Math.random()*28); // stop a little past the winner, then settle back
+  rpIdle=tiles.slice(WI-4,WI+5); // "Spin again" starts from the landed view, centred on this winner
   const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  void reel.offsetWidth;
-  const done=()=>{
-    if(!reel.isConnected){rpBusy=false;return}
-    reel.classList.remove('go');reel.style.transition='transform .5s cubic-bezier(.3,1.6,.5,1)';reel.style.transform=`translateX(${x}px)`;
-    const t=reel.querySelector('.target');t.classList.add('win');
-    const b=document.createElement('div');b.className='burst';const cols=['var(--accent)','var(--accent2)','var(--good)','var(--warn)','#fff'];
-    b.innerHTML=Array.from({length:26},(_,i)=>{const a=i/26*Math.PI*2,d=70+Math.random()*70;
-      return `<i style="--x:${Math.cos(a)*d}px;--y:${Math.sin(a)*d}px;--r:${Math.random()*540}deg;background:${cols[i%5]}"></i>`}).join('');
-    reel.parentElement.appendChild(b);setTimeout(()=>b.remove(),1000);
-    rpShow(win);rpBusy=false;btn.disabled=false;btn.textContent='Spin again';
+  if(still){reel.style.transform=`translateX(${x}px)`;return rpLand(win,reel,wrap,btn)}
+  wrap.classList.add('spinning');
+  // wind-up (pull back), a long spin that slows to a crawl, then a settle onto the winner
+  const anim=reel.animate([
+    {transform:`translateX(${x0}px)`},
+    {transform:`translateX(${x0+34}px)`,offset:.05,easing:'cubic-bezier(.5,0,.2,1)'},
+    {transform:`translateX(${x+over}px)`,offset:.93,easing:'cubic-bezier(.05,.55,.08,1)'},
+    {transform:`translateX(${x}px)`,offset:1}
+  ],{duration:7600,easing:'linear',fill:'forwards'});
+  // per-frame: blur by speed, tick the pointer each time a cover passes it, little vibration on phones
+  let lastX=x0,lastT=performance.now(),lastIdx=-1;
+  const tick=()=>{
+    if(!reel.isConnected||anim.playState!=='running')return;
+    const cur=new DOMMatrixReadOnly(getComputedStyle(reel).transform).m41,now=performance.now();
+    const v=Math.abs(cur-lastX)/Math.max(1,now-lastT); // px per ms
+    reel.style.setProperty('--blur',Math.min(5,v*1.6).toFixed(2)+'px');
+    const idx=Math.round((reel.parentElement.clientWidth/2-cur-53)/RT_W);
+    if(idx!==lastIdx){lastIdx=idx;mark.classList.add('tick');setTimeout(()=>mark.classList.remove('tick'),70);if(v<1.2)navigator.vibrate?.(4)}
+    lastX=cur;lastT=now;requestAnimationFrame(tick);
   };
-  if(still){reel.style.transform=`translateX(${x}px)`;return done()}
-  reel.classList.add('go');reel.style.transition='transform 4.6s cubic-bezier(.08,.72,.12,1)';reel.style.transform=`translateX(${x+jitter}px)`;
-  setTimeout(()=>reel.classList.remove('go'),2600);
-  let fired=false;const fin=()=>{if(!fired){fired=true;done()}};
-  reel.addEventListener('transitionend',fin,{once:true});setTimeout(fin,4900);
+  requestAnimationFrame(tick);
+  try{await anim.finished}catch{}
+  if(!reel.isConnected){rpBusy=false;return}
+  reel.style.transform=`translateX(${x}px)`;anim.cancel();
+  rpLand(win,reel,wrap,btn);
+}
+function rpLand(win,reel,wrap,btn){
+  reel.style.setProperty('--blur','0px');wrap.classList.remove('spinning');wrap.classList.add('landed','flash');setTimeout(()=>wrap.classList.remove('flash'),700);
+  reel.querySelector('.target').classList.add('win');navigator.vibrate?.([30,40,70]);
+  const b=document.createElement('div');b.className='burst';const cols=['var(--accent)','var(--accent2)','var(--good)','var(--warn)','#fff'];
+  b.innerHTML=Array.from({length:44},(_,i)=>{const a=i/44*Math.PI*2+Math.random()*.3,d=90+Math.random()*140;
+    return `<i style="--x:${Math.cos(a)*d}px;--y:${Math.sin(a)*d*.75}px;--r:${Math.random()*720-360}deg;background:${cols[i%5]}"></i>`}).join('');
+  wrap.appendChild(b);setTimeout(()=>b.remove(),1300);
+  rpShow(win);rpBusy=false;btn.disabled=false;btn.textContent='Spin again';
 }
 function rpShow(it){
   const m=it.m,meta=[m.format?.replace('_',' '),m.year,m.episodes?m.episodes+' ep':null,m.score?'★ '+(m.score/10).toFixed(1):null].filter(Boolean).join(' · ');
-  $('#rpOut').innerHTML=`<div class="rp-card"><img src="${esc(m.cover)}" alt=""><div style="min-width:0">
+  $('#rpOut').innerHTML=`<div class="rp-card in"><img src="${esc(m.cover)}" alt=""><div class="txt">
     <div class="rp-why">${esc(it.why||'')}</div><h3>${esc(titleOf(m))}</h3><div class="cmeta">${esc(meta)}</div>
-    <div class="chips" style="margin-top:8px">${(m.genres||[]).slice(0,4).map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div>
+    <div class="chips">${(m.genres||[]).slice(0,4).map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div>
     <div class="actions"><button class="btn primary sm" id="rpAdd">+ Plan to watch</button><button class="btn sm" id="rpOpen">Details</button></div></div></div>`;
   $('#rpAdd').onclick=e=>{if(list[m.id])return;addToList(m.id,'planning');refreshCards();updateCounts();e.target.textContent='Added ✓';e.target.disabled=true;toast('Added to Plan to watch')};
   $('#rpOpen').onclick=()=>openModal(m.id);
