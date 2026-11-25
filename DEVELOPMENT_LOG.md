@@ -35,7 +35,7 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
   - Old single-account data (`settings.token/user/lastSync` + `kuro.list`) is migrated to a profile automatically on first load.
 - **List statuses (local ↔ AniList, one-to-one via `SMAP`/`RMAP`):** `planning↔PLANNING`, `watching↔CURRENT`, `repeating↔REPEATING` (shown as Rewatching), `paused↔PAUSED`, `completed↔COMPLETED`, `dropped↔DROPPED`. `ACTIVE` = watching + repeating (episode progress, Next up).
 - **List item fields:** `status` is the *list* status; the show's airing status is `mstatus`. Use `freshMedia()` (not `slim()`) to copy fresh media data onto a list item, because `slim()` also returns `status`.
-- **Views:** Discover (Next-up strip, filters, results grid, "Load more") and My List (status tabs, local filters). Detail sheet (modal / bottom sheet on mobile). Settings sheet. Bottom nav on phones (<=760px), top nav on desktop.
+- **Views:** Discover (Next-up strip, filters, results grid, "Load more"), This week (airing schedule) and My List (status tabs, local filters). Detail sheet (modal / bottom sheet on mobile). Settings sheet. Bottom nav on phones (<=760px), top nav on desktop.
 - **Detail sheet extras** are fetched lazily when opened (`DETAIL_Q`: `externalLinks`, `streamingEpisodes`, episode counts) and cached in memory only (`details`), never stored in localStorage (One Piece alone has ~1,180 episode entries).
 
 ### Key code landmarks in `index.html`
@@ -55,6 +55,8 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 - **My List:** status tabs with counts, text filter, genre filter, sort.
 - **Detail sheet:** score, format, episodes, status, season, studio, next episode air time, popularity, synopsis, in-app YouTube trailer (youtube-nocookie iframe), **Where to watch** (official services from AniList `externalLinks` of type STREAMING), **Episodes** list (titles/thumbnails/official links where AniList has `streamingEpisodes`, otherwise a numbered grid; tap an episode to set progress, tap the current one again to undo; long shows show a 60-episode window with "Show all"), AniList and MAL links, Remove.
 - **Next up:** strip at the top of Discover for Watching and Rewatching. Episodes that are out come first, with "N new" for airing shows you are behind on; episodes not out yet show "Ep N airs in 3h / Tue 17:00" (dimmed), sorted by air time. Airing info is refreshed by `refreshAiring()` (public AniList API, max every 30 min or when a stored air time has passed; works without an account) and on every sync.
+- **This week:** airing schedule from yesterday to 7 days ahead, grouped by day, with local air times. "My shows" = list entries not completed/dropped; "All popular" = everything airing with popularity >= 10k (non-adult). Rows show Watched ✓ / Out now (+ "N to catch up") / Airs in 3h / Upcoming, a +1 button for the next unwatched aired episode, and + to add shows not in the list. Uses AniList `airingSchedules` (public), cached 10 min (`loadWeek()` fetches, `drawWeek()` renders).
+- **+1 episode:** one-tap button on Next up cards, on Watching/Rewatching cards in My List (replaces the ✓ when the next episode is out) and in This week; toast with Undo (5 s). Shared `bump()` logic: reaching the last episode completes the show, a planned/paused/dropped show becomes Watching (the detail-sheet stepper uses it too).
 - **Watch link:** optional, user-configurable URL template (`{query}` is replaced by the title), must start with http(s). **No default** since 2026-11-25 (the app is public now); the Watch button is hidden until a link is set. A link already saved in a browser is kept. See section 5.
 - **AniList sync:** two-way sync via AniList OAuth (implicit grant). Pulls the user's existing AniList anime list, pushes local changes, newest change wins per entry, removals propagate both ways (removals are queued in `pendingDel` so they survive being offline; entries deleted on another device are dropped locally), auto-sync ~2.5 s after a change, on open, and on tab refocus (>60 s since last). Manual "Sync now". Token stored in localStorage only and excluded from Export.
 - **User profiles:** sign in with AniList and the list follows you to any browser or device you sign in on. Several accounts can be signed in on one browser (switch in Settings); the header settings button shows the active account's avatar (dimmed with a red ring if its sign-in expired). Without an account, a guest list stays in that browser; on first sign-in Kuro offers to move the guest list into the account. Sign out removes the account and its cached list from that browser only (warns if changes have not reached AniList).
@@ -105,8 +107,8 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 ## 9. Next ideas (not started)
 
 - **Next step for profiles:** verify sign-in and sync end to end in two browsers on the hosted app (built-in Client ID 58014, Redirect URL set to the hosted address by the owner).
-- "This week" airing schedule with countdowns for shows being watched.
 - Jellyfin/Plex "Play from my library" button for anime the owner owns.
+- Own score and notes (synced to AniList); stats page; quick +1 from the lock screen / notifications for new episodes.
 - PNG icons (192/512) and maskable icon for installability.
 
 ## 10. Change Log
@@ -165,3 +167,10 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html` Next up: new `nextInfo()` / `whenText()`; shows "airs in 3h / Tue 17:00" for episodes not out yet and "N new" when behind on an airing show; ordered out-now first, then by air time.
 - `sw.js`: cache bumped to `kuro-v3`.
 - Tested on localhost: airing refresh fixes stale data on load ("3 new" matched AniList), sync against a mocked AniList (old wrong `watching` → `paused`, newer REPEATING pulled, local paused pushed as PAUSED, media refresh keeps list status), Watch link hidden when empty / shown when set / `javascript:` rejected, phone layout.
+
+### 2026-11-25 — This week airing schedule and +1 episode button
+- `index.html`: new **This week** view (header tab + bottom-nav button with calendar icon; `#v-week`, `WK_Q()`, `loadWeek()`, `drawWeek()`, `wkMode`), "My shows" / "All popular" chips. Covers yesterday through 7 days ahead so missed episodes can be caught up. Fetched shows go into `cache` (detail sheet opens) and refresh airing data of list entries. Typing in the search box while on This week switches to Discover.
+- AniList gotcha found: `airingSchedules(mediaId_in: null)` returns HTTP 500, so the query is built without that argument for "All popular".
+- `index.html`: **+1** button (`[data-plus]`, `plusOne()`) on Next up, My List Watching/Rewatching cards and This week rows; `toast()` now supports an Undo button and truncates long titles on one line. New shared `bump()`; `step()` (detail-sheet stepper) now uses it, so it also completes a show at the last episode (it did not before).
+- `sw.js`: cache bumped to `kuro-v4`.
+- Tested on localhost against live AniList: empty state, All popular (61 episodes over the week), My shows with "Out now · 3 to catch up", +1 from This week / Next up / My List, Undo, completion at last episode, paused → watching, phone and desktop layouts.

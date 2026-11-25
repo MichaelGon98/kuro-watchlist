@@ -136,6 +136,23 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .nuc .ctitle{font-size:13px}
 .nuc .new{color:var(--accent);font-weight:700}
 .nuc.soon{opacity:.7}
+.nuc .grow,.wkrow .grow{flex:1;min-width:0}
+.plus{flex:none;align-self:center;padding:7px 11px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:800;font-size:13px}
+.add.plus{width:auto;padding:0 11px;font-size:14px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+#toast{max-width:min(92vw,520px);width:max-content;display:flex;align-items:center;gap:12px;border-radius:16px}
+#toast .tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+#toast.act{pointer-events:auto}
+#toast .link{flex:none}
+/* this week */
+.wkday{margin:18px 0 8px;font-weight:700;color:var(--muted);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.wkday.today{color:var(--accent)}
+.wkrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin-bottom:8px;cursor:pointer}
+.wkrow .t{width:48px;font-weight:700;font-size:13px;flex:none;text-align:center}
+.wkrow .nuimg{width:40px}
+.wkrow.past .t{color:var(--muted)}
+.wkrow .ok{color:var(--good);font-weight:700}
+.wkrow .new{color:var(--accent);font-weight:700}
+#v-week{max-width:760px;margin:auto}
 #nextup{margin-bottom:16px}
 
 /* settings */
@@ -189,6 +206,7 @@ nav.bottom{display:none}
   </div>
   <div class="tabs">
     <button class="tab" data-view="discover">Discover</button>
+    <button class="tab" data-view="week">This week</button>
     <button class="tab" data-view="list">My List <b id="cnt1">0</b></button>
   </div>
   <button class="iconbtn" id="settingsBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
@@ -220,6 +238,12 @@ nav.bottom{display:none}
     <button class="more" id="more" style="display:none">Load more</button>
   </section>
 
+  <!-- THIS WEEK -->
+  <section id="v-week" style="display:none">
+    <div class="sub" id="wkmode"><button class="chip on" data-wk="mine">My shows</button><button class="chip" data-wk="all">All popular</button></div>
+    <div id="wk"></div>
+  </section>
+
   <!-- LIST -->
   <section id="v-list" style="display:none">
     <div class="sub" id="subtabs"></div>
@@ -234,6 +258,7 @@ nav.bottom{display:none}
 
 <nav class="bottom">
   <button data-view="discover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>Discover</button>
+  <button data-view="week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>This week</button>
   <button data-view="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>My List</button>
   <button id="navSet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Settings</button>
 </nav>
@@ -319,6 +344,7 @@ let page=1,hasNext=false,loading=false,cache={},view='discover',listStatus='watc
   $('#ftoggle').onclick=()=>$('#filters').classList.toggle('open');
   let t;$('#q').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{
     if(view==='list'){$('#lq').value=e.target.value;renderList();return}
+    if(view==='week')setView('discover');
     F.q=e.target.value.trim();run()},350)};
   $('#more').onclick=()=>{page++;load(true)};
 })();
@@ -373,11 +399,14 @@ function cardHTML(m,showProg){
   return `<div class="card" data-id="${m.id}">
     <div class="cover" style="background-image:url('${esc(m.cover)}');background-color:${esc(m.color||'')}" data-open="${m.id}">
       ${m.score?`<span class="badge ${scoreCls(m.score)}">★ ${(m.score/10).toFixed(1)}</span>`:''}
-      <button class="add ${inList?'in':''}" data-add="${m.id}" aria-label="${inList?'In list':'Add to list'}">${inList?'✓':'+'}</button>
+      ${showProg&&ACTIVE.includes(e.status)&&nextInfo(e).out&&!(e.episodes&&e.progress>=e.episodes)
+        ?`<button class="add plus" data-plus="${m.id}" aria-label="Mark episode ${(e.progress||0)+1} watched">+1</button>`
+        :`<button class="add ${inList?'in':''}" data-add="${m.id}" aria-label="${inList?'In list':'Add to list'}">${inList?'✓':'+'}</button>`}
       <div class="cinfo"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)}${showProg&&(ACTIVE.includes(e.status)||e.status==='paused')?` · ep ${e.progress||0}`:''}</div></div>
     </div>${showProg&&m.episodes?`<div class="prog"><i style="width:${pct}%"></i></div>`:''}</div>`;
 }
 document.addEventListener('click',e=>{
+  const p=e.target.closest('[data-plus]');if(p){e.stopPropagation();plusOne(+p.dataset.plus);return}
   const a=e.target.closest('[data-add]');
   if(a){e.stopPropagation();const id=+a.dataset.add;
     if(list[id])openModal(id);else{addToList(id,'planning');toast('Added to Plan to watch');refreshCards()}return}
@@ -405,8 +434,64 @@ function renderNext(){
     const tot=x.episodes?' / '+x.episodes:'';
     const sub=n.out?`Next: Ep ${n.ep}${tot}${n.behind>1?` · <b class="new">${n.behind} new</b>`:''}`
       :n.nx?`Ep ${n.ep} airs ${esc(whenText(n.nx.airingAt))}`:`Ep ${n.ep} not aired yet`;
-    return `<div class="nuc${n.out?'':' soon'}" data-open="${x.id}"><div class="nuimg" style="background-image:url('${esc(x.cover)}')"></div><div><div class="ctitle">${esc(titleOf(x))}</div><div class="cmeta">${sub}</div></div></div>`}).join('');
+    return `<div class="nuc${n.out?'':' soon'}" data-open="${x.id}"><div class="nuimg" style="background-image:url('${esc(x.cover)}')"></div><div class="grow"><div class="ctitle">${esc(titleOf(x))}</div><div class="cmeta">${sub}</div></div>${n.out?`<button class="plus" data-plus="${x.id}" aria-label="Mark episode ${n.ep} watched">+1</button>`:''}</div>`}).join('');
 }
+/* ---------- this week (airing schedule) ---------- */
+// Episodes airing from the start of yesterday (to catch up) to 7 days after today, from AniList's airingSchedules (public, no account needed).
+// "My shows" = list entries that are not completed/dropped; "All popular" = everything airing with popularity >= 10k.
+// Note: AniList answers 500 if mediaId_in is passed as null, so the "All popular" query leaves the argument out.
+const WK_Q=withIds=>`query($p:Int,${withIds?'$ids:[Int],':''}$from:Int,$to:Int){Page(page:$p,perPage:50){pageInfo{hasNextPage}
+airingSchedules(${withIds?'mediaId_in:$ids,':''}airingAt_greater:$from,airingAt_lesser:$to,sort:TIME){episode airingAt media{isAdult ${QUERY.slice(QUERY.indexOf('id idMal'),QUERY.lastIndexOf('}}}'))}}}}}`;
+let wkMode='mine',wkData=null,wkKey='',wkAt=0;
+const wkIds=()=>Object.values(list).filter(x=>x.status!=='completed'&&x.status!=='dropped').map(x=>x.id).sort((a,b)=>a-b);
+async function loadWeek(force){
+  const ids=wkMode==='mine'?wkIds():null,key=wkMode+':'+(ids||[]).join(',');
+  if(!force&&wkData&&key===wkKey&&Date.now()-wkAt<6e5)return drawWeek();
+  const day0=new Date();day0.setHours(0,0,0,0);const from=Math.floor(day0/1000)-86400-1,to=from+8*86400+1; // yesterday + 7 days
+  if(ids&&!ids.length){wkData=[];wkKey=key;wkAt=Date.now();return drawWeek()}
+  $('#wk').innerHTML='<div class="empty">Loading schedule…</div>';
+  try{
+    const out=[];
+    for(let p=1;p<=10;p++){
+      const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:WK_Q(!!ids),variables:ids?{p,ids,from,to}:{p,from,to}})});
+      if(!r.ok)throw new Error(r.status===429?'Rate limited, wait a moment':'AniList error '+r.status);
+      const pg=(await r.json()).data.Page;
+      for(const s of pg.airingSchedules){
+        if(!s.media||s.media.isAdult||(!ids&&(s.media.popularity||0)<1e4))continue;
+        const m=slim(s.media);cache[m.id]=cache[m.id]||m;
+        if(list[m.id])Object.assign(list[m.id],freshMedia(s.media));
+        out.push({ep:s.episode,at:s.airingAt,m});
+      }
+      if(!pg.pageInfo.hasNextPage)break;
+    }
+    wkData=out;wkKey=key;wkAt=Date.now();drawWeek();
+  }catch(e){$('#wk').innerHTML=`<div class="empty">⚠ ${esc(e.message)}<br><br><button class="btn" onclick="loadWeek(true)">Retry</button></div>`}
+}
+function drawWeek(){
+  if(!wkData)return;
+  if(!wkData.length){$('#wk').innerHTML=`<div class="empty">${wkMode==='mine'?'Nothing from your list airs this week.<br><span class="hint">Add airing shows from Discover (Filters → Status: Airing), or tap <b>All popular</b>.</span>':'Nothing found for this week.'}</div>`;return}
+  const now=Date.now()/1000,dayKey=t=>new Date(t*1000).toDateString(),today=dayKey(now),tmr=dayKey(now+86400),yst=dayKey(now-86400);
+  let html='',cur='';
+  for(const s of wkData){
+    const k=dayKey(s.at);
+    if(k!==cur){cur=k;const d=new Date(s.at*1000);
+      html+=`<div class="wkday${k===today?' today':''}">${k===today?'Today':k===tmr?'Tomorrow':k===yst?'Yesterday':d.toLocaleDateString([],{weekday:'long'})} · ${d.toLocaleDateString([],{day:'numeric',month:'short'})}</div>`}
+    const e=list[s.m.id],aired=s.at<=now,prog=e?.progress||0;
+    let note,act='';
+    if(!aired)note=s.at-now<86400?'Airs '+whenText(s.at):'Upcoming';
+    else if(e&&prog>=s.ep)note='<span class="ok">Watched ✓</span>';
+    else if(e){note='<span class="new">Out now</span>'+(s.ep-prog>1?` · ${s.ep-prog} to catch up`:'');
+      act=`<button class="plus" data-plus="${s.m.id}" aria-label="Mark episode ${prog+1} watched">+1</button>`}
+    else note='Out now';
+    if(!e)act=`<button class="plus" data-add="${s.m.id}" aria-label="Add to list" style="background:var(--card2);border:1px solid var(--line)">+</button>`;
+    html+=`<div class="wkrow${aired?' past':''}" data-open="${s.m.id}"><span class="t">${new Date(s.at*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
+      <div class="nuimg" style="background-image:url('${esc(s.m.cover)}')"></div>
+      <div class="grow"><div class="ctitle">${esc(titleOf(s.m))}</div><div class="cmeta">Ep ${s.ep}${s.m.episodes?' / '+s.m.episodes:''} · ${note}</div></div>${act}</div>`;
+  }
+  $('#wk').innerHTML=html;
+}
+$('#wkmode').onclick=e=>{const k=e.target.dataset.wk;if(!k||k===wkMode)return;wkMode=k;$$('#wkmode .chip').forEach(c=>c.classList.toggle('on',c.dataset.wk===k));loadWeek()};
+
 // Refresh airing info (next episode, episode count) for unfinished shows in the list, also without an account.
 // Uses the public AniList API, max once per 30 min unless a stored "next episode" time has passed.
 const AIR_Q=`query($ids:[Int]){Page(perPage:50){media(id_in:$ids,type:ANIME){${QUERY.slice(QUERY.indexOf('id idMal'),QUERY.lastIndexOf('}}}'))}}}}`;
@@ -426,6 +511,7 @@ async function refreshAiring(force){
 function refreshCards(){
   renderNext();
   if(view==='discover')$$('#grid .card').forEach(c=>{const m=cache[c.dataset.id];if(m)c.outerHTML=cardHTML(m)});
+  else if(view==='week')drawWeek();
   else renderList();
 }
 function addToList(id,status){
@@ -449,10 +535,11 @@ $('#subtabs').onclick=e=>{const k=e.target.dataset.ls;if(k){listStatus=k;renderL
 
 /* ---------- views ---------- */
 function setView(v){
-  view=v;$('#v-discover').style.display=v==='discover'?'':'none';$('#v-list').style.display=v==='list'?'':'none';
+  view=v;for(const k of ['discover','week','list'])$('#v-'+k).style.display=v===k?'':'none';
   $$('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
   $('#q').placeholder=v==='list'?'Search my list…':'Search anime…';
   if(v==='list')renderList();
+  if(v==='week')loadWeek();
   scrollTo({top:0});
 }
 $$('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
@@ -506,7 +593,24 @@ function openModal(id,keep){
   fillDetails(id);
   if($('#rm'))$('#rm').onclick=()=>{const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId];saveProfiles()}saveList();closeModal();refreshCards();toast('Removed')};
 }
-function step(id,d){const e=list[id],max=e.episodes||9999;e.progress=Math.max(0,Math.min(max,(e.progress||0)+d));e.updated=Date.now();saveList();refreshCards();openModal(id)}
+function step(id,d){bump(id,d);openModal(id)}
+// Change episode progress by d. Going up: the last episode completes the show; a planned/paused/dropped show becomes Watching.
+// Returns the previous {status,progress} so the change can be undone.
+function bump(id,d){
+  const e=list[id];if(!e)return null;const prev={status:e.status,progress:e.progress||0};
+  const tot=e.episodes||details[id]?.episodes||0;
+  e.progress=Math.max(0,Math.min(tot||9999,(e.progress||0)+d));
+  if(d>0&&tot&&e.progress>=tot)e.status='completed';
+  else if(d>0&&['planning','paused','dropped'].includes(e.status))e.status='watching';
+  e.updated=Date.now();saveList();refreshCards();
+  return prev;
+}
+// The one-tap "+1" on Next up, My List and This week, with Undo
+function plusOne(id){
+  const prev=bump(id,1),e=list[id];if(!prev)return;
+  const done=e.status==='completed'&&prev.status!=='completed';
+  toast(done?`Finished · ${titleOf(e)}`:`Ep ${e.progress} watched · ${titleOf(e)}`,()=>{Object.assign(e,prev,{updated:Date.now()});saveList();refreshCards()});
+}
 function closeModal(){$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
 
 /* where to watch + episodes (fetched on open, not stored) */
@@ -619,7 +723,12 @@ function openSettings(){
 }
 $('#settingsBtn').onclick=openSettings;$('#navSet').onclick=openSettings;
 
-function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+function toast(t,undo){
+  const el=$('#toast');el.innerHTML=`<span class="tt">${esc(t)}</span>`+(undo?'<button class="link" id="undo">Undo</button>':'');
+  el.classList.add('show');el.classList.toggle('act',!!undo);clearTimeout(toast.t);
+  if(undo)$('#undo').onclick=()=>{undo();el.classList.remove('show','act')};
+  toast.t=setTimeout(()=>el.classList.remove('show','act'),undo?5000:2200);
+}
 
 /* ---------- AniList sync ---------- */
 const SMAP={planning:'PLANNING',watching:'CURRENT',repeating:'REPEATING',paused:'PAUSED',completed:'COMPLETED',dropped:'DROPPED'};
