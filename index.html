@@ -376,6 +376,17 @@ details.hint summary{cursor:pointer}
 .wrslide{justify-content:safe center;overflow-y:auto}
 .wrprev{height:min(40vh,360px);width:auto;aspect-ratio:9/16;border-radius:12px;border:1px solid var(--line);box-shadow:0 10px 30px #0006;background:var(--card2)}
 .wr-cta{margin-bottom:12px}
+/* dates and rewatches in the detail sheet */
+.dates{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.dates label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.dates input{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text);color-scheme:inherit}
+.rew{display:flex;align-items:center;gap:8px}
+.rew span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.rew button{width:32px;height:32px;border-radius:50%;background:var(--card2);border:1px solid var(--line);font-size:17px}
+.rew b{min-width:32px;text-align:center;font-variant-numeric:tabular-nums}
+/* offline */
+.offbar{background:color-mix(in srgb,var(--warn) 16%,var(--card));border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));border-radius:12px;padding:9px 12px;font-size:13px;margin:0 0 14px}
+.offbar[hidden]{display:none}
 .rp .switch{display:flex;align-items:center;gap:10px;margin:10px 0 4px;cursor:pointer;font-weight:600;font-size:14px}
 .rp .switch input{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:99px;background:var(--card2);border:1px solid var(--line);position:relative;flex:none;cursor:pointer;transition:.2s;margin:0}
 .rp .switch input::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.2s}
@@ -520,6 +531,7 @@ nav.bottom{display:none}
 </div></header>
 
 <main>
+  <div class="offbar" id="offbar" role="status" hidden>📴 You're offline. Kuro shows what it has saved; your changes are kept and sync when you're back online.</div>
   <!-- DISCOVER -->
   <section id="v-discover">
     <button class="spin-cta" id="spinBtn"><span class="dice"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/></svg></span>
@@ -582,7 +594,7 @@ nav.bottom{display:none}
       <select id="lformat" aria-label="Format"><option value="">All formats</option><option value="TV">TV</option><option value="TV_SHORT">TV short</option><option value="MOVIE">Movie</option><option value="OVA">OVA</option><option value="ONA">ONA</option><option value="SPECIAL">Special</option><option value="MUSIC">Music</option></select>
       <select id="lair" aria-label="Airing"><option value="">Any airing state</option><option value="new">New episodes to watch</option><option value="RELEASING">Airing now</option><option value="FINISHED">Finished airing</option><option value="NOT_YET_RELEASED">Not yet aired</option></select>
       <div class="lsortw">
-        <select id="lsort" aria-label="Sort my list"><option value="added">Recently added</option><option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="score">AniList score</option><option value="mine">My rating</option><option value="pop">Popularity</option><option value="year">Year</option><option value="progress">Progress</option><option value="left">Episodes left</option><option value="airing">Next episode airs</option><option value="length">Length</option></select>
+        <select id="lsort" aria-label="Sort my list"><option value="added">Recently added</option><option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="score">AniList score</option><option value="mine">My rating</option><option value="pop">Popularity</option><option value="year">Year</option><option value="progress">Progress</option><option value="left">Episodes left</option><option value="airing">Next episode airs</option><option value="length">Length</option><option value="started">Date started</option><option value="finished">Date finished</option><option value="rewatch">Times rewatched</option></select>
         <button class="ibtn" id="lsel" aria-pressed="false" aria-label="Select several" title="Select several"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12l3 3 5-6"/></svg></button>
         <button class="ibtn" id="ldir" aria-pressed="false" aria-label="Reverse sort order" title="Reverse sort order"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></svg></button>
         <div class="vtog" role="group" aria-label="Layout">
@@ -804,7 +816,8 @@ async function load(append){
     hasNext=p.pageInfo.hasNextPage;$('#more').style.display=hasNext?'block':'none';
     $('#resCount').textContent=p.pageInfo.total?`${p.pageInfo.total.toLocaleString()} results`:'';
   }catch(e){
-    if(!append)g.innerHTML=`<div class="empty" style="grid-column:1/-1">⚠ ${esc(e.message)}<br><br><button class="btn" onclick="run()">Retry</button></div>`;else toast(e.message);
+    const msg=e instanceof TypeError?(navigator.onLine?'Could not reach AniList':"You're offline and this page wasn't saved yet. Pages you have opened before still work."):e.message;
+    if(!append)g.innerHTML=`<div class="empty" style="grid-column:1/-1">⚠ ${esc(msg)}<br><br><button class="btn" onclick="run()">Retry</button></div>`;else toast(msg);
   }
   loading=false;
 }
@@ -964,9 +977,26 @@ function refreshCards(){
   else redrawList();
 }
 function redrawList(){if(view==='list')renderList();else if(view==='stats')drawStats()}
+/* Start / finish dates and rewatch count, as on AniList. Stored as 'YYYY-MM-DD' (AniList may give 'YYYY' or 'YYYY-MM');
+   undefined = not known (never sent, so AniList's value is kept), null = cleared. */
+const pad2=n=>String(n).padStart(2,'0');
+function isoDay(t){const d=new Date(t);return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
+function fdStr(f){return f?.year?[f.year,f.month&&pad2(f.month),f.month&&f.day&&pad2(f.day)].filter(Boolean).join('-'):null}
+function strFd(v){return v?{year:+v.slice(0,4),month:v.length>=7?+v.slice(5,7):null,day:v.length>=10?+v.slice(8,10):null}:{year:null,month:null,day:null}}
+// filled in automatically like AniList does: started on the first watched episode, finished on completing;
+// completing a rewatch counts it and moves the finish date
+function autoDates(e,prev,watched){
+  const today=isoDay(Date.now());
+  if(watched&&!e.startedAt&&(e.progress||0)>0)e.startedAt=today;
+  if(e.status==='completed'&&prev&&prev!=='completed'){
+    if(prev==='repeating'){e.repeat=(e.repeat||0)+1;e.completedAt=today}else if(!e.completedAt)e.completedAt=today}
+  else if(e.status==='completed'&&!prev&&!e.completedAt)e.completedAt=today;
+}
 function addToList(id,status){
-  const m=cache[id]||list[id];if(!m)return;
-  list[id]={...m,status,progress:list[id]?.progress||0,added:list[id]?.added||Date.now(),updated:Date.now(),synced:list[id]?.synced,entryId:list[id]?.entryId};
+  const c=cache[id],old=list[id];if(!c&&!old)return;
+  const media=c?(({status:_s,...f})=>f)(c):{}; // fresh media fields; `status` in the cache is the airing status
+  list[id]={...(old||c),...media,status,progress:old?.progress||0,added:old?.added||Date.now(),updated:Date.now()};
+  autoDates(list[id],old?.status,false);
   saveList();
 }
 
@@ -985,7 +1015,8 @@ const LSORT={
   progress:[x=>x.episodes?(x.progress||0)/x.episodes:null,-1],
   left:[x=>x.episodes?Math.max(0,x.episodes-(x.progress||0)):null,1],
   airing:[x=>x.next?.airingAt*1000>Date.now()?x.next.airingAt:null,1],
-  length:[x=>x.episodes?x.episodes*(x.duration||24):null,-1]};
+  length:[x=>x.episodes?x.episodes*(x.duration||24):null,-1],
+  started:[x=>x.startedAt||null,-1], finished:[x=>x.completedAt||null,-1], rewatch:[x=>x.repeat||null,-1]};
 function airOk(x,a){
   if(!a)return true;
   if(a==='new'){const n=nextInfo(x);return(ACTIVE.includes(x.status)||x.status==='paused')&&n.out&&!(x.episodes&&(x.progress||0)>=x.episodes)}
@@ -1042,10 +1073,10 @@ $('#selAll').onclick=()=>{const ids=selItems().map(selId);if(sel.size===ids.leng
 $('#lgrid').addEventListener('click',e=>{if(!selMode)return;const el=e.target.closest('.card,.lrow');if(!el)return;
   e.preventDefault();e.stopPropagation();const id=selId(el);sel.has(id)?sel.delete(id):sel.add(id);markSel()},true);
 $('#selSt').onchange=e=>{const st=e.target.value;e.target.value='';if(!st||!sel.size)return;
-  const ids=[...sel].filter(id=>list[id]),prev=ids.map(id=>({id,status:list[id].status,progress:list[id].progress||0})),now=Date.now();
-  for(const id of ids){const x=list[id];x.status=st;if(st==='completed'&&x.episodes)x.progress=Math.max(x.progress||0,x.episodes);x.updated=now}
+  const ids=[...sel].filter(id=>list[id]),prev=ids.map(id=>{const x=list[id];return{id,status:x.status,progress:x.progress||0,startedAt:x.startedAt,completedAt:x.completedAt,repeat:x.repeat}}),now=Date.now();
+  for(const id of ids){const x=list[id],ps=x.status;x.status=st;if(st==='completed'&&x.episodes)x.progress=Math.max(x.progress||0,x.episodes);autoDates(x,ps,false);x.updated=now}
   saveList();sel.clear();refreshCards();
-  toast(`${ids.length} moved to ${STATUSES.find(s=>s[0]===st)[1]}`,()=>{for(const q of prev){const x=list[q.id];if(x)Object.assign(x,{status:q.status,progress:q.progress,updated:Date.now()})}saveList();refreshCards()})};
+  toast(`${ids.length} moved to ${STATUSES.find(s=>s[0]===st)[1]}`,()=>{for(const q of prev){const x=list[q.id];if(x){const{id:_i,...rest}=q;Object.assign(x,rest,{updated:Date.now()})}}saveList();refreshCards()})};
 $('#selRm').onclick=()=>{const ids=[...sel].filter(id=>list[id]);if(!ids.length)return;
   if(!confirm(`Remove ${ids.length} anime from your list?`+(me()?.token?' They are removed from AniList too.':'')))return;
   for(const id of ids){const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId]}}
@@ -1274,6 +1305,14 @@ function openModal(id,keep){
         <div class="rate" id="rate">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button data-sc="${n}" class="${Math.round((e.myScore||0)/10)>=n?'on':''}" aria-pressed="${Math.round((e.myScore||0)/10)===n}" aria-label="Rate ${n} out of 10">${n}</button>`).join('')}</div>
         <textarea id="notes" class="notes" maxlength="2000" placeholder="Your notes (optional)" aria-label="Your notes">${esc(e.notes||'')}</textarea>
         ${me()?'<div class="hint">Rating and notes are saved to your AniList entry too, so anyone who can see your AniList list may see them.</div>':''}`:''}
+      ${e&&e.status!=='planning'?`<h3 class="sh">Your dates</h3>
+        <div class="dates">
+          <label>Started<input type="date" id="dStart" value="${e.startedAt?.length===10?e.startedAt:''}" max="${isoDay(Date.now())}"></label>
+          <label>Finished<input type="date" id="dDone" value="${e.completedAt?.length===10?e.completedAt:''}" max="${isoDay(Date.now())}"></label>
+          <div class="rew"><span>Rewatched</span><button id="rwm" aria-label="One rewatch fewer">−</button><b id="rwn" aria-live="polite">${e.repeat||0}×</b><button id="rwp" aria-label="One more rewatch">+</button></div>
+        </div>
+        ${[e.startedAt,e.completedAt].some(v=>v&&v.length<10)?`<div class="hint">AniList only has part of a date (${esc([e.startedAt,e.completedAt].filter(v=>v&&v.length<10).join(', '))}); pick a full date to replace it.</div>`:''}
+        <div class="hint">Filled in automatically when you start and finish${me()?', and saved to your AniList entry':''}.</div>`:''}
       <h3 class="sh">Where to watch</h3>
       <div class="actions" id="wtwb"><span class="hint">Loading…</span></div>
       <h3 class="sh">Episodes <span class="hint" style="text-transform:none;letter-spacing:0">· tap an episode to mark it watched</span></h3>
@@ -1292,6 +1331,10 @@ function openModal(id,keep){
   if($('#rate'))$('#rate').onclick=ev=>{const n=+ev.target.dataset.sc;if(!n)return;
     e.myScore=Math.round((e.myScore||0)/10)===n?0:n*10;e.updated=Date.now();saveList();refreshCards();
     $$('#rate button').forEach(b=>b.classList.toggle('on',+b.dataset.sc<=e.myScore/10));toast(e.myScore?`Rated ${n}/10`:'Rating cleared')};
+  if($('#dStart')){const setD=(k,v)=>{e[k]=v||null;e.updated=Date.now();saveList()};
+    $('#dStart').onchange=ev=>setD('startedAt',ev.target.value);$('#dDone').onchange=ev=>setD('completedAt',ev.target.value);
+    const rw=d=>{e.repeat=Math.max(0,(e.repeat||0)+d);e.updated=Date.now();saveList();$('#rwn').textContent=e.repeat+'×'};
+    $('#rwp').onclick=()=>rw(1);$('#rwm').onclick=()=>rw(-1)}
   if($('#notes')){let nt;$('#notes').oninput=ev=>{clearTimeout(nt);nt=setTimeout(()=>{e.notes=ev.target.value;e.updated=Date.now();saveList()},700)}}
   $('#seg').onclick=ev=>{const s=ev.target.dataset.st;if(!s)return;addToList(id,s);
     if(s==='completed'&&m.episodes){list[id].progress=m.episodes;list[id].updated=Date.now();saveList()}refreshCards();openModal(id)};
@@ -1305,12 +1348,13 @@ function step(id,d){bump(id,d);openModal(id)}
 // Change episode progress by d. Going up: the last episode completes the show; a planned/paused/dropped show becomes Watching.
 // Returns the previous {status,progress} so the change can be undone.
 function bump(id,d){
-  const e=list[id];if(!e)return null;const prev={status:e.status,progress:e.progress||0};
+  const e=list[id];if(!e)return null;const prev={status:e.status,progress:e.progress||0,startedAt:e.startedAt,completedAt:e.completedAt,repeat:e.repeat};
   const tot=e.episodes||details[id]?.episodes||0;
   e.progress=Math.max(0,Math.min(tot||9999,(e.progress||0)+d));
   if(e.progress>prev.progress)logWatch(id,prev.progress,e.progress);else if(e.progress<prev.progress)unlogWatch(id,e.progress);
   if(d>0&&tot&&e.progress>=tot)e.status='completed';
   else if(d>0&&['planning','paused','dropped'].includes(e.status))e.status='watching';
+  autoDates(e,prev.status,d>0);
   e.updated=Date.now();saveList();refreshCards();
   return prev;
 }
@@ -1367,11 +1411,12 @@ function fillDetails(id){
 }
 function epTap(id,k){
   if(!list[id])addToList(id,'watching');
-  const e=list[id],tot=e.episodes||details[id]?.episodes||0,was=e.progress||0;
+  const e=list[id],tot=e.episodes||details[id]?.episodes||0,was=e.progress||0,pst=e.status;
   e.progress=e.progress===k?k-1:k;
   if(e.progress>was)logWatch(id,was,e.progress);else if(e.progress<was)unlogWatch(id,e.progress);
   if(tot&&e.progress>=tot)e.status='completed';
   else if(e.progress>0&&['planning','dropped','completed','paused'].includes(e.status))e.status='watching';
+  autoDates(e,pst,e.progress>was);
   e.updated=Date.now();saveList();refreshCards();openModal(id,true);
 }
 $('#modal').addEventListener('click',ev=>{
@@ -1459,13 +1504,16 @@ function openSettings(){
     <label class="check"><input type="checkbox" id="notifyOn" ${settings.notify&&alertsOn()?'checked':''}> Notify me when a new episode of a show I'm watching comes out</label>
     <div class="hint" id="notifyHint">${alertHint()}</div>
     <div class="actions" style="margin-top:6px"><button class="btn sm" id="notifyTest">Send a test alert</button></div>
+    <label>Offline</label>
+    <div class="hint" id="offInfo">Your list, stats and diary always live on this device. Covers and AniList pages you have opened are saved as you go, so Kuro keeps working without a connection.</div>
+    <div class="actions" style="margin-top:6px"><button class="btn sm" id="offSave">Save all my covers for offline</button></div>
     <label>Backup</label>
     <div class="actions"><button class="btn" id="exp">Export list</button><label class="btn" style="margin:0">Import list<input type="file" id="imp" accept="application/json" hidden></label></div>
     <div class="actions" style="margin-top:20px"><button class="btn primary" id="save">Save</button></div></div>`;
   $('#scrim').classList.add('open');
   $('#mclose').onclick=closeModal;
   $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;settings.rate=$('#rateOn').checked;refreshCards();const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
-  wireAlertsUI();
+  wireAlertsUI();wireOffline();
   $('#conn').onclick=()=>{const t=$('#cid')?.value.trim();if(t&&/^\d+$/.test(t))settings.clientId=t;else if(t==='')delete settings.clientId;saveSettings();
     const c=clientId();if(!c)return toast('Enter the numeric AniList Client ID (see AniList app setup)');
     location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+c+'&response_type=token'};
@@ -1561,8 +1609,8 @@ const SMAP={planning:'PLANNING',watching:'CURRENT',repeating:'REPEATING',paused:
 const RMAP=Object.fromEntries(Object.entries(SMAP).map(([k,v])=>[v,k]));
 const MEDIA_FIELDS=QUERY.slice(QUERY.indexOf('id idMal'),QUERY.lastIndexOf('}}}'));
 // myScore (0-100, AniList scoreRaw / POINT_100) and notes are the user's own rating and notes
-const COLL=`query($userId:Int){MediaListCollection(userId:$userId,type:ANIME){lists{entries{id mediaId status progress score(format:POINT_100) notes updatedAt media{${MEDIA_FIELDS}}}}}}`;
-const SAVE=`mutation($mediaId:Int,$status:MediaListStatus,$progress:Int,$scoreRaw:Int,$notes:String){SaveMediaListEntry(mediaId:$mediaId,status:$status,progress:$progress,scoreRaw:$scoreRaw,notes:$notes){id}}`;
+const COLL=`query($userId:Int){MediaListCollection(userId:$userId,type:ANIME){lists{entries{id mediaId status progress score(format:POINT_100) notes repeat startedAt{year month day} completedAt{year month day} updatedAt media{${MEDIA_FIELDS}}}}}}`;
+const SAVE=`mutation($mediaId:Int,$status:MediaListStatus,$progress:Int,$scoreRaw:Int,$notes:String,$repeat:Int,$startedAt:FuzzyDateInput,$completedAt:FuzzyDateInput){SaveMediaListEntry(mediaId:$mediaId,status:$status,progress:$progress,scoreRaw:$scoreRaw,notes:$notes,repeat:$repeat,startedAt:$startedAt,completedAt:$completedAt){id}}`;
 const DEL=`mutation($id:Int){DeleteMediaListEntry(id:$id){deleted}}`;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function gql(query,variables,token=me()?.token){
@@ -1583,6 +1631,7 @@ function renderSyncBar(){
   const el=$('#syncbar');if(!el)return;const p=me(),n=p?.token?unsynced():0;
   el.innerHTML=!p?`<span class="sdot"></span><span>This list is saved in this browser only.</span><button class="link" id="sbSign">Sign in to sync</button>`
     :!p.token?`<span class="sdot bad"></span><span>AniList sign-in expired, changes are kept here until you sign in again.</span><button class="link" id="sbSign">Sign in</button>`
+    :!navigator.onLine?`<span class="sdot warn"></span><span>Offline${n?` · ${n} change${n>1?'s':''} waiting`:''}. Changes sync when you're back online.</span>`
     :syncing?`<span class="sdot spin"></span><span>Syncing with AniList…</span>`
     :`<span class="sdot ${n?'warn':'ok'}"></span><span title="${p.lastSync?esc(new Date(p.lastSync).toLocaleString()):''}">${p.lastSync?'Synced with AniList '+ago(p.lastSync):'Not synced yet'}${n?` · ${n} change${n>1?'s':''} waiting`:''}</span><button class="link" id="sbSync">Sync now</button>`;
 }
@@ -1591,6 +1640,7 @@ setInterval(()=>{if(view==='list'&&!document.hidden)renderSyncBar()},30000);
 function scheduleSync(){if(!me()?.token)return;clearTimeout(syncT);syncT=setTimeout(()=>sync(false),2500)}
 async function sync(manual){
   const p=me();if(!p?.token)return;
+  if(!navigator.onLine){if(manual)toast("You're offline. Changes are kept and sync when you're back.");renderSyncBar();return}
   if(syncing){syncAgain=true;return}
   syncing=true;syncAgain=false;renderSyncBar();
   try{
@@ -1611,11 +1661,14 @@ async function sync(manual){
       // remote wins if newer; on an equal time the local copy is unchanged since the last pull, so remote status is
       // authoritative (fixes entries that older versions stored as 'watching' for PAUSED/REPEATING)
       if(!loc||ms>(loc.updated||0)||(ms===loc.updated&&RMAP[e.status]&&RMAP[e.status]!==loc.status)){
-        list[e.mediaId]={...slim(e.media),status:RMAP[e.status]||'planning',progress:e.progress||0,myScore:Math.round(e.score||0),notes:e.notes||'',added:loc?.added||ms||Date.now(),updated:ms,synced:Date.now(),entryId:e.id};
+        list[e.mediaId]={...slim(e.media),status:RMAP[e.status]||'planning',progress:e.progress||0,myScore:Math.round(e.score||0),notes:e.notes||'',repeat:e.repeat||0,startedAt:fdStr(e.startedAt),completedAt:fdStr(e.completedAt),added:loc?.added||ms||Date.now(),updated:ms,synced:Date.now(),entryId:e.id};
       }else{
         Object.assign(loc,freshMedia(e.media)); // fresh airing info, episode count etc.; does not count as a local change
         if(!loc.entryId)loc.entryId=e.id;
         if(loc.myScore===undefined&&loc.notes===undefined){loc.myScore=Math.round(e.score||0);loc.notes=e.notes||''} // entries pulled before ratings existed
+        if(loc.repeat===undefined)loc.repeat=e.repeat||0; // ... or before dates and rewatches existed
+        if(loc.startedAt===undefined)loc.startedAt=fdStr(e.startedAt);
+        if(loc.completedAt===undefined)loc.completedAt=fdStr(e.completedAt);
       }
     }
     // removed on another browser/device: drop entries that were in sync here but are gone on AniList
@@ -1627,6 +1680,9 @@ async function sync(manual){
       const v={mediaId:it.id,status:SMAP[it.status],progress:it.progress||0};
       if(it.myScore!==undefined)v.scoreRaw=it.myScore||0; // never send a score/notes Kuro does not know, so AniList's are not wiped
       if(it.notes!==undefined)v.notes=it.notes||'';
+      if(it.repeat!==undefined)v.repeat=it.repeat||0;
+      if(it.startedAt!==undefined)v.startedAt=strFd(it.startedAt);
+      if(it.completedAt!==undefined)v.completedAt=strFd(it.completedAt);
       const r=await gql(SAVE,v);
       it.entryId=r.SaveMediaListEntry.id;it.synced=Date.now();store.set(listKey(),list);await sleep(700);
     }
@@ -1698,7 +1754,7 @@ async function scheduleAlertsNow(){
 async function fireAlert(it){
   let send=false;
   try{await alertStore(d=>{const n=d.notified||{};if((n[it.id]||0)<it.ep){n[it.id]=it.ep;send=true}d.notified=n;return d})}catch{send=true}
-  if(send&&alertsOn())(await navigator.serviceWorker.ready).showNotification('New episode: '+it.t,{body:`Episode ${it.ep} is out. Tap to open it in Kuro.`,icon:'icon-192.png',badge:'favicon-32.png',tag:'kuro-ep-'+it.id,data:{id:it.id}});
+  if(send&&alertsOn())(await navigator.serviceWorker.ready).showNotification('New episode: '+it.t,{body:`Episode ${it.ep} is out. Tap to open it in Kuro.`,icon:'icon-192.png',badge:'favicon-32.png',tag:'kuro-ep-'+it.id,data:{id:it.id,ep:it.ep,title:it.t},actions:[{action:'plus',title:`+1 Mark Ep ${it.ep} watched`}]});
   setTimeout(()=>refreshAiring(true),3e5); // AniList moves "next episode" on; refreshing reschedules
 }
 async function periodicAlerts(on){
@@ -1725,7 +1781,19 @@ function wireAlertsUI(){
   };
 }
 // tapping a notification: the worker focuses Kuro and sends {open:id}, or opens Kuro at #open=<id>
-navigator.serviceWorker?.addEventListener('message',e=>{const id=+e.data?.open;if(id&&(list[id]||cache[id]))openModal(id)});
+navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.queue)return drainQueue();const id=+e.data?.open;if(id&&(list[id]||cache[id]))openModal(id)});
+/* "+1" pressed on an episode alert: the service worker cannot touch the list (it lives in localStorage), so it queues
+   {id, ep, t} in Cache Storage kuro-data → ./__kuro-queue; the page applies the queue when it is open or next opens. */
+const QUEUE_URL='./__kuro-queue';
+async function drainQueue(){
+  let q=[];try{const c=await caches.open('kuro-data'),r=await c.match(QUEUE_URL);if(!r)return;q=await r.json();await c.delete(QUEUE_URL)}catch{return}
+  let n=0,last='';
+  for(const it of q){const e=list[it.id];if(!e||!(it.ep>(e.progress||0)))continue;
+    const from=e.progress||0,ps=e.status;e.progress=e.episodes?Math.min(it.ep,e.episodes):it.ep;
+    if(e.episodes&&e.progress>=e.episodes)e.status='completed';else if(['planning','paused','dropped'].includes(e.status))e.status='watching';
+    autoDates(e,ps,true);e.updated=Date.now();hist.push([it.t||Date.now(),it.id,from+1,e.progress]);n++;last=`Ep ${e.progress} · ${titleOf(e)}`}
+  if(n){hist.sort((a,b)=>a[0]-b[0]);saveHist();saveList();refreshCards();toast(n===1?`Marked from the alert: ${last}`:`${n} episodes marked from alerts`)}
+}
 function openFromHash(){const m=location.hash.match(/^#open=(\d+)$/);if(!m)return;history.replaceState(null,'',location.pathname+location.search);if(list[+m[1]])openModal(+m[1])}
 
 /* ---------- random pick ----------
@@ -2179,7 +2247,7 @@ function wrapYears(){const ys=new Set();for(const x of Object.values(list))if(x.
 function wrapData(Y){
   const all=Y==='all',start=all?0:new Date(Y,0,1).getTime(),end=all?Infinity:new Date(Y+1,0,1).getTime();
   const H=hist.filter(h=>h[0]>=start&&h[0]<end),hIds=new Set(H.map(h=>h[1]));
-  const shows=Object.values(list).filter(x=>x.status!=='planning'&&(all||hIds.has(x.id)||((x.updated||0)>=start&&(x.updated||0)<end)));
+  const shows=Object.values(list).filter(x=>x.status!=='planning'&&(all||hIds.has(x.id)||((x.updated||0)>=start&&(x.updated||0)<end)||[x.startedAt,x.completedAt].some(v=>v&&+v.slice(0,4)===Y)));
   // the day-by-day history only counts when it covers the whole year; otherwise use the shows you touched that year
   const full=!all&&hist.length&&hist[0][0]<=start;
   let eps=0,mins=0;const per=new Map();
@@ -2310,6 +2378,25 @@ async function wrappedImage(d){
   return await new Promise(res=>cv.toBlob(res,'image/png'));
 }
 setTimeout(checkBadges,2500);
+
+/* ================= Phase 4: offline ================= */
+function netState(){$('#offbar').hidden=navigator.onLine;if(view==='list')renderSyncBar()}
+addEventListener('offline',netState);
+addEventListener('online',()=>{netState();toast('Back online');if(me()?.token)sync(false);refreshAiring();
+  if(view==='discover'&&!$('#grid .card'))run();else if(view==='week')loadWeek(true)});
+async function offCounts(){try{const[a,b]=await Promise.all(['kuro-img','kuro-api'].map(async n=>(await(await caches.open(n)).keys()).length));return{img:a,api:b}}catch{return null}}
+async function wireOffline(){
+  const show=async()=>{const c=await offCounts();if(c&&$('#offInfo'))$('#offInfo').textContent=`Your list, stats and diary always live on this device. Saved for offline: ${c.img} cover${c.img===1?'':'s'} and ${c.api} AniList page${c.api===1?'':'s'} (most recent kept).`};
+  show();
+  $('#offSave').onclick=async e=>{
+    const b=e.target,urls=[...new Set(Object.values(list).map(x=>x.cover).filter(okUrl))];if(!urls.length)return toast('Your list is empty');
+    if(!navigator.serviceWorker?.controller)return toast('Offline saving starts after Kuro reloads once');
+    b.disabled=true;let done=0;const next=async()=>{while(urls.length){const u=urls.shift();try{await fetch(u,{mode:'cors',credentials:'omit'})}catch{}done++;if(b.isConnected)b.textContent=`Saving covers… ${done}`}};
+    await Promise.all(Array.from({length:6},next));if(!b.isConnected)return;b.disabled=false;b.textContent='Save all my covers for offline';toast(`${done} covers saved for offline`);show();
+  };
+}
+netState();drainQueue();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)drainQueue()});
 
 renderProfileBtn();updateCounts();renderNext();setView('discover');load(false);
 openFromHash();
