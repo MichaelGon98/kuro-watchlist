@@ -78,7 +78,8 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 - **Gotcha — stale page:** the service worker and browser cache can serve an old `index.html`. Hard refresh (Ctrl+Shift+R) or unregister the service worker and clear caches (DevTools → Application) after changes.
 - **Gotcha — wrong folder / busy port:** a server left running from an old folder keeps port 5188 and serves old files. Check what holds the port and stop it. The owner uses Windows (PowerShell and cmd) and the Brave browser; remember `cd /d` is cmd-only and `Set-Location`/`cd` quoted paths work in PowerShell.
 - **Phone access:** same Wi-Fi via `http://<laptop-ip>:5188` (works, but not installable/offline because it is HTTP), or an HTTPS tunnel (`cloudflared tunnel --url http://localhost:5188`). Better: host the static files permanently (Netlify drop / GitHub Pages) — **not done yet**.
-- **AniList sync setup (owner must do once):** create a client at anilist.co/settings/developer, set its Redirect URL to the exact hosted address of the app (not `localhost` for phone use), paste the Client ID into Kuro → Settings → Profile → AniList app setup, then Sign in with AniList. Use the same address and Client ID on every browser. To add a second account in one browser, log out on anilist.co first (AniList otherwise signs straight back in as the current account). Local storage is per origin, so each address keeps its own list until synced.
+- **AniList sign-in on the hosted app needs no setup:** it has a built-in Client ID (`BUILTIN_CLIENT_ID` = 58014, owner's AniList client, Redirect URL `https://michaelgon98.github.io/kuro-watchlist/`). The built-in ID is only used at that exact address (`IS_HOSTED`), since AniList always redirects to the registered URL. A Client ID is public (implicit grant, no secret), so it is safe in the repo.
+- **AniList sync setup for any other address (localhost, LAN, a fork):** create a client at anilist.co/settings/developer, set its Redirect URL to the exact hosted address of the app (not `localhost` for phone use), paste the Client ID into Kuro → Settings → Profile → AniList app setup, then Sign in with AniList. Use the same address and Client ID on every browser. To add a second account in one browser, log out on anilist.co first (AniList otherwise signs straight back in as the current account). Local storage is per origin, so each address keeps its own list until synced.
 
 ## 7. Current status
 
@@ -102,7 +103,7 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 
 ## 9. Next ideas (not started)
 
-- **Next step for profiles:** owner registers `https://michaelgon98.github.io/kuro-watchlist/` as the AniList client's Redirect URL, then verify sign-in and sync end to end in two browsers.
+- **Next step for profiles:** verify sign-in and sync end to end in two browsers on the hosted app (built-in Client ID 58014, Redirect URL set to the hosted address by the owner).
 - "This week" airing schedule with countdowns for shows being watched.
 - Jellyfin/Plex "Play from my library" button for anime the owner owns.
 - PNG icons (192/512) and maskable icon for installability.
@@ -151,3 +152,7 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 ### 2026-11-25 — Hosted on GitHub Pages
 - Owner signed in with `gh auth login`. Set repo-local git identity to the GitHub noreply address (keeps the owner's email out of public history), committed everything, created public repo `MichaelGon98/kuro-watchlist`, pushed `main`, enabled Pages (branch `main`, `/`).
 - Live at https://michaelgon98.github.io/kuro-watchlist/; checked: Discover loads, no console errors, service worker registers, Settings shows that address as the Redirect URL. Why: a fixed HTTPS address is needed for profiles/AniList sign-in to work across browsers and on the phone.
+
+### 2026-11-25 — Built-in AniList Client ID for the hosted app
+- `index.html`: added `HOSTED_URL`, `BUILTIN_CLIENT_ID` ('58014', supplied by the owner), `APP_URL`, `IS_HOSTED` and `clientId()`. On the hosted address, "Sign in with AniList" works with no setup; Settings shows "Sign-in help" with an optional field to use your own Client ID (empty = built-in). Elsewhere (localhost/LAN) Settings still asks for a Client ID and points to the hosted app. Why: so other users don't have to register their own AniList client.
+- Verified on localhost that the setup prompt still appears there.

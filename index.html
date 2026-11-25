@@ -245,6 +245,11 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const GENRES=['Action','Adventure','Comedy','Drama','Fantasy','Horror','Mahou Shoujo','Mecha','Music','Mystery','Psychological','Romance','Sci-Fi','Slice of Life','Sports','Supernatural','Thriller'];
 const STATUSES=[['planning','Plan to watch'],['watching','Watching'],['completed','Completed'],['dropped','Dropped']];
 const DEFAULT_PROVIDER='https://anikototv.bz/search?keyword={query}';
+// Built-in AniList client (public id, implicit grant, no secret). Its Redirect URL is the hosted address,
+// so it is only used there; other addresses (localhost, LAN) need their own client in Settings.
+const HOSTED_URL='https://michaelgon98.github.io/kuro-watchlist/',BUILTIN_CLIENT_ID='58014';
+const APP_URL=location.origin+location.pathname.replace(/index\.html$/,''),IS_HOSTED=APP_URL===HOSTED_URL;
+const clientId=()=>settings.clientId||(IS_HOSTED?BUILTIN_CLIENT_ID:'');
 
 /* ---------- storage & profiles ---------- */
 const store={
@@ -541,19 +546,22 @@ function openSettings(){
       ${!on?`<button class="btn sm" data-switch="${p.id}">Switch</button>`:''}
       <button class="btn sm danger" data-signout="${p.id}">Sign out</button></div>`}).join('')}
     ${me()?`<div class="prof"><span class="av">?</span><div class="grow"><b>No account</b><div class="hint" style="margin:0">Guest list, this browser only</div></div><button class="btn sm" data-switch="">Switch</button></div>`:''}
-    ${settings.clientId?'':`<input type="text" id="cid" inputmode="numeric" placeholder="AniList Client ID" value="">`}
+    ${clientId()?'':`<input type="text" id="cid" inputmode="numeric" placeholder="AniList Client ID" value="">`}
     <div class="actions" style="margin-top:8px"><button class="btn primary" id="conn">${me()&&!me().token?'Sign in again':Object.keys(profiles).length?'Add AniList account':'Sign in with AniList'}</button></div>
-    <details class="hint" style="margin-top:8px"><summary>AniList app setup${settings.clientId?' (Client ID '+esc(settings.clientId)+')':''}</summary>
-      One-time setup: at anilist.co/settings/developer create a client, set its Redirect URL to <code>${esc(location.origin+location.pathname)}</code>, and paste its Client ID here. Use this same address and Client ID in every browser.
+    <details class="hint" style="margin-top:8px"><summary>${IS_HOSTED?'Sign-in help':'AniList app setup'}${settings.clientId?' (Client ID '+esc(settings.clientId)+')':''}</summary>
       To add a second account, log out on anilist.co first, otherwise AniList signs you straight back in as the current one.
-      ${settings.clientId?`<div style="margin-top:6px"><input type="text" id="cid" inputmode="numeric" placeholder="AniList Client ID" value="${esc(settings.clientId)}"></div>`:''}</details>
+      ${IS_HOSTED?`<div style="margin-top:6px">Advanced: to use your own AniList client instead of the built-in one, enter its Client ID (leave empty for the built-in one).</div>`
+      :`<div style="margin-top:6px">One-time setup for this address: at anilist.co/settings/developer create a client, set its Redirect URL to <code>${esc(APP_URL)}</code>, and paste its Client ID here. Or just use the hosted app at <a href="${HOSTED_URL}">${HOSTED_URL}</a>, which needs no setup.</div>`}
+      ${clientId()?`<div style="margin-top:6px"><input type="text" id="cid" inputmode="numeric" placeholder="${IS_HOSTED?'Built-in':'AniList Client ID'}" value="${esc(settings.clientId||'')}"></div>`:''}</details>
     <label>Backup</label>
     <div class="actions"><button class="btn" id="exp">Export list</button><label class="btn" style="margin:0">Import list<input type="file" id="imp" accept="application/json" hidden></label></div>
     <div class="actions" style="margin-top:20px"><button class="btn primary" id="save">Save</button></div></div>`;
   $('#scrim').classList.add('open');
   $('#mclose').onclick=closeModal;
-  $('#save').onclick=()=>{settings.provider=$('#prov').value.trim()||DEFAULT_PROVIDER;const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;saveSettings();closeModal();toast('Saved')};
-  $('#conn').onclick=()=>{const c=($('#cid')?.value||settings.clientId||'').trim();if(!/^\d+$/.test(c))return toast('Enter the numeric AniList Client ID (see AniList app setup)');settings.clientId=c;saveSettings();location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+c+'&response_type=token'};
+  $('#save').onclick=()=>{settings.provider=$('#prov').value.trim()||DEFAULT_PROVIDER;const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
+  $('#conn').onclick=()=>{const t=$('#cid')?.value.trim();if(t&&/^\d+$/.test(t))settings.clientId=t;else if(t==='')delete settings.clientId;saveSettings();
+    const c=clientId();if(!c)return toast('Enter the numeric AniList Client ID (see AniList app setup)');
+    location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+c+'&response_type=token'};
   if($('#syncNow'))$('#syncNow').onclick=async()=>{await sync(true);openSettings()};
   $$('[data-switch]').forEach(b=>b.onclick=()=>switchProfile(b.dataset.switch?+b.dataset.switch:null,b.dataset.switch?'Switched to '+profiles[b.dataset.switch].name:'Using the guest list'));
   $$('[data-signout]').forEach(b=>b.onclick=async()=>{
