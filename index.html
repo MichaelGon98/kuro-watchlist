@@ -326,6 +326,30 @@ details.hint summary{cursor:pointer}
 .t10 .card:hover{transform:none}
 .t10:first-child .rk{--rkc:#f5c542}
 .t10ld{color:var(--muted);font-size:13px;padding:30px 0}
+/* Celebrations: confetti rain + a card (Completed! stamp or badge reveal); +1 pop */
+.fxw{position:fixed;inset:0;z-index:70;pointer-events:none;display:grid;place-items:center;transition:opacity .35s}
+.fxw.out{opacity:0}
+.fxconf i{position:absolute;top:-16px;left:var(--l);width:8px;height:12px;border-radius:2px;opacity:0;animation:fall var(--d) cubic-bezier(.3,.6,.5,1) var(--dl) forwards}
+.fxconf i:nth-child(3n){width:6px;height:6px;border-radius:50%}
+@keyframes fall{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:.85;transform:translate(var(--x),105vh) rotate(var(--r))}}
+.fxcard{pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;background:color-mix(in srgb,var(--bg2) 92%,transparent);backdrop-filter:blur(10px);
+  border:1px solid color-mix(in srgb,var(--accent) 50%,var(--line));border-radius:22px;padding:18px 22px 16px;box-shadow:0 20px 70px #000a,0 0 60px -10px var(--accent);max-width:min(300px,86vw);animation:fxin .5s cubic-bezier(.2,1.4,.4,1) both;color:var(--text)}
+@keyframes fxin{from{opacity:0;transform:scale(.7) translateY(20px)}}
+.fxcov{position:relative;width:120px;aspect-ratio:2/3;border-radius:12px;background:var(--card2) center/cover;box-shadow:0 10px 30px #0009}
+.stamp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-16deg);white-space:nowrap;font-size:19px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#ff4d6d;
+  border:3px solid #ff4d6d;border-radius:8px;padding:2px 10px;background:rgba(255,255,255,.88);box-shadow:0 4px 16px #0006;animation:stamp .45s cubic-bezier(.2,1.6,.4,1) .3s both}
+@keyframes stamp{from{opacity:0;transform:translate(-50%,-50%) rotate(-16deg) scale(2.6)}}
+.fxt{font-size:17px;line-height:1.25;margin-top:6px}.fxs{color:var(--muted);font-size:13px}
+.fxk{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-top:8px}
+.fxbadge{width:120px;height:120px;border-radius:28px;display:grid;place-items:center;font-size:62px;position:relative;overflow:hidden;
+  background:linear-gradient(145deg,var(--accent),var(--accent2));box-shadow:0 12px 40px color-mix(in srgb,var(--accent) 50%,transparent);animation:bflip 1s cubic-bezier(.2,.8,.2,1) .1s both}
+.fxbadge::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 48%,transparent 62%);background-size:300% 100%;animation:foil 1.6s ease-in-out .8s 2 both}
+.pop1{position:fixed;z-index:72;pointer-events:none;font-weight:900;font-size:18px;color:var(--accent);text-shadow:0 2px 10px #000a;animation:rise .9s ease-out forwards}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}20%{opacity:1;transform:translate(-50%,-90%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-280%) scale(1)}}
+.popring{position:fixed;z-index:71;pointer-events:none;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:2px solid var(--accent);animation:ring .55s ease-out forwards}
+@keyframes ring{from{transform:scale(.4);opacity:1}to{transform:scale(1.9);opacity:0}}
+/* Seasonal particles (canvas) */
+.sfx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
 /* Hero spotlight: rotating trending banners; the page behind Discover takes the show's colour */
 @property --htint{syntax:'<color>';inherits:true;initial-value:transparent}
 #v-discover{position:relative;isolation:isolate;transition:--htint 1.2s ease}
@@ -399,7 +423,15 @@ details.hint summary{cursor:pointer}
 .bdgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
 .bdg{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:3px;opacity:.72}
 .bdg.on{opacity:1;border-color:color-mix(in srgb,var(--accent) 55%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--card)),var(--card))}
-.bdg .bi{font-size:28px;line-height:1.2;filter:grayscale(1)}.bdg.on .bi{filter:none}
+.bdg .bi{font-size:28px;line-height:1.2;filter:grayscale(1)}.bdg.on .bi{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--accent) 55%,transparent))}
+/* foil sheen on unlocked badges; "fresh" ones (unlocked since you last looked) flip in */
+.bdg{position:relative;overflow:hidden}
+.bdg.on::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(115deg,transparent 25%,rgba(255,110,200,.16) 38%,rgba(110,200,255,.2) 47%,rgba(255,235,130,.16) 56%,transparent 70%);background-size:280% 100%;animation:foil 7s ease-in-out infinite}
+.bdg.on:hover::before{animation-duration:2.2s}
+@keyframes foil{0%,100%{background-position:100% 0}50%{background-position:0 0}}
+.bdg.fresh{animation:bflip .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes bflip{from{transform:perspective(700px) rotateY(180deg) scale(.85);opacity:0}}
 .bdg b{font-size:14.5px}.bdg small{color:var(--muted);font-size:12.5px;line-height:1.35}
 .bdg em{font-style:normal;font-size:12px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}.bdg.on em{color:var(--accent)}
 .bp{height:6px;border-radius:3px;background:var(--card2);overflow:hidden;margin-top:6px}.bp i{display:block;height:100%;background:var(--accent)}
@@ -897,7 +929,7 @@ function cardHTML(m,showProg){
     </div>${showProg&&m.episodes?`<div class="prog"><i style="width:${pct}%"></i></div>`:''}</div>`;
 }
 document.addEventListener('click',e=>{
-  const p=e.target.closest('[data-plus]');if(p){e.stopPropagation();plusOne(+p.dataset.plus);return}
+  const p=e.target.closest('[data-plus]');if(p){e.stopPropagation();popAt(p);plusOne(+p.dataset.plus);return}
   const a=e.target.closest('[data-add]');
   if(a){e.stopPropagation();const id=+a.dataset.add;
     if(list[id])openModal(id);else{addToList(id,'planning');toast('Added to Plan to watch');refreshCards()}return}
@@ -1056,6 +1088,7 @@ function addToList(id,status){
   list[id]={...(old||c),...media,status,progress:old?.progress||0,added:old?.added||Date.now(),updated:Date.now()};
   autoDates(list[id],old?.status,false);
   saveList();
+  if(status==='completed'&&old?.status!=='completed')celebrate([id]);
 }
 
 /* ---------- list view ---------- */
@@ -1132,8 +1165,9 @@ $('#lgrid').addEventListener('click',e=>{if(!selMode)return;const el=e.target.cl
   e.preventDefault();e.stopPropagation();const id=selId(el);sel.has(id)?sel.delete(id):sel.add(id);markSel()},true);
 $('#selSt').onchange=e=>{const st=e.target.value;e.target.value='';if(!st||!sel.size)return;
   const ids=[...sel].filter(id=>list[id]),prev=ids.map(id=>{const x=list[id];return{id,status:x.status,progress:x.progress||0,startedAt:x.startedAt,completedAt:x.completedAt,repeat:x.repeat}}),now=Date.now();
+  const newly=st==='completed'?ids.filter(id=>list[id].status!=='completed'):[];
   for(const id of ids){const x=list[id],ps=x.status;x.status=st;if(st==='completed'&&x.episodes)x.progress=Math.max(x.progress||0,x.episodes);autoDates(x,ps,false);x.updated=now}
-  saveList();sel.clear();refreshCards();
+  saveList();sel.clear();refreshCards();celebrate(newly);
   toast(`${ids.length} moved to ${STATUSES.find(s=>s[0]===st)[1]}`,()=>{for(const q of prev){const x=list[q.id];if(x){const{id:_i,...rest}=q;Object.assign(x,rest,{updated:Date.now()})}}saveList();refreshCards()})};
 $('#selRm').onclick=()=>{const ids=[...sel].filter(id=>list[id]);if(!ids.length)return;
   if(!confirm(`Remove ${ids.length} anime from your list?`+(me()?.token?' They are removed from AniList too.':'')))return;
@@ -1403,7 +1437,7 @@ function openModal(id,keep){
   if($('#studioBtn'))$('#studioBtn').onclick=()=>openStudio(m.studio,id);
   if($('#rm'))$('#rm').onclick=()=>{const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId];saveProfiles()}saveList();closeModal();refreshCards();toast('Removed')};
 }
-function step(id,d){bump(id,d);openModal(id)}
+function step(id,d){if(d>0)popAt($('#epp'));bump(id,d);openModal(id)}
 // Change episode progress by d. Going up: the last episode completes the show; a planned/paused/dropped show becomes Watching.
 // Returns the previous {status,progress} so the change can be undone.
 function bump(id,d){
@@ -1415,6 +1449,7 @@ function bump(id,d){
   else if(d>0&&['planning','paused','dropped'].includes(e.status))e.status='watching';
   autoDates(e,prev.status,d>0);
   e.updated=Date.now();saveList();refreshCards();
+  if(d>0&&e.status==='completed'&&prev.status!=='completed')celebrate([id]);
   return prev;
 }
 // The one-tap "+1" on Next up, My List and This week, with Undo
@@ -1477,6 +1512,7 @@ function epTap(id,k){
   else if(e.progress>0&&['planning','dropped','completed','paused'].includes(e.status))e.status='watching';
   autoDates(e,pst,e.progress>was);
   e.updated=Date.now();saveList();refreshCards();openModal(id,true);
+  if(e.status==='completed'&&pst!=='completed')celebrate([id]);
 }
 $('#modal').addEventListener('click',ev=>{
   if(ev.target.id==='epall'){epAll=true;keepTop=$('#modal').scrollTop;fillDetails(curModal);return}
@@ -1559,6 +1595,11 @@ function openSettings(){
     <label>Lists</label>
     <label class="check"><input type="checkbox" id="rateOn" ${settings.rate!==false?'checked':''}> Show my rating and notes on each anime</label>
     <div class="hint">Optional. Turning this off only hides them; nothing is deleted.</div>
+    <label>Effects</label>
+    <label class="check"><input type="checkbox" id="partyOn" ${settings.party!==false?'checked':''}> Celebrations: confetti when you finish a show, badge reveals, the +1 pop</label>
+    <select id="seasonSel" aria-label="Seasonal effect" style="margin-top:8px">${[['auto',`Seasonal effect: auto (now ${SFX_KINDS[sfxNow()]})`],...Object.entries(SFX_KINDS).map(([k,l])=>[k,'Seasonal effect: '+l]),['off','Seasonal effect: off']]
+      .map(([k,l])=>`<option value="${k}" ${(settings.season||'auto')===k?'selected':''}>${l}</option>`).join('')}</select>
+    <div class="hint">Auto follows Japan's seasons: snow Dec–Feb, sakura Mar–May, fireflies Jun–Aug, leaves Sep–Nov. Effects stay off if your device asks for reduced motion.</div>
     <label>Alerts</label>
     <label class="check"><input type="checkbox" id="notifyOn" ${settings.notify&&alertsOn()?'checked':''}> Notify me when a new episode of a show I'm watching comes out</label>
     <div class="hint" id="notifyHint">${alertHint()}</div>
@@ -1571,7 +1612,7 @@ function openSettings(){
     <div class="actions" style="margin-top:20px"><button class="btn primary" id="save">Save</button></div></div>`;
   $('#scrim').classList.add('open');
   $('#mclose').onclick=closeModal;
-  $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;settings.rate=$('#rateOn').checked;refreshCards();const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
+  $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;settings.rate=$('#rateOn').checked;settings.party=$('#partyOn').checked;settings.season=$('#seasonSel').value;applySeason();refreshCards();const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
   wireAlertsUI();wireOffline();
   $('#conn').onclick=()=>{const t=$('#cid')?.value.trim();if(t&&/^\d+$/.test(t))settings.clientId=t;else if(t==='')delete settings.clientId;saveSettings();
     const c=clientId();if(!c)return toast('Enter the numeric AniList Client ID (see AniList app setup)');
@@ -2183,6 +2224,81 @@ function heroTimer(){clearInterval(heroT);if(stillMotion())return; // no auto-ad
   document.addEventListener('pointerout',e=>{if(tc&&!tc.contains(e.relatedTarget)){untilt(tc);tc=null}});
 })();
 
+/* ===== Phase 6: celebrations, seasonal effects ===== */
+const partyOn=()=>settings.party!==false;
+const buzz=pat=>{if(navigator.userActivation?.hasBeenActive)try{navigator.vibrate?.(pat)}catch{}}; // vibrate only after a real tap (Chrome blocks it otherwise)
+const FX_COLS=['var(--accent)','var(--accent2)','#4ade80','#fbbf24','#ffffff','#38bdf8'];
+let fxQ=[],fxBusy=false;
+function fxShow(html,onTap,ms=2800){fxQ.push({html,onTap,ms});if(!fxBusy)fxNext()}
+function fxNext(){ // one card at a time (finishing a show can unlock a badge right after)
+  const it=fxQ.shift();if(!it){fxBusy=false;return}fxBusy=true;
+  const w=document.createElement('div');w.className='fxw';
+  w.innerHTML=(stillMotion()?'':confettiHTML(70))+`<button class="fxcard" type="button">${it.html}</button>`;
+  document.body.appendChild(w);buzz([20,30,60]);
+  let done=false;const end=()=>{if(done)return;done=true;w.classList.add('out');setTimeout(()=>{w.remove();fxNext()},350)};
+  w.querySelector('.fxcard').onclick=()=>{end();it.onTap?.()};
+  setTimeout(end,it.ms);
+}
+function confettiHTML(n){return `<div class="fxconf" aria-hidden="true">${Array.from({length:n},(_,i)=>`<i style="--l:${(Math.random()*100).toFixed(1)}%;--x:${(Math.random()*160-80).toFixed(0)}px;--r:${(Math.random()*900-450).toFixed(0)}deg;--d:${(1.6+Math.random()*1.4).toFixed(2)}s;--dl:${(Math.random()*.5).toFixed(2)}s;background:${FX_COLS[i%FX_COLS.length]}"></i>`).join('')}</div>`}
+function celebrate(ids){
+  ids=(ids||[]).filter(id=>list[id]);if(!ids.length||!partyOn())return;
+  const e=list[ids[0]],one=ids.length===1,rate=one&&settings.rate!==false&&!e.myScore;
+  fxShow(`<span class="fxcov" style="background-image:url('${esc(e.cover||'')}')"><span class="stamp">Completed!</span></span>
+    <b class="fxt">${one?esc(titleOf(e)):ids.length+' shows completed'}</b>
+    <small class="fxs">${rate?'Tap to rate it':one?(e.episodes?e.episodes+' episodes · ':'')+'well done!':'Nice clean-up!'}</small>`,one?()=>openModal(ids[0]):null);
+}
+function fxBadge(fresh){const x=fresh[0];
+  fxShow(`<span class="fxbadge" aria-hidden="true">${x.ic}</span><span class="fxk">Badge unlocked!</span><b class="fxt">${esc(x.name)}</b>
+    <small class="fxs">${esc(x.desc)}${fresh.length>1?` · +${fresh.length-1} more`:''}</small>`,
+    ()=>{closeModal();statsTab='badges';store.set('kuro.statsTab','badges');setView('stats');drawStats()},3600);
+}
+function popAt(el,txt='+1'){
+  if(!el||!partyOn()||stillMotion())return;const r=el.getBoundingClientRect();if(!r.width)return;
+  const x=r.left+r.width/2+'px',y=r.top+r.height/2+'px',a=document.createElement('span'),g=document.createElement('span');
+  a.className='pop1';a.textContent=txt;g.className='popring';a.style.left=g.style.left=x;a.style.top=g.style.top=y;
+  document.body.append(a,g);buzz(12);setTimeout(()=>{a.remove();g.remove()},950);
+}
+
+// Seasonal particles on a canvas above the page (pointer-events: none)
+const SFX_KINDS={snow:'❄️ snow',sakura:'🌸 sakura petals',fireflies:'✨ fireflies',leaves:'🍁 autumn leaves'};
+function sfxNow(){const m=new Date().getMonth();return m===11||m<2?'snow':m<5?'sakura':m<8?'fireflies':'leaves'}
+function seasonKind(){const v=settings.season||'auto';return v==='off'?null:v==='auto'?sfxNow():SFX_KINDS[v]?v:null}
+let sfx=null;
+function applySeason(){
+  const kind=stillMotion()?null:seasonKind();
+  if(sfx?.kind===kind)return;
+  if(sfx){cancelAnimationFrame(sfx.raf);removeEventListener('resize',sfx.size);sfx.cv.remove();sfx=null}
+  if(!kind)return;
+  const cv=document.createElement('canvas'),ctx=cv.getContext('2d'),R=Math.random;cv.className='sfx';cv.setAttribute('aria-hidden','true');document.body.appendChild(cv);
+  const spawn=first=>{const W=innerWidth,H=innerHeight;
+    if(kind==='fireflies')return{x:R()*W,y:H*.2+R()*H*.8,vx:(R()-.5)*.4,vy:(R()-.5)*.4,ph:R()*6.3,s:1.4+R()*1.6};
+    return{x:R()*W,y:first?R()*H:-20,s:kind==='snow'?1.2+R()*2.6:kind==='sakura'?4.5+R()*3.5:7+R()*6,
+      vy:kind==='snow'?.35+R()*.8:.45+R()*.7,vx:kind==='snow'?(R()-.5)*.3:.2+R()*.5,ph:R()*6.3,rot:R()*6.3,vr:(R()-.5)*.05,c:R()}};
+  const S=sfx={kind,cv,raf:0,ps:[],last:0};
+  S.size=()=>{const d=Math.min(devicePixelRatio||1,2);cv.width=innerWidth*d;cv.height=innerHeight*d;ctx.setTransform(d,0,0,d,0,0);
+    const n=Math.round(Math.min(44,Math.max(12,innerWidth/(kind==='fireflies'?48:34))));while(S.ps.length<n)S.ps.push(spawn(true));S.ps.length=n};
+  S.size();addEventListener('resize',S.size);
+  const leaf=(p,t)=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.scale(1,.35+.65*Math.abs(Math.cos(t/700+p.ph)));const z=p.s;
+    ctx.beginPath();ctx.moveTo(0,-z);ctx.quadraticCurveTo(z*.95,-z*.15,0,z);ctx.quadraticCurveTo(-z*.95,-z*.15,0,-z);ctx.fill();ctx.restore()};
+  const frame=t=>{S.raf=requestAnimationFrame(frame);
+    const f=Math.min(3,S.last?(t-S.last)/16.7:1);S.last=t;const W=innerWidth,H=innerHeight,light=document.documentElement.dataset.theme==='light';
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<S.ps.length;i++){let p=S.ps[i];
+      if(kind==='fireflies'){p.vx=Math.max(-.5,Math.min(.5,p.vx+(R()-.5)*.03));p.vy=Math.max(-.5,Math.min(.5,p.vy+(R()-.5)*.03));p.x+=p.vx*f;p.y+=p.vy*f;
+        if(p.x<-10||p.x>W+10||p.y<-10||p.y>H+10){p=S.ps[i]=spawn(true)}
+        const a=.15+.85*Math.abs(Math.sin(t/1100+p.ph));ctx.globalAlpha=a;ctx.shadowBlur=14;ctx.shadowColor=light?'#c9a400':'#eaff7a';ctx.fillStyle=light?'#d4b000':'#f2ff9e';
+        ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,7);ctx.fill();continue}
+      p.y+=p.vy*f;p.x+=(p.vx+Math.sin(t/1400+p.ph)*.35)*f;p.rot+=(p.vr||0)*f;
+      if(p.y>H+20||p.x>W+30){p=S.ps[i]=spawn(false)}
+      ctx.shadowBlur=0;
+      if(kind==='snow'){ctx.globalAlpha=.55+p.c*.35;ctx.fillStyle=light?'#9fb2cc':'#ffffff';ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,7);ctx.fill()}
+      else{ctx.globalAlpha=.85;ctx.fillStyle=kind==='sakura'?`hsl(${335+p.c*15},85%,${light?70:80+p.c*8}%)`:`hsl(${12+p.c*32},80%,${light?45:52}%)`;leaf(p,t)}}
+    ctx.globalAlpha=1};
+  S.raf=requestAnimationFrame(frame);
+}
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',applySeason);
+applySeason();
+
 /* ----- "From your shows": sequels and prequels of shows you watched that are not on your list.
    New announcements (not seen before) get a "New" badge, a toast and, when alerts are on, a notification. ----- */
 const REL_Q=`query($p:Int,$ids:[Int]){Page(page:$p,perPage:50){pageInfo{hasNextPage}media(id_in:$ids,type:ANIME){id relations{edges{relationType node{type isAdult startDate{year month day} ${MEDIA_FIELDS}}}}}}}`;
@@ -2364,10 +2480,13 @@ function badgeList(){
     airing:s.all.filter(x=>ACTIVE.includes(x.status)&&(x.mstatus==='RELEASING'||x.next)).length};
   return BADGES.map(([id,ic,name,desc,f])=>{const[v,goal]=f(d);return{id,ic,name,desc,v:Math.min(v,goal),goal,done:v>=goal,at:got[id]}});
 }
+let bNew=null; // badges unlocked since you last opened Badges (shown with a flip and a "New" chip)
 function drawBadges(b=badgeList()){
   const n=b.filter(x=>x.done).length;
+  if(!bNew){const k='kuro.badgeSeen.'+prefKey(),s0=store.get(k,null);bNew=new Set(s0==null?[]:b.filter(x=>x.done&&x.at>s0).map(x=>x.id));store.set(k,Date.now())}
+  let fi=0;
   $('#stats').innerHTML=`<div class="hint" style="margin:0 0 12px">${n} of ${b.length} unlocked. Streak, binge and night owl badges use the episodes you mark watched in Kuro${hist.length?` (since ${dateTxt(hist[0][0],{year:'numeric'})})`:''}.</div>
-    <div class="bdgs">${b.map(x=>`<div class="bdg ${x.done?'on':''}"><span class="bi" aria-hidden="true">${x.ic}</span><b>${esc(x.name)}</b><small>${esc(x.desc)}</small>
+    <div class="bdgs">${b.map(x=>`<div class="bdg ${x.done?'on':''}${bNew.has(x.id)?' fresh" style="animation-delay:'+(fi++)*.12+'s':''}"><span class="bi" aria-hidden="true">${x.ic}</span><b>${bNew.has(x.id)?'<span class="newb">New</span>':''}${esc(x.name)}</b><small>${esc(x.desc)}</small>
       ${x.done?`<em>Unlocked${x.at?' '+dateTxt(x.at,{year:'numeric'}):''}</em>`
       :`<div class="bp" role="progressbar" aria-label="${esc(x.name)} progress" aria-valuemin="0" aria-valuemax="${x.goal}" aria-valuenow="${Math.floor(x.v)}"><i style="width:${x.v/x.goal*100}%"></i></div><em>${fmtN(x.v)} / ${fmtN(x.goal)}</em>`}</div>`).join('')}</div>`;
 }
@@ -2377,7 +2496,7 @@ function checkBadges(){
   const b=badgeList(),had=store.get(badgeKey(),null),got={...(had||{})},fresh=[];
   for(const x of b)if(x.done&&!got[x.id]){got[x.id]=Date.now();fresh.push(x)}
   if(fresh.length||!had)store.set(badgeKey(),got);
-  if(had&&fresh.length){toast(fresh.length===1?`Badge unlocked: ${fresh[0].ic} ${fresh[0].name}`:`${fresh.length} badges unlocked · see Stats → Badges`);if(view==='stats')drawStats()}
+  if(had&&fresh.length){bNew=null;if(partyOn())fxBadge(fresh);else toast(fresh.length===1?`Badge unlocked: ${fresh[0].ic} ${fresh[0].name}`:`${fresh.length} badges unlocked · see Stats → Badges`);if(view==='stats')drawStats()}
 }
 
 /* ----- Wrapped: a story of your year (or all time), with a shareable 1080×1920 image ----- */
