@@ -225,6 +225,46 @@ details.hint summary{cursor:pointer}
 .modal:focus{outline:0}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.card:hover{transform:none}}
 
+/* random pick */
+.spin-cta{position:relative;display:flex;align-items:center;gap:14px;width:100%;margin:0 0 16px;padding:14px 18px;border-radius:var(--r);
+  background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 28%,var(--card)),color-mix(in srgb,var(--accent2) 22%,var(--card)));
+  border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));text-align:left;overflow:hidden;isolation:isolate}
+.spin-cta::before{content:"";position:absolute;inset:-40% auto -40% -30%;width:30%;transform:skewX(-20deg);z-index:-1;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,#fff 22%,transparent),transparent);animation:shine 3.6s ease-in-out infinite}
+@keyframes shine{0%,55%{left:-30%}100%{left:130%}}
+.spin-cta:hover{border-color:var(--accent)}
+.spin-cta .dice{flex:none;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--on-accent);box-shadow:0 6px 22px color-mix(in srgb,var(--accent) 45%,transparent)}
+.spin-cta:hover .dice svg{animation:wob .6s ease}
+@keyframes wob{25%{transform:rotate(-14deg)}60%{transform:rotate(10deg)}}
+.spin-cta b{display:block;font-size:16px}.spin-cta small{color:var(--muted);font-size:13px}
+.spin-cta .go{margin-left:auto;font-weight:700;color:var(--accent)}
+.rp .switch{display:flex;align-items:center;gap:10px;margin:10px 0 4px;cursor:pointer;font-weight:600;font-size:14px}
+.rp .switch input{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:99px;background:var(--card2);border:1px solid var(--line);position:relative;flex:none;cursor:pointer;transition:.2s;margin:0}
+.rp .switch input::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.2s}
+.rp .switch input:checked{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
+.rp .switch input:checked::after{left:20px;background:var(--on-accent)}
+.reel-wrap{position:relative;margin:14px -4px 6px;height:186px;overflow:hidden;border-radius:14px;background:var(--card);border:1px solid var(--line);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+.reel{display:flex;gap:10px;padding:14px 0;will-change:transform}
+.reel.go .rt img{filter:blur(1.5px)}
+.rt{flex:none;width:106px;height:158px;border-radius:12px;overflow:hidden;background:var(--card2);transition:transform .35s,box-shadow .35s}
+.rt img{width:100%;height:100%;object-fit:cover;display:block;transition:filter .4s}
+.rt.win{transform:scale(1.08);box-shadow:0 0 0 3px var(--accent),0 0 32px color-mix(in srgb,var(--accent) 70%,transparent)}
+.reel-mark{position:absolute;top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px;background:linear-gradient(var(--accent),var(--accent2));box-shadow:0 0 14px var(--accent);border-radius:2px;pointer-events:none}
+.reel-mark::before,.reel-mark::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border:8px solid transparent}
+.reel-mark::before{top:0;border-top-color:var(--accent)}.reel-mark::after{bottom:0;border-bottom-color:var(--accent2)}
+.rp-msg{color:var(--muted);text-align:center;padding:60px 10px}
+.rp-out{min-height:20px}
+.rp-card{position:relative;display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-top:6px;animation:rise .45s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+.rp-card img{width:88px;aspect-ratio:2/3;object-fit:cover;border-radius:10px;flex:none}
+.rp-card h3{margin:2px 0 4px;font-size:18px;line-height:1.2}
+.rp-why{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.rp-card .actions{margin-top:10px}
+.burst{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:5}
+.burst i{position:absolute;width:8px;height:8px;border-radius:2px;animation:pop2 .9s ease-out forwards}
+@keyframes pop2{from{transform:translate(0,0) rotate(0);opacity:1}to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+
 /* stats */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:8px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
@@ -298,6 +338,8 @@ nav.bottom{display:none}
 <main>
   <!-- DISCOVER -->
   <section id="v-discover">
+    <button class="spin-cta" id="spinBtn"><span class="dice"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/></svg></span>
+      <span><b>Random pick</b><small>Spin for something you haven't seen</small></span><span class="go" aria-hidden="true">Spin ›</span></button>
     <div id="nextup" style="display:none"><h2 class="sec">Next up</h2><div class="nu" id="nuRow"></div></div>
     <div class="filters" id="filters">
       <button class="btn ftoggle" id="ftoggle">⚙ Filters <span id="fcount"></span></button>
@@ -546,7 +588,7 @@ function nextInfo(x){
   const aired=nx?nx.episode-1:x.mstatus==='NOT_YET_RELEASED'?0:(x.episodes||Infinity);
   return{ep,out:ep<=aired,behind:nx?aired-ep+1:0,nx}; // "N new" only makes sense for shows still airing
 }
-function renderNext(){
+function renderNext(){scheduleAlerts();
   const items=Object.values(list).filter(x=>ACTIVE.includes(x.status)&&(!x.episodes||(x.progress||0)<x.episodes)).map(x=>({x,n:nextInfo(x)}))
     // episodes you can watch now first (most recently touched first), then upcoming ones by air time
     .sort((a,b)=>(b.n.out-a.n.out)||(a.n.out?(b.x.updated||0)-(a.x.updated||0):(a.n.nx?.airingAt||9e9)-(b.n.nx?.airingAt||9e9))).slice(0,12);
@@ -932,12 +974,17 @@ function openSettings(){
     <label>Lists</label>
     <label class="check"><input type="checkbox" id="rateOn" ${settings.rate!==false?'checked':''}> Show my rating and notes on each anime</label>
     <div class="hint">Optional. Turning this off only hides them; nothing is deleted.</div>
+    <label>Alerts</label>
+    <label class="check"><input type="checkbox" id="notifyOn" ${settings.notify&&alertsOn()?'checked':''}> Notify me when a new episode of a show I'm watching comes out</label>
+    <div class="hint" id="notifyHint">${alertHint()}</div>
+    <div class="actions" style="margin-top:6px"><button class="btn sm" id="notifyTest">Send a test alert</button></div>
     <label>Backup</label>
     <div class="actions"><button class="btn" id="exp">Export list</button><label class="btn" style="margin:0">Import list<input type="file" id="imp" accept="application/json" hidden></label></div>
     <div class="actions" style="margin-top:20px"><button class="btn primary" id="save">Save</button></div></div>`;
   $('#scrim').classList.add('open');
   $('#mclose').onclick=closeModal;
   $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;settings.rate=$('#rateOn').checked;refreshCards();const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
+  wireAlertsUI();
   $('#conn').onclick=()=>{const t=$('#cid')?.value.trim();if(t&&/^\d+$/.test(t))settings.clientId=t;else if(t==='')delete settings.clientId;saveSettings();
     const c=clientId();if(!c)return toast('Enter the numeric AniList Client ID (see AniList app setup)');
     location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+c+'&response_type=token'};
@@ -1116,7 +1163,168 @@ function renderProfileBtn(){
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return;refreshAiring();renderNext();if(me()?.token&&Date.now()-(me().lastSync||0)>60000)sync(false)});
 
+/* ---------- new-episode alerts ----------
+   Shows you are Watching or Rewatching get a notification when their next episode airs. Kuro sets a timer per show
+   while it is open (also in a background tab). A copy of the schedule (show id, title, episode, air time only) is kept
+   in Cache Storage ('kuro-data'), so the service worker can also check from time to time while Kuro is closed, where
+   the browser supports Periodic Background Sync (Chrome/Edge with the app installed). `notified` stops repeats. */
+var alertTimers=[],alertT=0;
+const ALERT_URL='./__kuro-alerts';
+const canNotify=()=>'Notification' in window&&'serviceWorker' in navigator;
+const alertsOn=()=>!!settings.notify&&canNotify()&&Notification.permission==='granted';
+function alertHint(){
+  if(!canNotify())return 'This browser cannot show notifications. On iPhone and iPad, add Kuro to the Home Screen first (Share → Add to Home Screen).';
+  if(Notification.permission==='denied')return 'Notifications are blocked for this site. Allow them in the browser’s site settings (the icon left of the address), then turn this on again.';
+  return 'For shows you are Watching or Rewatching, saved in this browser. Alerts arrive while Kuro is open, also in a background tab. With Kuro installed in Chrome or Edge, the browser may also check a few times a day while it is closed; it decides when.';
+}
+async function alertStore(fn){
+  const c=await caches.open('kuro-data'),r=await c.match(ALERT_URL),d=r?await r.json():{};
+  const out=fn(d)||d;await c.put(ALERT_URL,new Response(JSON.stringify(out),{headers:{'Content-Type':'application/json'}}));return out;
+}
+const alertItems=()=>Object.values(list).filter(x=>ACTIVE.includes(x.status)&&x.next?.airingAt).map(x=>({id:x.id,t:titleOf(x),ep:x.next.episode,at:x.next.airingAt}));
+function scheduleAlerts(){clearTimeout(alertT);alertT=setTimeout(scheduleAlertsNow,400)}
+async function scheduleAlertsNow(){
+  alertTimers.forEach(clearTimeout);alertTimers=[];
+  const on=alertsOn(),items=on?alertItems():[];
+  try{await alertStore(d=>({on,items,notified:d.notified||{}}))}catch{}
+  if(!on)return;
+  for(const it of items){const ms=it.at*1000-Date.now()+30e3;if(ms>0&&ms<2147e6)alertTimers.push(setTimeout(()=>fireAlert(it),ms))}
+}
+async function fireAlert(it){
+  let send=false;
+  try{await alertStore(d=>{const n=d.notified||{};if((n[it.id]||0)<it.ep){n[it.id]=it.ep;send=true}d.notified=n;return d})}catch{send=true}
+  if(send&&alertsOn())(await navigator.serviceWorker.ready).showNotification('New episode: '+it.t,{body:`Episode ${it.ep} is out. Tap to open it in Kuro.`,icon:'icon-192.png',badge:'favicon-32.png',tag:'kuro-ep-'+it.id,data:{id:it.id}});
+  setTimeout(()=>refreshAiring(true),3e5); // AniList moves "next episode" on; refreshing reschedules
+}
+async function periodicAlerts(on){
+  try{const r=await navigator.serviceWorker.ready;if(!r.periodicSync)return;
+    if(!on)return r.periodicSync.unregister('kuro-episodes');
+    const st=await navigator.permissions.query({name:'periodic-background-sync'});
+    if(st.state==='granted')await r.periodicSync.register('kuro-episodes',{minInterval:3*3600e3});
+  }catch{}
+}
+function wireAlertsUI(){
+  const box=$('#notifyOn');if(!box)return;
+  box.onchange=async()=>{
+    if(box.checked){
+      if(!canNotify()){box.checked=false;$('#notifyHint').textContent=alertHint();return}
+      const perm=await Notification.requestPermission();
+      if(perm!=='granted'){box.checked=false;settings.notify=false;saveSettings();$('#notifyHint').textContent=alertHint();return toast('Notifications were not allowed')}
+      settings.notify=true;saveSettings();scheduleAlertsNow();periodicAlerts(true);toast('Episode alerts on');
+    }else{settings.notify=false;saveSettings();scheduleAlertsNow();periodicAlerts(false);toast('Episode alerts off')}
+    $('#notifyHint').textContent=alertHint();
+  };
+  $('#notifyTest').onclick=async()=>{
+    if(!alertsOn())return toast('Turn on episode alerts first');
+    (await navigator.serviceWorker.ready).showNotification('Kuro alerts are on',{body:'You will get one like this when a new episode is out.',icon:'icon-192.png',badge:'favicon-32.png',tag:'kuro-test'});
+  };
+}
+// tapping a notification: the worker focuses Kuro and sends {open:id}, or opens Kuro at #open=<id>
+navigator.serviceWorker?.addEventListener('message',e=>{const id=+e.data?.open;if(id&&(list[id]||cache[id]))openModal(id)});
+function openFromHash(){const m=location.hash.match(/^#open=(\d+)$/);if(!m)return;history.replaceState(null,'',location.pathname+location.search);if(list[+m[1]])openModal(+m[1])}
+
+/* ---------- random pick ----------
+   "Matches my taste": AniList recommendations for your best-rated / most recent started shows, weighted by how
+   strongly AniList users recommend them and how much you liked the source show. "Outside my usual": highly rated,
+   popular shows in genres you rarely watch. Shows already on your list are always left out. Pools are cached 15 min. */
+const RP_F='id idMal title{romaji english} coverImage{large color} bannerImage description(asHtml:false) genres format episodes duration status season seasonYear averageScore popularity nextAiringEpisode{episode airingAt} siteUrl';
+const RP_REC=`query($ids:[Int]){Page(perPage:10){media(id_in:$ids,type:ANIME){id recommendations(perPage:12,sort:RATING_DESC){nodes{rating mediaRecommendation{isAdult ${RP_F}}}}}}}`;
+const RP_EXP=`query($p:Int,$not:[String]){Page(page:$p,perPage:50){media(type:ANIME,isAdult:false,sort:SCORE_DESC,genre_not_in:$not,averageScore_greater:72,popularity_greater:15000,format_in:[TV,MOVIE,ONA]){isAdult ${RP_F}}}}`;
+var rpPool={},rpSeen=new Set(),rpBusy=false;
+async function gqlPublic(query,variables){
+  const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query,variables})});
+  if(!r.ok)throw new Error(r.status===429?'AniList is busy, try again in a minute':'AniList error '+r.status);
+  const j=await r.json();if(j.errors)throw new Error(j.errors[0].message);return j.data.Page;
+}
+function topGenres(n){const c={};for(const x of Object.values(list))if(x.status!=='planning')for(const g of x.genres||[])c[g]=(c[g]||0)+1;
+  return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,n).map(e=>e[0])}
+const rpOk=m=>m&&!m.isAdult&&!list[m.id]&&m.status!=='NOT_YET_RELEASED'&&m.coverImage?.large;
+async function rpBuild(explore){
+  const key=explore?'explore':'taste';
+  if(rpPool[key]&&Date.now()-rpPool[key].at<9e5&&rpPool[key].items.length)return rpPool[key].items;
+  const out=new Map(),started=Object.values(list).filter(x=>x.status!=='planning'&&x.status!=='dropped');
+  if(!explore&&started.length){
+    const seeds=started.sort((a,b)=>(b.myScore||60)-(a.myScore||60)||(b.updated||0)-(a.updated||0)).slice(0,10);
+    const sw={};for(const x of seeds)sw[x.id]=(x.myScore||60)/100;
+    for(const sm of (await gqlPublic(RP_REC,{ids:seeds.map(x=>x.id)})).media)
+      for(const nd of sm.recommendations?.nodes||[]){const m=nd.mediaRecommendation;if(!rpOk(m))continue;
+        const w=Math.max(nd.rating||0,1)*sw[sm.id],o=out.get(m.id)||{m:slim(m),w:0,why:null,best:0};
+        o.w+=w;if(w>o.best){o.best=w;o.why='Because you liked '+titleOf(list[sm.id])}out.set(m.id,o)}
+  }else{
+    const not=explore?topGenres(3):[];
+    for(const m of (await gqlPublic(RP_EXP,{p:1+Math.floor(Math.random()*4),not:not.length?not:null})).media){if(!rpOk(m))continue;
+      const g=(m.genres||[]).slice(0,2).join(' · ');
+      out.set(m.id,{m:slim(m),w:1,why:explore?(not.length?'Outside your usual · '+g:'Something different · '+g):'Popular pick · add shows so I can learn your taste'})}
+  }
+  const items=[...out.values()].sort((a,b)=>b.w-a.w).slice(0,40);
+  for(const it of items)cache[it.m.id]=cache[it.m.id]||it.m;
+  rpPool[key]={at:Date.now(),items};return items;
+}
+function rpChoose(items){
+  let pool=items.filter(it=>!rpSeen.has(it.m.id)&&!list[it.m.id]);
+  if(!pool.length){rpSeen.clear();pool=items.filter(it=>!list[it.m.id])}
+  pool=pool.slice(0,24);const tot=pool.reduce((s,it)=>s+it.w,0);let r=Math.random()*tot;
+  for(const it of pool){r-=it.w;if(r<=0)return it}return pool[pool.length-1];
+}
+function openRandom(){
+  $('#modal').innerHTML=`<div class="mbody rp" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
+    <h2 style="margin:0 0 2px">Random pick</h2>
+    <div class="hint" style="margin:0">Something you haven't watched yet. Spin again as often as you like.</div>
+    <label class="switch"><input type="checkbox" id="rpExplore" ${settings.rpExplore?'checked':''}> Surprise me: go outside my usual picks</label>
+    <div class="reel-wrap" aria-hidden="true"><div class="reel" id="reel"><div class="rp-msg" style="width:100%">Ready</div></div><i class="reel-mark"></i></div>
+    <div class="rp-out" id="rpOut" aria-live="polite"></div>
+    <div class="actions" style="justify-content:center;margin-top:12px"><button class="btn primary" id="rpSpin">Spin</button></div></div>`;
+  $('#scrim').classList.add('open');document.body.style.overflow='hidden';
+  $('#mclose').onclick=closeModal;
+  $('#rpExplore').onchange=e=>{settings.rpExplore=e.target.checked;saveSettings();rpSpin()};
+  $('#rpSpin').onclick=rpSpin;
+  rpSpin();
+}
+async function rpSpin(){
+  if(rpBusy)return;rpBusy=true;const btn=$('#rpSpin'),reel=$('#reel'),out=$('#rpOut');btn.disabled=true;out.innerHTML='';
+  let items;
+  try{reel.style.transition='none';reel.style.transform='none';reel.innerHTML='<div class="rp-msg" style="width:100%">Shuffling the deck…</div>';
+    items=await rpBuild(!!settings.rpExplore)}
+  catch(e){if(reel.isConnected)reel.innerHTML=`<div class="rp-msg" style="width:100%">⚠ ${esc(e.message)}</div>`;rpBusy=false;btn.disabled=false;return}
+  if(!reel.isConnected){rpBusy=false;return}
+  if(!items.length){reel.innerHTML='<div class="rp-msg" style="width:100%">No new picks found. Try the other mode.</div>';rpBusy=false;btn.disabled=false;return}
+  const win=rpChoose(items);rpSeen.add(win.m.id);
+  const others=items.filter(it=>it!==win).sort(()=>Math.random()-.5);
+  const tiles=[];const WI=30;for(let i=0;i<WI+6;i++)tiles.push(i===WI?win:(others.length?others[i%others.length]:win));
+  reel.innerHTML=tiles.map((it,i)=>`<div class="rt${i===WI?' target':''}"><img src="${esc(it.m.cover)}" alt="" decoding="async"></div>`).join('');
+  const T=106+10,wrap=reel.parentElement.clientWidth,jitter=(Math.random()-.5)*60;
+  const x=-(WI*T+53-wrap/2);
+  const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  void reel.offsetWidth;
+  const done=()=>{
+    if(!reel.isConnected){rpBusy=false;return}
+    reel.classList.remove('go');reel.style.transition='transform .5s cubic-bezier(.3,1.6,.5,1)';reel.style.transform=`translateX(${x}px)`;
+    const t=reel.querySelector('.target');t.classList.add('win');
+    const b=document.createElement('div');b.className='burst';const cols=['var(--accent)','var(--accent2)','var(--good)','var(--warn)','#fff'];
+    b.innerHTML=Array.from({length:26},(_,i)=>{const a=i/26*Math.PI*2,d=70+Math.random()*70;
+      return `<i style="--x:${Math.cos(a)*d}px;--y:${Math.sin(a)*d}px;--r:${Math.random()*540}deg;background:${cols[i%5]}"></i>`}).join('');
+    reel.parentElement.appendChild(b);setTimeout(()=>b.remove(),1000);
+    rpShow(win);rpBusy=false;btn.disabled=false;btn.textContent='Spin again';
+  };
+  if(still){reel.style.transform=`translateX(${x}px)`;return done()}
+  reel.classList.add('go');reel.style.transition='transform 4.6s cubic-bezier(.08,.72,.12,1)';reel.style.transform=`translateX(${x+jitter}px)`;
+  setTimeout(()=>reel.classList.remove('go'),2600);
+  let fired=false;const fin=()=>{if(!fired){fired=true;done()}};
+  reel.addEventListener('transitionend',fin,{once:true});setTimeout(fin,4900);
+}
+function rpShow(it){
+  const m=it.m,meta=[m.format?.replace('_',' '),m.year,m.episodes?m.episodes+' ep':null,m.score?'★ '+(m.score/10).toFixed(1):null].filter(Boolean).join(' · ');
+  $('#rpOut').innerHTML=`<div class="rp-card"><img src="${esc(m.cover)}" alt=""><div style="min-width:0">
+    <div class="rp-why">${esc(it.why||'')}</div><h3>${esc(titleOf(m))}</h3><div class="cmeta">${esc(meta)}</div>
+    <div class="chips" style="margin-top:8px">${(m.genres||[]).slice(0,4).map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div>
+    <div class="actions"><button class="btn primary sm" id="rpAdd">+ Plan to watch</button><button class="btn sm" id="rpOpen">Details</button></div></div></div>`;
+  $('#rpAdd').onclick=e=>{if(list[m.id])return;addToList(m.id,'planning');refreshCards();updateCounts();e.target.textContent='Added ✓';e.target.disabled=true;toast('Added to Plan to watch')};
+  $('#rpOpen').onclick=()=>openModal(m.id);
+}
+$('#spinBtn').onclick=openRandom;
+
 renderProfileBtn();updateCounts();renderNext();setView('discover');load(false);
+openFromHash();
 authing.then(a=>{if(!a&&me()?.token)sync(false)});
 refreshAiring();
 try{const m=sessionStorage.getItem('kuro.toast');if(m){sessionStorage.removeItem('kuro.toast');toast(m)}}catch{}
