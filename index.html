@@ -331,6 +331,51 @@ details.hint summary{cursor:pointer}
 .statlink:hover{border-color:var(--accent)}
 .statlink b{color:var(--accent)}
 .stgrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));margin-top:12px}
+/* diary */
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,13px);grid-auto-columns:13px;gap:3px;overflow-x:auto;padding:4px 2px 6px}
+.heat i{border-radius:3px;background:var(--card2)}
+.heat .l1,.heatleg .l1{background:color-mix(in srgb,var(--accent) 30%,var(--card2))}.heat .l2,.heatleg .l2{background:color-mix(in srgb,var(--accent) 55%,var(--card2))}
+.heat .l3,.heatleg .l3{background:color-mix(in srgb,var(--accent) 80%,var(--card2))}.heat .l4,.heatleg .l4{background:var(--accent)}.heat .lf{background:transparent}
+.heatleg{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);justify-content:flex-end;margin-top:2px}
+.heatleg i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.dday{font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 6px;display:flex;justify-content:space-between}
+.drow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 12px 6px 6px;margin-bottom:6px}
+.drow[data-open]{cursor:pointer}.drow[data-open]:hover{border-color:var(--hover)}
+.drow .nuimg{width:36px;border-radius:6px}
+.drow .grow{flex:1;min-width:0}.drow .ctitle{font-size:14px;-webkit-line-clamp:1}
+.drow .dn{font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent)}
+/* badges */
+.bdgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.bdg{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:3px;opacity:.72}
+.bdg.on{opacity:1;border-color:color-mix(in srgb,var(--accent) 55%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--card)),var(--card))}
+.bdg .bi{font-size:28px;line-height:1.2;filter:grayscale(1)}.bdg.on .bi{filter:none}
+.bdg b{font-size:14.5px}.bdg small{color:var(--muted);font-size:12.5px;line-height:1.35}
+.bdg em{font-style:normal;font-size:12px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}.bdg.on em{color:var(--accent)}
+.bp{height:6px;border-radius:3px;background:var(--card2);overflow:hidden;margin-top:6px}.bp i{display:block;height:100%;background:var(--accent)}
+/* wrapped */
+.modal.wrm{max-width:440px;overflow:hidden}
+.wr{position:relative;height:min(86vh,760px);display:flex;flex-direction:column;user-select:none;-webkit-user-select:none;cursor:pointer}
+.wrbg{position:absolute;inset:0;background:radial-gradient(120% 80% at 85% 0%,color-mix(in srgb,var(--accent) 42%,transparent),transparent 62%),radial-gradient(100% 70% at 0% 100%,color-mix(in srgb,var(--accent2) 36%,transparent),transparent 62%),var(--bg2)}
+.wrbars{display:flex;gap:4px;padding:14px 58px 0 16px;position:relative;z-index:2}
+.wrbars i{flex:1;height:3px;border-radius:2px;background:color-mix(in srgb,var(--text) 22%,transparent)}
+.wrbars i.on{background:var(--text)}
+.wr .close{top:4px;right:8px}
+.wrslide{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:16px 26px;gap:8px;position:relative;z-index:1;animation:wrin .45s ease;min-height:0}
+@keyframes wrin{from{opacity:0;transform:translateY(18px) scale(.98)}}
+.wrslide small{letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--muted);font-weight:700}
+.wrslide h1{margin:0;font-size:34px;line-height:1.1;letter-spacing:-.02em;overflow-wrap:anywhere}
+.wrslide .big{font-size:76px;line-height:1.05;font-weight:900;letter-spacing:-.03em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums}
+.wrslide p{margin:0;font-size:16px;max-width:340px}
+.wrslide .hint{max-width:340px}
+.wrcov{width:160px;aspect-ratio:2/3;border-radius:16px;object-fit:cover;box-shadow:0 18px 40px #0008;margin:6px 0 8px;background:var(--card2)}
+.wrgrid{display:grid;grid-template-columns:repeat(3,70px);gap:8px;margin-top:10px}
+.wrgrid img{width:70px;aspect-ratio:2/3;object-fit:cover;border-radius:8px;background:var(--card2)}
+.wrlist{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:8px;font-size:15.5px}
+.wrlist b{color:var(--accent)}
+.wrfoot{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:10px 14px 14px;color:var(--muted);font-size:13px}
+.wrslide{justify-content:safe center;overflow-y:auto}
+.wrprev{height:min(40vh,360px);width:auto;aspect-ratio:9/16;border-radius:12px;border:1px solid var(--line);box-shadow:0 10px 30px #0006;background:var(--card2)}
+.wr-cta{margin-bottom:12px}
 .rp .switch{display:flex;align-items:center;gap:10px;margin:10px 0 4px;cursor:pointer;font-weight:600;font-size:14px}
 .rp .switch input{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:99px;background:var(--card2);border:1px solid var(--line);position:relative;flex:none;cursor:pointer;transition:.2s;margin:0}
 .rp .switch input::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.2s}
@@ -435,6 +480,8 @@ nav.bottom{display:none}
   .nuc.nudge{width:calc(100vw - 56px);max-width:340px}
   .snopts{margin-left:0;width:100%}
   .snnav{width:100%;justify-content:space-between}
+  .bdgs{grid-template-columns:repeat(2,1fr)}
+  .wr{height:calc(92vh - 10px)}
   .selbar{bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 10px)}
   #v-list.selmode{padding-bottom:150px}
   body:has(#v-list.selmode) #toast{bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 130px)}
@@ -556,7 +603,7 @@ nav.bottom{display:none}
   </section>
 
   <!-- STATS -->
-  <section id="v-stats" style="display:none"><div id="stats"></div></section>
+  <section id="v-stats" style="display:none"><div class="sub" id="stTabs" role="group" aria-label="Stats section"></div><div id="stats"></div></section>
 </main>
 
 <nav class="bottom">
@@ -606,7 +653,7 @@ const activeId=store.get('kuro.active',null);
 const me=()=>profiles[activeId]||null;
 const listKey=()=>me()?'kuro.list.'+me().id:'kuro.list';
 let list=store.get(listKey(),{});          // id -> item
-const saveList=()=>{store.set(listKey(),list);updateCounts();scheduleSync();if(view==='list')renderSyncBar()};
+const saveList=()=>{store.set(listKey(),list);updateCounts();scheduleSync();if(view==='list')renderSyncBar();badgeSoon()};
 const saveSettings=()=>store.set('kuro.settings',settings);
 const saveProfiles=()=>store.set('kuro.profiles',profiles);
 // Per-profile look, kept in this browser only (AniList has no place to store it):
@@ -1049,7 +1096,7 @@ function statsData(){
     completed:all.filter(x=>x.status==='completed').length,watching:all.filter(x=>ACTIVE.includes(x.status)).length,
     planning:all.filter(x=>x.status==='planning').length};
 }
-function drawStats(){
+function drawOverview(){
   const d=statsData(),{all,started,eps,mins,noLen,rate,rated,mean,top}=d;
   if(!all.length){$('#stats').innerHTML=`<div class="empty">No stats yet.<br>Add some anime to your list and they will show up here.</div>`;return}
   const tile=(l,v,s)=>`<div class="tile"><small>${l}</small><b>${v}</b>${s?`<span>${s}</span>`:''}</div>`;
@@ -1067,6 +1114,8 @@ function drawStats(){
       <div class="hax">${b.map((_,i)=>`<span>${i+1}</span>`).join('')}</div><div class="hint" style="margin:8px 4px 2px">Out of 10 · ${rated.length} rated</div></div>`;
   }
   $('#stats').innerHTML=`
+    <button class="spin-cta wr-cta" id="wrBtn"><span class="dice"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></span>
+      <span><b>Your ${new Date().getFullYear()} Wrapped</b><small>Your year in anime, ready to share</small></span><span class="go" aria-hidden="true">Open ›</span></button>
     <div class="shead"><button class="btn" id="stShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>Share as image</button></div>
     <div class="tiles">
       ${tile('Anime on list',all.length,`${started.length} started`)}
@@ -1086,6 +1135,8 @@ function drawStats(){
     <div class="hint" style="margin-top:14px">Genres, formats and time count shows you have started (everything except Plan to watch). Rewatches count your current progress once.</div>`;
 }
 $('#stats').onclick=e=>{if(e.target.closest('#stShare'))return openShare();
+  if(e.target.closest('#wrBtn'))return openWrapped();
+  if(e.target.id==='diaryMore'){diaryDays+=30;drawDiary();return}
   const r=e.target.closest('[data-ls]');if(r){listStatus=r.dataset.ls;setView('list');return}
   const t=e.target.closest('.toprow');if(t)openModal(+t.dataset.id)};
 
@@ -1269,7 +1320,7 @@ function plusOne(id){
   const done=e.status==='completed'&&prev.status!=='completed';
   toast(done?`Finished · ${titleOf(e)}`:`Ep ${e.progress} watched · ${titleOf(e)}`,()=>{unlogWatch(id,prev.progress);Object.assign(e,prev,{updated:Date.now()});saveList();refreshCards()});
 }
-function closeModal(){applyPrefs()/* drops an unsaved theme preview */;$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
+function closeModal(){applyPrefs()/* drops an unsaved theme preview */;$('#modal').classList.remove('wrm');$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
 
 /* where to watch + episodes (fetched on open, not stored) */
 const DETAIL_Q=`query($id:Int){Media(id:$id,type:ANIME){episodes nextAiringEpisode{episode} externalLinks{site url type color isDisabled} streamingEpisodes{title thumbnail url site}}}`;
@@ -2005,6 +2056,260 @@ function drawStudio(){
   $('#stGrid').innerHTML=its.length?its.map(m=>cardHTML(m)).join(''):'<div class="empty" style="grid-column:1/-1">Nothing here.</div>';
 }
 $('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-stf]');if(b){stFilter=b.dataset.stf;drawStudio()}});
+
+/* ================= Phase 3: diary, streaks, badges, Wrapped ================= */
+const dayStart=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+const shiftDay=(t,n)=>{const d=new Date(t);d.setDate(d.getDate()+n);return d.getTime()};
+const hEps=h=>h[3]-h[2]+1;
+const fmtN=n=>Math.floor(n).toLocaleString();
+const dateTxt=(t,o={})=>new Date(t).toLocaleDateString([],{day:'numeric',month:'short',...(new Date(t).getFullYear()!==new Date().getFullYear()?{year:'numeric'}:{}),...o});
+function dayMap(H=hist){const m=new Map();for(const h of H){const k=dayStart(h[0]);m.set(k,(m.get(k)||0)+hEps(h))}return m}
+// current streak counts back from today (or from yesterday, so a streak is not "lost" before you watch today)
+function streaks(days){
+  const ks=[...days.keys()].sort((a,b)=>a-b);let best=0,run=0,prev=null;
+  for(const k of ks){run=prev!=null&&shiftDay(prev,1)===k?run+1:1;best=Math.max(best,run);prev=k}
+  const t0=dayStart(Date.now());let d=days.has(t0)?t0:shiftDay(t0,-1),cur=0;while(days.has(d)){cur++;d=shiftDay(d,-1)}
+  return{cur,best,today:days.has(t0)};
+}
+
+/* ----- Stats sections ----- */
+let statsTab=store.get('kuro.statsTab','overview'),diaryDays=30;
+function drawStats(){
+  const t=statsTab,b=badgeList();
+  $('#stTabs').innerHTML=[['overview','Overview'],['diary','Diary'],['badges',`Badges · ${b.filter(x=>x.done).length}/${b.length}`]]
+    .map(([k,l])=>`<button class="chip ${k===t?'on':''}" data-stt="${k}" aria-pressed="${k===t}">${l}</button>`).join('');
+  if(t==='diary')drawDiary();else if(t==='badges')drawBadges(b);else drawOverview();
+}
+$('#stTabs').onclick=e=>{const b=e.target.closest('[data-stt]');if(b){statsTab=b.dataset.stt;store.set('kuro.statsTab',statsTab);diaryDays=30;drawStats()}};
+
+/* ----- Diary: what you marked watched, day by day ----- */
+function epsText(eps){const a=[...new Set(eps)].sort((x,y)=>x-y),r=[];
+  for(const e of a){const l=r[r.length-1];if(l&&e===l[1]+1)l[1]=e;else r.push([e,e])}
+  return (a.length>1?'Eps ':'Ep ')+r.map(([x,y])=>x===y?x:`${x}–${y}`).join(', ')}
+function drawDiary(){
+  if(!hist.length){$('#stats').innerHTML=`<div class="empty">Your diary is empty for now.<br><span class="hint">Every episode you mark watched (+1, the episode stepper or the episode list) is written here, with your streaks and a calendar.</span></div>`;return}
+  const days=dayMap(),st=streaks(days),t0=dayStart(Date.now()),now=new Date(t0);
+  const mon=shiftDay(t0,-((now.getDay()+6)%7)),month1=new Date(now.getFullYear(),now.getMonth(),1).getTime();
+  const sumFrom=f=>{let n=0;for(const[k,v]of days)if(k>=f)n+=v;return n};
+  const tile=(l,v,sub)=>`<div class="tile"><small>${l}</small><b>${v}</b>${sub?`<span>${sub}</span>`:''}</div>`;
+  const W=18,from=shiftDay(mon,-7*(W-1));let cells='';
+  for(let i=0,d=from;i<W*7;i++,d=shiftDay(d,1)){const n=days.get(d)||0,fut=d>t0,lv=fut?'f':n>=7?4:n>=4?3:n>=2?2:n?1:0;
+    cells+=`<i class="l${lv}"${fut?'':` title="${esc(dateTxt(d,{weekday:'short'}))}: ${n?n+' episode'+(n>1?'s':''):'nothing'}"`}></i>`}
+  // timeline, newest day first; one row per show per day
+  const byDay=new Map();for(let i=hist.length-1;i>=0;i--){const h=hist[i],k=dayStart(h[0]);if(!byDay.has(k))byDay.set(k,new Map());
+    const g=byDay.get(k);if(!g.has(h[1]))g.set(h[1],{eps:[],t:h[0]});const o=g.get(h[1]);for(let e=h[2];e<=h[3];e++)o.eps.push(e)}
+  const keys=[...byDay.keys()],shown=keys.slice(0,diaryDays);
+  const label=k=>k===t0?'Today':k===shiftDay(t0,-1)?'Yesterday':dateTxt(k,{weekday:'long'});
+  const tl=shown.map(k=>{const g=byDay.get(k),tot=days.get(k)||0;
+    return `<div class="dday"><span>${label(k)}</span><span>${tot} ep${tot>1?'s':''}</span></div>`+[...g].map(([id,o])=>{const m=list[id]||cache[id];
+      return `<div class="drow"${m?` data-open="${id}"`:''}>${pic(m?.cover,'nuimg')}<div class="grow"${m?' role="button" tabindex="0"':''}><div class="ctitle">${esc(m?titleOf(m):'A show no longer on your list')}</div>
+        <div class="cmeta">${epsText(o.eps)} · ${new Date(o.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div><span class="dn">${new Set(o.eps).size}</span></div>`}).join('')}).join('');
+  $('#stats').innerHTML=`
+    <div class="tiles">
+      ${tile('This week',sumFrom(mon),'episodes')}${tile('This month',sumFrom(month1),'episodes')}
+      ${tile('Current streak',st.cur+(st.cur===1?' day':' days'),st.cur&&!st.today?'watch today to keep it':st.today?'🔥 watched today':'')}
+      ${tile('Longest streak',st.best+(st.best===1?' day':' days'),'')}
+    </div>
+    <h2 class="sec" style="margin-top:22px">Last ${W} weeks</h2>
+    <div class="spanel"><div class="heat" role="img" aria-label="Calendar of episodes watched per day over the last ${W} weeks">${cells}</div>
+      <div class="heatleg">Less <i style="background:var(--card2)"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> More</div></div>
+    <h2 class="sec" style="margin-top:22px">Diary</h2>${tl}
+    ${keys.length>shown.length?`<button class="more" id="diaryMore">Show older days</button>`:''}
+    <div class="hint" style="margin-top:14px">Kept in this browser since ${dateTxt(hist[0][0],{year:'numeric'})}. Changing a show's status (e.g. to Completed) is not counted as watching.</div>`;
+}
+
+/* ----- Badges ----- */
+const BADGES=[
+  ['first','🎬','First episode','Mark an episode watched in Kuro',d=>[d.histEps,1]],
+  ['ep100','💯','Century','Watch 100 episodes',d=>[d.eps,100]],
+  ['ep500','🏃','Marathoner','Watch 500 episodes',d=>[d.eps,500]],
+  ['ep1000','🏆','Thousand club','Watch 1,000 episodes',d=>[d.eps,1000]],
+  ['ep5000','👑','Legend','Watch 5,000 episodes',d=>[d.eps,5000]],
+  ['day1','⏰','A full day','Spend 24 hours watching',d=>[d.hours,24]],
+  ['week1','📆','A full week','Spend 168 hours watching',d=>[d.hours,168]],
+  ['done10','✅','Finisher','Complete 10 shows',d=>[d.completed,10]],
+  ['done50','📚','Collector','Complete 50 shows',d=>[d.completed,50]],
+  ['done100','🎖️','Completionist','Complete 100 shows',d=>[d.completed,100]],
+  ['long','🗻','Long haul','Complete a show with 100+ episodes',d=>[d.longest,100]],
+  ['streak3','🔥','On a roll','Watch something 3 days in a row',d=>[d.best,3]],
+  ['streak7','⚡','Week warrior','Keep a 7-day streak',d=>[d.best,7]],
+  ['streak30','🌟','Unstoppable','Keep a 30-day streak',d=>[d.best,30]],
+  ['binge','🍿','Binge mode','Watch 10 episodes in one day',d=>[d.binge,10]],
+  ['night','🦉','Night owl','Mark an episode between midnight and 4 am',d=>[d.night,1]],
+  ['genres','🧭','Explorer','Start shows in 10 different genres',d=>[d.genres,10]],
+  ['critic','⭐','Critic','Rate 25 shows',d=>[d.rated,25]],
+  ['simul','📡','Simulcast squad','Watch 5 airing shows at once',d=>[d.airing,5]],
+];
+const badgeKey=()=>'kuro.badges.'+prefKey(); // {badgeId: when it was first seen unlocked}
+function badgeList(){
+  const s=statsData(),days=dayMap(),got=store.get(badgeKey(),null)||{};
+  const d={eps:s.eps,hours:s.mins/60,completed:s.completed,histEps:hist.reduce((a,h)=>a+hEps(h),0),
+    longest:Math.max(0,...s.all.filter(x=>x.status==='completed').map(x=>x.episodes||0)),best:streaks(days).best,binge:Math.max(0,...days.values()),
+    night:hist.some(h=>new Date(h[0]).getHours()<4)?1:0,genres:new Set(s.started.flatMap(x=>x.genres||[])).size,rated:s.rated.length,
+    airing:s.all.filter(x=>ACTIVE.includes(x.status)&&(x.mstatus==='RELEASING'||x.next)).length};
+  return BADGES.map(([id,ic,name,desc,f])=>{const[v,goal]=f(d);return{id,ic,name,desc,v:Math.min(v,goal),goal,done:v>=goal,at:got[id]}});
+}
+function drawBadges(b=badgeList()){
+  const n=b.filter(x=>x.done).length;
+  $('#stats').innerHTML=`<div class="hint" style="margin:0 0 12px">${n} of ${b.length} unlocked. Streak, binge and night owl badges use the episodes you mark watched in Kuro${hist.length?` (since ${dateTxt(hist[0][0],{year:'numeric'})})`:''}.</div>
+    <div class="bdgs">${b.map(x=>`<div class="bdg ${x.done?'on':''}"><span class="bi" aria-hidden="true">${x.ic}</span><b>${esc(x.name)}</b><small>${esc(x.desc)}</small>
+      ${x.done?`<em>Unlocked${x.at?' '+dateTxt(x.at,{year:'numeric'}):''}</em>`
+      :`<div class="bp" role="progressbar" aria-label="${esc(x.name)} progress" aria-valuemin="0" aria-valuemax="${x.goal}" aria-valuenow="${Math.floor(x.v)}"><i style="width:${x.v/x.goal*100}%"></i></div><em>${fmtN(x.v)} / ${fmtN(x.goal)}</em>`}</div>`).join('')}</div>`;
+}
+// after list changes: newly unlocked badges get a toast. The very first check only records what is already unlocked.
+var badgeT;function badgeSoon(){clearTimeout(badgeT);badgeT=setTimeout(checkBadges,1200)}
+function checkBadges(){
+  const b=badgeList(),had=store.get(badgeKey(),null),got={...(had||{})},fresh=[];
+  for(const x of b)if(x.done&&!got[x.id]){got[x.id]=Date.now();fresh.push(x)}
+  if(fresh.length||!had)store.set(badgeKey(),got);
+  if(had&&fresh.length){toast(fresh.length===1?`Badge unlocked: ${fresh[0].ic} ${fresh[0].name}`:`${fresh.length} badges unlocked · see Stats → Badges`);if(view==='stats')drawStats()}
+}
+
+/* ----- Wrapped: a story of your year (or all time), with a shareable 1080×1920 image ----- */
+const PERSONA={Action:['Adrenaline junkie','Big fights and bigger moments, you are here for the hype.'],Adventure:['Explorer','Always heading somewhere new, map in hand.'],
+  Comedy:['Professional laugher','If it does not make you laugh, it is not worth the time.'],Drama:['Feels collector','You watch for the moments that hit hard.'],
+  Fantasy:['World hopper','Swords, spells and other worlds are your second home.'],Romance:['Hopeless romantic','You are rooting for them. Always.'],
+  'Slice of Life':['Cozy connoisseur','Tea, everyday life and quiet joy.'],Mystery:['Detective','You had the culprit figured out by episode 3.'],
+  'Sci-Fi':['Future seeker','Robots, space and what comes next.'],Sports:['Team player','Training arcs and last-second wins.'],
+  Horror:['Fearless','Lights off, volume up.'],Psychological:['Mind bender','The twistier, the better.'],Supernatural:['Spirit seeker','Ghosts, curses and things that go bump.'],
+  Mecha:['Ace pilot','Giant robots. Need we say more?'],Music:['Idol fan','Every opening on repeat.'],Thriller:['Edge-of-seat','Cliffhangers are your cardio.'],
+  'Mahou Shoujo':['Magical guardian','Transformation sequences, never skipped.']};
+function wrapYears(){const ys=new Set();for(const x of Object.values(list))if(x.status!=='planning')ys.add(new Date(x.updated||x.added||Date.now()).getFullYear());
+  for(const h of hist)ys.add(new Date(h[0]).getFullYear());ys.add(new Date().getFullYear());return[...ys].sort((a,b)=>b-a)}
+function wrapData(Y){
+  const all=Y==='all',start=all?0:new Date(Y,0,1).getTime(),end=all?Infinity:new Date(Y+1,0,1).getTime();
+  const H=hist.filter(h=>h[0]>=start&&h[0]<end),hIds=new Set(H.map(h=>h[1]));
+  const shows=Object.values(list).filter(x=>x.status!=='planning'&&(all||hIds.has(x.id)||((x.updated||0)>=start&&(x.updated||0)<end)));
+  // the day-by-day history only counts when it covers the whole year; otherwise use the shows you touched that year
+  const full=!all&&hist.length&&hist[0][0]<=start;
+  let eps=0,mins=0;const per=new Map();
+  if(full){for(const h of H){const x=list[h[1]],n=hEps(h);eps+=n;const m=n*(x?.duration||24);mins+=m;per.set(h[1],(per.get(h[1])||0)+m)}}
+  else for(const x of shows){const n=watchedEps(x);eps+=n;const m=n*(x.duration||24);mins+=m;per.set(x.id,m)}
+  const gc={};for(const x of shows)for(const g of x.genres||[])gc[g]=(gc[g]||0)+1;
+  const genres=Object.entries(gc).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const topId=[...per].sort((a,b)=>b[1]-a[1])[0],top=topId&&list[topId[0]]?{x:list[topId[0]],m:topId[1]}:null;
+  const rated=shows.filter(x=>x.myScore>0&&settings.rate!==false).sort((a,b)=>b.myScore-a.myScore)[0]||null;
+  const days=dayMap(H),bingeE=[...days].sort((a,b)=>b[1]-a[1])[0],st=streaks(days);
+  const wd=[0,0,0,0,0,0,0];for(const[k,n]of days)wd[new Date(k).getDay()]+=n;const wdMax=wd.indexOf(Math.max(...wd));
+  const completed=shows.filter(x=>x.status==='completed');
+  return{Y,all,full,shows,eps,mins,genres,top,rated,completed,persona:PERSONA[genres[0]?.[0]]||['Anime fan','A little bit of everything, and that is the best way.'],
+    binge:bingeE?{n:bingeE[1],at:bingeE[0]}:null,best:st.best,activeDays:days.size,wday:days.size?new Date(2024,0,7+wdMax).toLocaleDateString([],{weekday:'long'}):'',
+    name:look(me()).name,since:hist[0]?.[0]};
+}
+let wr=null; // {d, i, slides, years}
+function openWrapped(Y=new Date().getFullYear()){
+  const d=wrapData(Y);wr={d,i:0,years:wrapYears(),slides:wrapSlides(d)};
+  $('#modal').classList.add('wrm');$('#scrim').classList.add('open');document.body.style.overflow='hidden';curModal=null;
+  wrDraw();
+}
+function wrapSlides(d){
+  const yr=d.all?'all time':d.Y,S=[];const cov=x=>x?.cover?`<img class="wrcov" src="${esc(x.cover)}" alt="">`:'';
+  const note=d.all?'':d.full?'':`<div class="hint">Counted from the shows you updated in ${d.Y}${d.since?`. Kuro has kept a day-by-day history since ${dateTxt(d.since,{year:'numeric'})}`:''}.</div>`;
+  S.push(`<small>Kuro Wrapped</small><h1>${d.all?'Your anime story so far':`Your ${d.Y} in anime`}</h1><p>${esc(d.name)}</p>
+    <div class="sub" style="justify-content:center;flex-wrap:wrap;margin-top:12px" role="group" aria-label="Which year">${[...wr?.years||wrapYears(),'all'].map(y=>`<button class="chip ${y===d.Y?'on':''}" data-wy="${y}" aria-pressed="${y===d.Y}">${y==='all'?'All time':y}</button>`).join('')}</div>
+    <div class="hint" style="margin-top:10px">Tap the right side to continue</div>`);
+  if(!d.shows.length){S.push(`<small>${yr}</small><h1>Nothing tracked yet</h1><p>Mark some episodes watched and come back for your Wrapped.</p>`);return S}
+  const days=d.mins/1440;
+  S.push(`<small>You watched</small><b class="big"><span class="count" data-to="${d.eps}">0</span></b><p>episodes</p>
+    <p style="margin-top:12px">That is <b><span class="count" data-to="${Math.round(d.mins/60)}">0</span> hours</b>${days>=1?`, or ${days.toFixed(1)} full days`:''} of anime.</p>${note}`);
+  S.push(`<small>Across</small><b class="big"><span class="count" data-to="${d.shows.length}">0</span></b><p>shows${d.completed.length?`, and you finished <b>${d.completed.length}</b>`:''}</p>
+    ${d.completed.length?`<div class="wrgrid">${d.completed.slice().sort((a,b)=>(b.myScore||0)-(a.myScore||0)||(b.updated||0)-(a.updated||0)).slice(0,9).map(x=>`<img src="${esc(x.cover||'')}" alt="">`).join('')}</div>`:''}`);
+  if(d.genres.length)S.push(`<small>Your top genre</small><h1 style="font-size:44px">${esc(d.genres[0][0])}</h1><p>${d.genres[0][1]} show${d.genres[0][1]>1?'s':''}</p>
+    ${d.genres.length>1?`<ol class="wrlist">${d.genres.slice(1).map((g,i)=>`<li>${i+2}. ${esc(g[0])} <b>${g[1]}</b></li>`).join('')}</ol>`:''}`);
+  if(d.top)S.push(`<small>Your most watched</small>${cov(d.top.x)}<h1 style="font-size:26px">${esc(titleOf(d.top.x))}</h1><p>${fmtTime(d.top.m)} of your time</p>`);
+  if(d.rated&&d.rated.id!==d.top?.x.id)S.push(`<small>Your highest rated</small>${cov(d.rated)}<h1 style="font-size:26px">${esc(titleOf(d.rated))}</h1><p>♥ ${d.rated.myScore/10} / 10</p>`);
+  else if(d.rated)S[S.length-1]+=`<p>and you rated it ♥ ${d.rated.myScore/10} / 10</p>`;
+  if(d.activeDays)S.push(`<small>Your habits</small><ul class="wrlist">
+    ${d.binge?`<li>Biggest binge: <b>${d.binge.n} episodes</b> on ${dateTxt(d.binge.at)}</li>`:''}
+    <li>Longest streak: <b>${d.best} day${d.best>1?'s':''}</b></li><li>You watched on <b>${d.activeDays} day${d.activeDays>1?'s':''}</b></li>
+    ${d.wday?`<li>Favourite day: <b>${d.wday}</b></li>`:''}</ul>`);
+  S.push(`<small>Your anime personality</small><p style="font-size:18px">You are a…</p><h1 style="font-size:42px">${esc(d.persona[0])}</h1><p>${esc(d.persona[1])}</p>`);
+  S.push(`<small>That was ${yr}</small><h1 style="font-size:28px">Share your Wrapped</h1><div id="wrShareBox" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+    <button class="btn primary" id="wrMake">Make my image</button><span class="hint">Made on your device. Nothing is uploaded.</span></div>
+    <button class="link" id="wrAgain" style="margin-top:12px">Watch again</button>`);
+  return S;
+}
+function wrDraw(){
+  const n=wr.slides.length;
+  $('#modal').innerHTML=`<div class="wr" id="wr"><div class="wrbg"></div><div class="wrbars" aria-hidden="true">${wr.slides.map((_,i)=>`<i class="${i<=wr.i?'on':''}"></i>`).join('')}</div>
+    <button class="close" id="mclose" aria-label="Close">✕</button>
+    <div class="wrslide" id="wrSlide" aria-live="polite"><h2 class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Kuro Wrapped, part ${wr.i+1} of ${n}</h2>${wr.slides[wr.i]}</div>
+    <div class="wrfoot"><button class="ibtn" id="wrPrev" aria-label="Previous" ${wr.i?'':'disabled'}>‹</button><span>${wr.i+1} / ${n}</span><button class="ibtn" id="wrNext" aria-label="Next" ${wr.i<n-1?'':'disabled'}>›</button></div></div>`;
+  $('#mclose').onclick=closeModal;
+  const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  $$('#wrSlide .count').forEach(el=>{const to=+el.dataset.to;if(still||to<2){el.textContent=fmtN(to);return}
+    const t0=performance.now(),dur=1300;const f=t=>{if(!el.isConnected)return;const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=fmtN(to*e);if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
+}
+const wrGo=d=>{if(!wr)return;const i=Math.max(0,Math.min(wr.slides.length-1,wr.i+d));if(i!==wr.i){wr.i=i;wrDraw()}};
+$('#modal').addEventListener('click',e=>{
+  if(!$('#wr'))return;
+  const y=e.target.closest('[data-wy]');if(y){openWrapped(y.dataset.wy==='all'?'all':+y.dataset.wy);return}
+  if(e.target.closest('#wrPrev'))return wrGo(-1);if(e.target.closest('#wrNext'))return wrGo(1);
+  if(e.target.closest('#wrAgain')){wr.i=0;return wrDraw()}
+  if(e.target.closest('#wrMake'))return wrShare();
+  if(e.target.closest('button,a,img.wrprev,#mclose'))return;
+  const r=$('#wr').getBoundingClientRect();wrGo(e.clientX-r.left<r.width*.35?-1:1);
+});
+addEventListener('keydown',e=>{if(!$('#wr'))return;if(e.key==='ArrowRight')wrGo(1);else if(e.key==='ArrowLeft')wrGo(-1)});
+async function wrShare(){
+  const box=$('#wrShareBox');box.innerHTML='<span class="hint">Making the image…</span>';
+  let blob=null;try{blob=await wrappedImage(wr.d)}catch(err){console.warn('wrapped image',err)}
+  if(!$('#wrShareBox'))return;
+  if(!blob){box.innerHTML='<span class="hint">Sorry, the image could not be made.</span>';return}
+  if(shareUrl)URL.revokeObjectURL(shareUrl);shareUrl=URL.createObjectURL(blob);
+  const name=`kuro-wrapped-${wr.d.all?'all-time':wr.d.Y}.png`,file=new File([blob],name,{type:'image/png'});let can=false;try{can=!!navigator.canShare?.({files:[file]})}catch{}
+  box.innerHTML=`<img class="wrprev" src="${shareUrl}" alt="Your Wrapped as an image"><div class="actions" style="justify-content:center">${can?'<button class="btn primary" id="wrShareBtn">Share…</button>':''}<a class="btn${can?'':' primary'}" href="${shareUrl}" download="${name}">Save image</a></div>`;
+  if(can)$('#wrShareBtn').onclick=async()=>{try{await navigator.share({files:[file],title:'My anime Wrapped'})}catch{}};
+}
+async function wrappedImage(d){
+  const cs=getComputedStyle(document.documentElement),v=k=>cs.getPropertyValue(k).trim();
+  const C={bg:v('--bg'),bg2:v('--bg2'),card:v('--card'),card2:v('--card2'),line:v('--line'),text:v('--text'),muted:v('--muted'),a:v('--accent'),a2:v('--accent2')};
+  const W=1080,H=1920,P=80,cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const x=cv.getContext('2d'),FONT='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+  const font=(w,px)=>{x.font=`${w} ${px}px ${FONT}`};
+  const text=(t,X,Y,col,align='left')=>{x.fillStyle=col;x.textAlign=align;x.fillText(t,X,Y)};
+  const fit=(t,max)=>{t=String(t);if(x.measureText(t).width<=max)return t;while(t&&x.measureText(t+'…').width>max)t=t.slice(0,-1);return t.trimEnd()+'…'};
+  const lines=(t,max,n)=>{const w=String(t).split(/\s+/),out=[];let l='';for(const s of w){const c=(l+' '+s).trim();if(x.measureText(c).width<=max)l=c;else{if(l)out.push(l);l=s}}if(l)out.push(l);
+    if(out.length>n){out.length=n;out[n-1]=fit(out[n-1]+'…',max)}return out.map(s=>fit(s,max))};
+  const rr=(X,Y,w,h,r)=>{x.beginPath();x.roundRect?x.roundRect(X,Y,w,h,r):x.rect(X,Y,w,h)};
+  const panel=(X,Y,w,h)=>{rr(X,Y,w,h,28);x.fillStyle=C.card;x.fill();x.lineWidth=2;x.strokeStyle=C.line;x.stroke()};
+  const grad=(X,w)=>{const g=x.createLinearGradient(X,0,X+w,0);g.addColorStop(0,C.a);g.addColorStop(1,C.a2);return g};
+  const spaced=on=>{if('letterSpacing' in x)x.letterSpacing=on?'3px':'0px'};
+  const[logo,topImg]=await Promise.all([loadImg('icon-192.png'),d.top?coverImg(d.top.x.cover):null]);
+  const bg=x.createLinearGradient(0,0,0,H);bg.addColorStop(0,C.bg2);bg.addColorStop(1,C.bg);x.fillStyle=bg;x.fillRect(0,0,W,H);
+  for(const[cx,cy,r,col]of[[W*.95,120,820,C.a],[0,H*.72,760,C.a2]]){x.save();x.globalAlpha=.24;const g=x.createRadialGradient(cx,cy,0,cx,cy,r);
+    g.addColorStop(0,col);g.addColorStop(1,/^#[0-9a-f]{6}$/i.test(col)?col+'00':'rgba(0,0,0,0)');x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,7);x.fill();x.restore()}
+  if(logo){x.save();rr(P,84,100,100,26);x.clip();x.drawImage(logo,P,84,100,100);x.restore()}
+  font(800,48);text('Kuro Wrapped',P+124,130,C.text);font(500,30);text(fit(d.name,520),P+124,172,C.muted);
+  font(900,120);x.fillStyle=grad(W-P-330,330);x.textAlign='right';x.fillText(d.all?'All time':String(d.Y),W-P,178);
+  // episodes
+  font(700,26);spaced(1);text('EPISODES WATCHED',P,330,C.muted);spaced(0);
+  font(900,210);x.fillStyle=grad(P,700);x.textAlign='left';x.fillText(fmtN(d.eps),P-6,530);
+  font(600,40);text(`${fmtN(d.mins/60)} hours${d.mins>=1440?` · ${(d.mins/1440).toFixed(1)} days`:''}`,P,600,C.text);
+  // tiles
+  const tw=(W-2*P-40)/3,ty=670;
+  [['SHOWS',fmtN(d.shows.length)],['COMPLETED',fmtN(d.completed.length)],['TOP GENRE',d.genres[0]?.[0]||'–']].forEach(([l,val],i)=>{const X=P+i*(tw+20);panel(X,ty,tw,180);
+    font(700,22);spaced(1);text(l,X+30,ty+52,C.muted);spaced(0);font(800,val.length>8?46:64);text(fit(val,tw-60),X+30,ty+135,C.text)});
+  // personality
+  font(700,26);spaced(1);text('MY ANIME PERSONALITY',P,950,C.muted);spaced(0);
+  font(900,84);x.fillStyle=grad(P,W-2*P);x.textAlign='left';x.fillText(fit(d.persona[0],W-2*P),P,1045);
+  font(500,34);lines(d.persona[1],W-2*P,2).forEach((l,i)=>text(l,P,1100+i*46,C.muted));
+  // most watched
+  if(d.top){const cy=1230,cw=270,ch=405;font(700,26);spaced(1);text('MOST WATCHED',P,cy-20,C.muted);spaced(0);
+    x.save();rr(P,cy,cw,ch,22);x.clip();x.fillStyle=d.top.x.color||C.card2;x.fillRect(P,cy,cw,ch);
+    if(topImg){const s=Math.max(cw/topImg.width,ch/topImg.height),iw=topImg.width*s,ih=topImg.height*s;x.drawImage(topImg,P+(cw-iw)/2,cy+(ch-ih)/2,iw,ih)}
+    x.restore();x.lineWidth=2;x.strokeStyle=C.line;rr(P,cy,cw,ch,22);x.stroke();
+    const tx=P+cw+40,tmax=W-P-tx;font(800,52);const tl=lines(titleOf(d.top.x),tmax,3);tl.forEach((l,i)=>text(l,tx,cy+70+i*62,C.text));
+    font(500,34);text(`${fmtTime(d.top.m)} watched`,tx,cy+90+tl.length*62,C.muted);
+    if(d.rated){font(600,32);text(fit(`♥ Highest rated: ${titleOf(d.rated)}`,tmax),tx,cy+ch-20,C.text)}}
+  // habits
+  const hab=[d.best?`🔥 ${d.best}-day streak`:'',d.binge?`🍿 ${d.binge.n} episodes in a day`:''].filter(Boolean).join('    ');
+  if(hab){font(600,34);text(fit(hab,W-2*P),P,1730,C.text)}
+  x.fillStyle=grad(P,W-2*P);x.fillRect(P,H-110,W-2*P,4);
+  font(600,28);text('Kuro Watchlist',P,H-60,C.muted);text('Data from AniList',W-P,H-60,C.muted,'right');
+  return await new Promise(res=>cv.toBlob(res,'image/png'));
+}
+setTimeout(checkBadges,2500);
 
 renderProfileBtn();updateCounts();renderNext();setView('discover');load(false);
 openFromHash();

@@ -1,4 +1,4 @@
-const C='kuro-v16',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
+const C='kuro-v17',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 // delete old app-shell caches only; 'kuro-data' (episode alert schedule) must survive updates
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('kuro-v')&&x!==C).map(x=>caches.delete(x))))));
