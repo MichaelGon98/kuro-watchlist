@@ -18,7 +18,8 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 | `index.html` | The entire app: HTML + CSS + JS in one file. No build step, no dependencies. |
 | `manifest.json` | PWA manifest (name "Kuro Watchlist", standalone, dark theme colour). |
 | `sw.js` | Service worker, cache name `kuro-vN` (bump on each release). Network-first for same-origin GETs, falls back to cache offline. Does not touch cross-origin requests (AniList). |
-| `icon.svg` | App icon (purple/pink gradient play button). Used for favicon, apple-touch-icon and manifest. |
+| `icon.svg` | App icon (purple/pink gradient play button). Favicon and manifest. |
+| `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` | PNG copies of the icon for installs. The first two match `icon.svg`; the maskable and Apple ones fill the whole square with the gradient (bigger play triangle, inside the maskable safe circle) because Android/iOS cut the shape themselves. Drawn once with Pillow from the SVG's shapes; redraw them if `icon.svg` changes. |
 | `.claude/launch.json` | Dev-server config for Claude Code's preview (`kuro` = `python -m http.server 5188`; `kuro-alt` = port 5189 for when 5188 is busy). Not copied automatically between machines — recreate if missing. |
 | `DEVELOPMENT_LOG.md` | This file. |
 | `CLAUDE.md` | Standing instructions for Claude Code in this project. |
@@ -104,7 +105,6 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 - AniList search is strict on spelling: e.g. "Worlds" (no apostrophe, no "s" strip match) may fail; the variant retry handles the common cases (`World's`, `Worlds`).
 - Where-to-watch links come from AniList and are not region-specific; some titles have none.
 - Two harmless console messages ("fetching the script") appeared once after clearing the service worker — likely service-worker update noise, unconfirmed.
-- Icon is SVG only; some Android installs prefer PNG icons.
 - Removal propagates to AniList only if the entry has a known `entryId` (an entry not yet synced has none, but then it is not on AniList either).
 - Settings (Watch link, Client ID) and the profile look (photo, display name, colour) are per browser and do not sync: AniList has no place to store them. The owner has to re-enter their Watch link on the hosted site (it no longer comes as a default).
 - Kuro-only data beyond status and episode progress (e.g. the `added` date) is not stored on AniList, so a new browser shows AniList's update time as the added date.
@@ -115,7 +115,6 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 - Jellyfin/Plex "Play from my library" button for anime the owner owns.
 - Theme follows the system light/dark setting (an "Auto" option); custom accent colour picker.
 - Quick +1 from the lock screen / notifications for new episodes.
-- PNG icons (192/512) and maskable icon for installability.
 
 ## 10. Change Log
 
@@ -204,3 +203,10 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `.claude/launch.json`: added `kuro-alt` (port 5189). The `kuro` config hard-codes 5188 in the Python command, so when another session holds 5188 the preview's automatic port switch starts nothing; both configs now have `autoPort:false`.
 - Tested on localhost: totals checked by hand against seeded data (56 episodes, 1 show without episode length noted), status row opens My List on that status, top-show row opens the detail sheet, rating parts hidden with ratings off, empty-list message, phone width with no sideways scroll, Light theme. No console errors.
 - `sw.js`: cache bumped to `kuro-v7`.
+
+### 2026-11-25 — PNG app icons
+- New files `icon-192.png`, `icon-512.png` (same look as `icon.svg`), `icon-maskable-512.png` (full-bleed gradient, play triangle 1.5x, within the 80% safe circle) and `apple-touch-icon.png` (180, full-bleed, no transparency). Drawn with Pillow (no cairo on this machine) from the SVG's exact shapes and colours, 4x supersampled then downscaled; script kept out of the repo (one-off).
+- `manifest.json`: icons now list the PNGs (192/512 `any`, 512 `maskable`) plus the SVG as `any`; the old SVG-only `"any maskable"` entry is gone.
+- `index.html` `<head>`: PNG favicon fallback (192) next to the SVG one; `apple-touch-icon` now points to the PNG (iOS ignores SVG there).
+- `sw.js`: the PNGs added to the cached app shell; cache bumped to `kuro-v8`.
+- Tested on localhost: every manifest icon loads at its declared size, Apple icon 180x180, all four PNGs in the `kuro-v8` cache, no console errors. Not tested: an actual install on Android/iOS (needs the owner's phone).
