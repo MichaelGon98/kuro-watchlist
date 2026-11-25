@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kuro Watchlist</title>
 <meta name="theme-color" content="#0b0b12">
+<script>/* apply the active profile's theme before first paint (see applyPrefs) */try{const a=JSON.parse(localStorage.getItem('kuro.active')),t=(JSON.parse(localStorage.getItem('kuro.prefs'))||{})[a==null?'guest':String(a)]?.theme;if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -13,36 +14,51 @@
   --bg:#0b0b12;--bg2:#12121c;--card:#171724;--card2:#1e1e2e;--line:#2a2a3d;
   --text:#ecebf5;--muted:#9a99b3;--accent:#8b7bff;--accent2:#ff6bd6;--good:#4ade80;--warn:#fbbf24;--bad:#f87171;
   --r:16px;--nav-h:64px;
+  --glass:rgba(11,11,18,.72);--glass2:rgba(11,11,18,.88);--glow1:#2b2160;--glow2:#4a1f55;--thumb:#3a3a55;--hover:#4a4a6e;--desc:#cfcee2;--on-accent:#fff;
 }
+/* ---------- themes (picked per profile in Edit profile; [data-theme] set on <html>) ---------- */
+[data-theme=sakura]{--on-accent:#2a0818;--bg:#140b11;--bg2:#1c1018;--card:#24141f;--card2:#2e1a28;--line:#3f2537;--text:#f7eaf2;--muted:#b89aab;--accent:#ff7eb6;--accent2:#ffb86b;
+  --glass:rgba(20,11,17,.72);--glass2:rgba(20,11,17,.9);--glow1:#5a1f42;--glow2:#5c3418;--thumb:#5a3049;--hover:#6b3a58;--desc:#e6d0dc}
+[data-theme=ocean]{--on-accent:#031522;--bg:#06111a;--bg2:#0b1824;--card:#102030;--card2:#16293b;--line:#223a50;--text:#e6f2fb;--muted:#8fa9bf;--accent:#38bdf8;--accent2:#818cf8;
+  --glass:rgba(6,17,26,.72);--glass2:rgba(6,17,26,.9);--glow1:#0c3b5c;--glow2:#2a2a6b;--thumb:#2d4a63;--hover:#35597a;--desc:#cbdbe8}
+[data-theme=forest]{--on-accent:#03170b;--bg:#08120d;--bg2:#0d1912;--card:#122218;--card2:#182b1f;--line:#24402e;--text:#e8f5ec;--muted:#93b09d;--accent:#4ade80;--accent2:#2dd4bf;
+  --glass:rgba(8,18,13,.72);--glass2:rgba(8,18,13,.9);--glow1:#14462a;--glow2:#0f3f3c;--thumb:#2f5039;--hover:#3a6347;--desc:#cfe3d5}
+[data-theme=sunset]{--on-accent:#240a02;--bg:#140c08;--bg2:#1c120c;--card:#251811;--card2:#2f1f16;--line:#45301f;--text:#fbefe6;--muted:#c0a08a;--accent:#fb923c;--accent2:#f43f5e;
+  --glass:rgba(20,12,8,.72);--glass2:rgba(20,12,8,.9);--glow1:#5c2a10;--glow2:#5a1428;--thumb:#5a3a24;--hover:#6e4730;--desc:#ead6c8}
+[data-theme=amoled]{--on-accent:#14082e;--bg:#000;--bg2:#000;--card:#0c0c0f;--card2:#141418;--line:#232329;--text:#f2f2f5;--muted:#9a9aa6;--accent:#a78bfa;--accent2:#f472b6;
+  --glass:rgba(0,0,0,.8);--glass2:rgba(0,0,0,.92);--glow1:transparent;--glow2:transparent;--thumb:#2c2c33;--hover:#3a3a44;--desc:#d4d4dc}
+[data-theme=light]{--bg:#f4f4f9;--bg2:#fff;--card:#fff;--card2:#ececf4;--line:#dcdce8;--text:#17171f;--muted:#5f5f75;--accent:#6d5dfc;--accent2:#e0479e;
+  --good:#16a34a;--warn:#b45309;--bad:#dc2626;--glass:rgba(255,255,255,.78);--glass2:rgba(255,255,255,.92);--glow1:#ddd6ff;--glow2:#ffd6ee;--thumb:#c4c4d4;--hover:#b8b8cc;--desc:#33334a}
+html[data-theme=light]{color-scheme:light}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{color-scheme:dark}
-*{scrollbar-width:thin;scrollbar-color:#3a3a55 transparent}
+*{scrollbar-width:thin;scrollbar-color:var(--thumb) transparent}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#3a3a55;border-radius:999px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb{background:var(--thumb);border-radius:999px;border:2px solid transparent;background-clip:content-box}
 ::-webkit-scrollbar-thumb:hover{background:var(--accent);background-clip:content-box;border:2px solid transparent}
 ::-webkit-scrollbar-button,::-webkit-scrollbar-corner{display:none;background:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 body{min-height:100vh;background:
-  radial-gradient(900px 500px at 10% -10%,#2b2160 0,transparent 60%),
-  radial-gradient(700px 400px at 100% 0,#4a1f55 0,transparent 55%),var(--bg);background-attachment:fixed}
+  radial-gradient(900px 500px at 10% -10%,var(--glow1) 0,transparent 60%),
+  radial-gradient(700px 400px at 100% 0,var(--glow2) 0,transparent 55%),var(--bg);background-attachment:fixed}
 button,select,input{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none}
 a{color:inherit;text-decoration:none}
 
 /* header */
-header{position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:rgba(11,11,18,.72);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+header{position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:var(--glass);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
 .bar{max-width:1280px;margin:auto;display:flex;align-items:center;gap:14px;padding:12px 16px}
 .logo{font-weight:800;font-size:19px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
 .logo i{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-block}
 .search{flex:1;position:relative;max-width:560px}
 .search input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:10px 16px 10px 40px;outline:0}
-.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #8b7bff33}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 .search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;opacity:.6}
 .tabs{display:flex;gap:4px;margin-left:auto}
 .tab{padding:8px 14px;border-radius:999px;color:var(--muted);font-weight:600;display:flex;gap:6px;align-items:center}
 .tab.on{background:var(--card2);color:var(--text)}
-.tab b{background:var(--accent);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px}
+.tab b{background:var(--accent);color:var(--on-accent);border-radius:999px;font-size:11px;padding:1px 7px}
 .iconbtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
 .iconbtn svg{width:18px;height:18px}
 
@@ -58,7 +74,7 @@ select option{background:var(--card)}
 input[type=range]{width:100%;accent-color:var(--accent)}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
 .chip{padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:13px;white-space:nowrap}
-.chip.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.chip.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--on-accent);border-color:transparent}
 .ftoggle{display:none}
 .fbottom{display:flex;gap:8px;margin-top:12px;align-items:center;justify-content:space-between}
 .link{color:var(--accent);font-weight:600;font-size:13px}
@@ -66,14 +82,15 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 /* grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
 .card{background:var(--card);border-radius:var(--r);overflow:hidden;position:relative;border:1px solid var(--line);transition:transform .18s,border-color .18s;display:flex;flex-direction:column}
-.card:hover{transform:translateY(-4px);border-color:#4a4a6e}
+.card:hover{transform:translateY(-4px);border-color:var(--hover)}
 .cover{aspect-ratio:2/3;background:var(--card2) center/cover;position:relative;cursor:pointer}
 .cover::after{content:"";position:absolute;inset:auto 0 0 0;height:55%;background:linear-gradient(transparent,rgba(11,11,18,.92))}
-.badge{position:absolute;z-index:2;top:8px;left:8px;background:rgba(11,11,18,.75);backdrop-filter:blur(6px);padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
-.badge.s{color:var(--good)}.badge.m{color:var(--warn)}.badge.l{color:var(--bad)}
-.add{position:absolute;z-index:3;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:rgba(11,11,18,.75);backdrop-filter:blur(6px);display:grid;place-items:center;font-size:20px;line-height:1;transition:.15s}
+.badge{position:absolute;z-index:2;top:8px;left:8px;background:rgba(11,11,18,.75);color:#fff;backdrop-filter:blur(6px);padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.badge.s{color:#4ade80}.badge.m{color:#fbbf24}.badge.l{color:#f87171} /* on a dark chip in every theme */
+.add{position:absolute;z-index:3;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:rgba(11,11,18,.75);color:#fff;backdrop-filter:blur(6px);display:grid;place-items:center;font-size:20px;line-height:1;transition:.15s}
 .add:hover{background:var(--accent)}
-.add.in{background:var(--accent);color:#fff}
+.add.in{background:var(--accent);color:var(--on-accent)}
+.cover .ctitle{color:#fff}.cover .cmeta{color:#d4d3e2}
 .cinfo{position:absolute;z-index:2;left:10px;right:10px;bottom:9px}
 .ctitle{font-weight:700;font-size:14px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .cmeta{color:var(--muted);font-size:12px;margin-top:3px}
@@ -97,7 +114,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 @keyframes pop{from{opacity:0;transform:translateY(24px)}}
 .banner{height:170px;background:var(--card2) center/cover;position:relative}
 .banner::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 20%,var(--bg2))}
-.close{position:absolute;top:12px;right:12px;z-index:3;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.6);font-size:20px}
+.close{position:absolute;top:12px;right:12px;z-index:3;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:20px}
 .mbody{padding:0 22px 24px;margin-top:-70px;position:relative;z-index:2}
 .mtop{display:flex;gap:18px}
 .mcover{width:130px;aspect-ratio:2/3;border-radius:12px;background:var(--card2) center/cover;flex:none;box-shadow:0 10px 30px #000a}
@@ -107,13 +124,13 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .stat small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
 .stat b{font-size:15px}
-.desc{color:#cfcee2;max-height:150px;overflow:auto;margin:10px 0}
+.desc{color:var(--desc);max-height:150px;overflow:auto;margin:10px 0}
 .seg{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
 .seg button{padding:8px 13px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:13px}
-.seg button.on{background:var(--accent);color:#fff;border-color:transparent}
+.seg button.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
 .btn{padding:11px 18px;border-radius:12px;font-weight:700;background:var(--card2);border:1px solid var(--line);display:inline-flex;gap:8px;align-items:center}
-.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#fff}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:var(--on-accent)}
 .btn.danger{color:var(--bad)}
 .stepper{display:flex;align-items:center;gap:10px;margin:10px 0}
 .stepper button{width:34px;height:34px;border-radius:50%;background:var(--card2);border:1px solid var(--line);font-size:18px}
@@ -125,11 +142,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .ep.done{opacity:.55}
 .epth{width:84px;aspect-ratio:16/9;border-radius:8px;background:var(--card2) center/cover;flex:none}
 .epm{flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.epw{width:30px;height:30px;border-radius:50%;background:var(--accent);display:grid;place-items:center;font-size:12px;color:#fff;flex:none}
+.epw{width:30px;height:30px;border-radius:50%;background:var(--accent);display:grid;place-items:center;font-size:12px;color:var(--on-accent);flex:none}
 .tick{width:22px;color:var(--good);font-weight:800;text-align:center}
 .epg{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px}
 .epc{padding:8px 0;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-weight:600}
-.epc.done{background:var(--accent);color:#fff;border-color:transparent}
+.epc.done{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .nu{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.nu::-webkit-scrollbar{display:none}
 .nuc{flex:none;width:260px;display:flex;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px;cursor:pointer}
 .nuimg{width:48px;aspect-ratio:2/3;border-radius:8px;background:var(--card2) center/cover;flex:none}
@@ -137,8 +154,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .nuc .new{color:var(--accent);font-weight:700}
 .nuc.soon{opacity:.7}
 .nuc .grow,.wkrow .grow{flex:1;min-width:0}
-.plus{flex:none;align-self:center;padding:7px 11px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:800;font-size:13px}
-.add.plus{width:auto;padding:0 11px;font-size:14px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.plus{flex:none;align-self:center;padding:7px 11px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--on-accent);font-weight:800;font-size:13px}
+.add.plus{width:auto;padding:0 11px;font-size:14px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--on-accent)}
 #toast{max-width:min(92vw,520px);width:max-content;display:flex;align-items:center;gap:12px;border-radius:16px}
 #toast .tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 #toast.act{pointer-events:auto}
@@ -154,10 +171,15 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .swatches{display:flex;gap:10px;flex-wrap:wrap}
 .swatches button{width:32px;height:32px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px var(--line)}
 .swatches button.on{border-color:var(--text)}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.themes button{display:flex;flex-direction:column;gap:6px;align-items:center;padding:8px;border-radius:12px;background:var(--card);border:2px solid var(--line);font-size:12.5px;font-weight:600}
+.themes button.on{border-color:var(--accent)}
+.themes i{width:100%;height:38px;border-radius:8px;display:flex;align-items:flex-end;padding:6px;box-shadow:inset 0 0 0 1px rgba(128,128,128,.35)}
+.themes b{width:55%;height:8px;border-radius:99px}
 /* rating & notes */
 .rate{display:flex;gap:4px}
 .rate button{flex:1;min-width:0;max-width:42px;height:34px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:13px}
-.rate button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.rate button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--on-accent);border-color:transparent}
 .notes{width:100%;min-height:70px;margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;outline:0;resize:vertical;font:inherit;color:inherit}
 .notes:focus{border-color:var(--accent)}
 .badge.mine{color:var(--accent2)}
@@ -183,7 +205,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .prof{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
 .prof img,.prof .av{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none;display:grid;place-items:center;background:var(--card2);font-weight:700}
 .prof .grow{flex:1;min-width:0;overflow-wrap:anywhere}
-.prof .tag{font-size:11px;padding:1px 7px;border-radius:99px;background:var(--accent);color:#fff;vertical-align:1px}
+.prof .tag{font-size:11px;padding:1px 7px;border-radius:99px;background:var(--accent);color:var(--on-accent);vertical-align:1px}
 .btn.sm{padding:7px 11px;font-size:13px;border-radius:10px}
 .iconbtn.me{overflow:hidden;padding:0;font-weight:700}
 .iconbtn.me img{width:100%;height:100%;object-fit:cover}
@@ -207,7 +229,7 @@ nav.bottom{display:none}
   .filters .fbody{display:none}
   .filters.open .fbody{display:block}
   .filters{padding:10px 14px}
-  nav.bottom{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:40;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(11,11,18,.88);backdrop-filter:blur(18px);border-top:1px solid var(--line)}
+  nav.bottom{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:40;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--glass2);backdrop-filter:blur(18px);border-top:1px solid var(--line)}
   nav.bottom button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font-size:11px;font-weight:600}
   nav.bottom button.on{color:var(--accent)}
   nav.bottom svg{width:22px;height:22px}
@@ -341,8 +363,15 @@ function look(p,pr=prefsAll[p?String(p.id):'guest']||{}){
   return{name,col,custom:!!(pr.nick||pr.picMode||pr.color),
     av:cls=>src?`<img class="${cls||''}" src="${esc(src)}" alt="">`:`<span class="av ${cls||''}" style="background:${esc(col)}">${esc([...name][0]||'?').toUpperCase()}</span>`};
 }
-// Hook for future themes: applies the active profile's look to the whole page
-function applyPrefs(){document.documentElement.style.setProperty('--me',myPrefs().color||PCOLORS[0]);document.documentElement.dataset.theme=myPrefs().theme||'dark'}
+// App themes: CSS variable sets in [data-theme=…] blocks; 'dark' (Midnight) is the :root default
+const THEMES=[['dark','Midnight','#0b0b12','#8b7bff','#ff6bd6'],['sakura','Sakura','#140b11','#ff7eb6','#ffb86b'],['ocean','Ocean','#06111a','#38bdf8','#818cf8'],
+  ['forest','Forest','#08120d','#4ade80','#2dd4bf'],['sunset','Sunset','#140c08','#fb923c','#f43f5e'],['amoled','AMOLED black','#000000','#a78bfa','#f472b6'],['light','Light','#f4f4f9','#6d5dfc','#e0479e']];
+// Applies the active profile's look (theme, colour) to the whole page; `t` previews a theme without saving
+function applyPrefs(t){
+  const th=THEMES.find(x=>x[0]===(t||myPrefs().theme))||THEMES[0],h=document.documentElement;
+  h.style.setProperty('--me',myPrefs().color||PCOLORS[0]);h.dataset.theme=th[0];
+  document.querySelector('meta[name=theme-color]').content=th[2]; // phone status bar / installed app title bar
+}
 function switchProfile(id,msg){store.set('kuro.active',id);try{if(msg)sessionStorage.setItem('kuro.toast',msg)}catch{}location.replace(location.pathname+location.search)}
 
 /* ---------- AniList ---------- */
@@ -522,7 +551,7 @@ function drawWeek(){
     else if(e){note='<span class="new">Out now</span>'+(s.ep-prog>1?` · ${s.ep-prog} to catch up`:'');
       act=`<button class="plus" data-plus="${s.m.id}" aria-label="Mark episode ${prog+1} watched">+1</button>`}
     else note='Out now';
-    if(!e)act=`<button class="plus" data-add="${s.m.id}" aria-label="Add to list" style="background:var(--card2);border:1px solid var(--line)">+</button>`;
+    if(!e)act=`<button class="plus" data-add="${s.m.id}" aria-label="Add to list" style="background:var(--card2);border:1px solid var(--line);color:var(--text)">+</button>`;
     html+=`<div class="wkrow${aired?' past':''}" data-open="${s.m.id}"><span class="t">${new Date(s.at*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
       <div class="nuimg" style="background-image:url('${esc(s.m.cover)}')"></div>
       <div class="grow"><div class="ctitle">${esc(titleOf(s.m))}</div><div class="cmeta">Ep ${s.ep}${s.m.episodes?' / '+s.m.episodes:''} · ${note}</div></div>${act}</div>`;
@@ -658,7 +687,7 @@ function plusOne(id){
   const done=e.status==='completed'&&prev.status!=='completed';
   toast(done?`Finished · ${titleOf(e)}`:`Ep ${e.progress} watched · ${titleOf(e)}`,()=>{Object.assign(e,prev,{updated:Date.now()});saveList();refreshCards()});
 }
-function closeModal(){$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
+function closeModal(){applyPrefs()/* drops an unsaved theme preview */;$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
 
 /* where to watch + episodes (fetched on open, not stored) */
 const DETAIL_Q=`query($id:Int){Media(id:$id,type:ANIME){episodes nextAiringEpisode{episode} externalLinks{site url type color isDisabled} streamingEpisodes{title thumbnail url site}}}`;
@@ -796,15 +825,19 @@ function openProfileEditor(){
       <label>Colour</label>
       <div class="swatches">${PCOLORS.map(c=>`<button data-col="${c}" class="${l.col===c?'on':''}" style="background:${c}" aria-label="Colour ${c}"></button>`).join('')}</div>
       <div class="hint">Used for your initial and around your picture.</div>
+      <label>App theme</label>
+      <div class="themes">${THEMES.map(([k,n,bg,a1,a2])=>`<button data-th="${k}" class="${(d.theme||'dark')===k?'on':''}" aria-label="${n} theme">
+        <i style="background:${bg}"><b style="background:linear-gradient(135deg,${a1},${a2})"></b></i>${n}</button>`).join('')}</div>
       <label>Display name</label>
       <input type="text" id="nick" maxlength="30" value="${esc(d.nick||'')}" placeholder="${esc(p?.name||'Guest')}">
-      <div class="hint">Saved in this browser only. Your AniList name and picture are not changed. Themes for the whole app are coming later.</div>
+      <div class="hint">Saved in this browser only. Your AniList name and picture are not changed. Each profile keeps its own theme.</div>
       <div class="actions" style="margin-top:20px"><button class="btn primary" id="psave">Save</button><button class="btn" id="pback">Cancel</button>
         ${myPrefs().nick||myPrefs().picMode||myPrefs().color?'<button class="btn danger" id="preset">Reset</button>':''}</div></div>`;
-    $('#mclose').onclick=closeModal;$('#pback').onclick=openSettings;
+    $('#mclose').onclick=()=>{applyPrefs();closeModal()};$('#pback').onclick=()=>{applyPrefs();openSettings()}; // undo an unsaved preview
     $('#nick').oninput=e=>{d.nick=e.target.value.trim();$('.pcard .pname').textContent=d.nick||p?.name||'Guest'};
     $$('[data-pm]').forEach(b=>b.onclick=()=>{const m=b.dataset.pm;if(m==='photo'&&!d.pic)return $('#pfile0').click();d.picMode=m;draw()});
     $$('[data-col]').forEach(b=>b.onclick=()=>{d.color=b.dataset.col;draw()});
+    $$('[data-th]').forEach(b=>b.onclick=()=>{d.theme=b.dataset.th==='dark'?undefined:b.dataset.th;applyPrefs(d.theme||'dark');const st=$('#modal').scrollTop;draw();$('#modal').scrollTop=st}); // live preview
     const pick=async e=>{const f=e.target.files[0];if(!f)return;try{d.pic=await squareJpeg(f,192);d.picMode='photo';draw()}catch{toast('Could not read that image')}};
     $('#pfile0').onchange=pick;if($('#pfile'))$('#pfile').onchange=pick;
     $('#psave').onclick=()=>{d.nick=$('#nick').value.trim();savePrefs(d);renderProfileBtn();openSettings();toast('Profile saved')};
