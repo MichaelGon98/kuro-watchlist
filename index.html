@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kuro Watchlist</title>
+<meta name="theme-color" content="#0b0b12">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{
+  --bg:#0b0b12;--bg2:#12121c;--card:#171724;--card2:#1e1e2e;--line:#2a2a3d;
+  --text:#ecebf5;--muted:#9a99b3;--accent:#8b7bff;--accent2:#ff6bd6;--good:#4ade80;--warn:#fbbf24;--bad:#f87171;
+  --r:16px;--nav-h:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{color-scheme:dark}
+*{scrollbar-width:thin;scrollbar-color:#3a3a55 transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#3a3a55;border-radius:999px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--accent);background-clip:content-box;border:2px solid transparent}
+::-webkit-scrollbar-button,::-webkit-scrollbar-corner{display:none;background:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100vh;background:
+  radial-gradient(900px 500px at 10% -10%,#2b2160 0,transparent 60%),
+  radial-gradient(700px 400px at 100% 0,#4a1f55 0,transparent 55%),var(--bg);background-attachment:fixed}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:inherit;text-decoration:none}
+
+/* header */
+header{position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:rgba(11,11,18,.72);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+.bar{max-width:1280px;margin:auto;display:flex;align-items:center;gap:14px;padding:12px 16px}
+.logo{font-weight:800;font-size:19px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.logo i{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-block}
+.search{flex:1;position:relative;max-width:560px}
+.search input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:10px 16px 10px 40px;outline:0}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #8b7bff33}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;opacity:.6}
+.tabs{display:flex;gap:4px;margin-left:auto}
+.tab{padding:8px 14px;border-radius:999px;color:var(--muted);font-weight:600;display:flex;gap:6px;align-items:center}
+.tab.on{background:var(--card2);color:var(--text)}
+.tab b{background:var(--accent);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px}
+.iconbtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
+.iconbtn svg{width:18px;height:18px}
+
+main{max-width:1280px;margin:auto;padding:16px 16px calc(var(--nav-h) + 40px)}
+h2.sec{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 12px}
+
+/* filters */
+.filters{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:16px}
+.frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
+select,.field input[type=number]{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;outline:0}
+select option{background:var(--card)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.chip{padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:13px;white-space:nowrap}
+.chip.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.ftoggle{display:none}
+.fbottom{display:flex;gap:8px;margin-top:12px;align-items:center;justify-content:space-between}
+.link{color:var(--accent);font-weight:600;font-size:13px}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.card{background:var(--card);border-radius:var(--r);overflow:hidden;position:relative;border:1px solid var(--line);transition:transform .18s,border-color .18s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-4px);border-color:#4a4a6e}
+.cover{aspect-ratio:2/3;background:var(--card2) center/cover;position:relative;cursor:pointer}
+.cover::after{content:"";position:absolute;inset:auto 0 0 0;height:55%;background:linear-gradient(transparent,rgba(11,11,18,.92))}
+.badge{position:absolute;z-index:2;top:8px;left:8px;background:rgba(11,11,18,.75);backdrop-filter:blur(6px);padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.badge.s{color:var(--good)}.badge.m{color:var(--warn)}.badge.l{color:var(--bad)}
+.add{position:absolute;z-index:3;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:rgba(11,11,18,.75);backdrop-filter:blur(6px);display:grid;place-items:center;font-size:20px;line-height:1;transition:.15s}
+.add:hover{background:var(--accent)}
+.add.in{background:var(--accent);color:#fff}
+.cinfo{position:absolute;z-index:2;left:10px;right:10px;bottom:9px}
+.ctitle{font-weight:700;font-size:14px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cmeta{color:var(--muted);font-size:12px;margin-top:3px}
+.prog{height:3px;background:var(--line)}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.more{display:block;margin:24px auto;padding:11px 26px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-weight:600}
+.empty{text-align:center;color:var(--muted);padding:60px 10px}
+.skel{aspect-ratio:2/3;border-radius:var(--r);background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+
+/* list subtabs */
+.sub{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.sub::-webkit-scrollbar{display:none}
+.lbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.lbar input,.lbar select{width:auto;flex:1;min-width:140px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;outline:0}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+.scrim.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--line);border-radius:22px;width:100%;max-width:780px;max-height:90vh;overflow:auto;position:relative;animation:pop .22s ease}
+@keyframes pop{from{opacity:0;transform:translateY(24px)}}
+.banner{height:170px;background:var(--card2) center/cover;position:relative}
+.banner::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 20%,var(--bg2))}
+.close{position:absolute;top:12px;right:12px;z-index:3;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.6);font-size:20px}
+.mbody{padding:0 22px 24px;margin-top:-70px;position:relative;z-index:2}
+.mtop{display:flex;gap:18px}
+.mcover{width:130px;aspect-ratio:2/3;border-radius:12px;background:var(--card2) center/cover;flex:none;box-shadow:0 10px 30px #000a}
+.mtitle{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:78px 0 4px}
+.msub{color:var(--muted);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:18px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.stat b{font-size:15px}
+.desc{color:#cfcee2;max-height:150px;overflow:auto;margin:10px 0}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+.seg button{padding:8px 13px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:13px}
+.seg button.on{background:var(--accent);color:#fff;border-color:transparent}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn{padding:11px 18px;border-radius:12px;font-weight:700;background:var(--card2);border:1px solid var(--line);display:inline-flex;gap:8px;align-items:center}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#fff}
+.btn.danger{color:var(--bad)}
+.stepper{display:flex;align-items:center;gap:10px;margin:10px 0}
+.stepper button{width:34px;height:34px;border-radius:50%;background:var(--card2);border:1px solid var(--line);font-size:18px}
+
+/* episodes, where to watch, trailer, next up */
+.sh{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+#trailer iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;margin:10px 0}
+.ep{display:flex;align-items:center;gap:10px;padding:6px;border-radius:12px;background:var(--card);border:1px solid var(--line);margin-bottom:6px;cursor:pointer}
+.ep.done{opacity:.55}
+.epth{width:84px;aspect-ratio:16/9;border-radius:8px;background:var(--card2) center/cover;flex:none}
+.epm{flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.epw{width:30px;height:30px;border-radius:50%;background:var(--accent);display:grid;place-items:center;font-size:12px;color:#fff;flex:none}
+.tick{width:22px;color:var(--good);font-weight:800;text-align:center}
+.epg{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px}
+.epc{padding:8px 0;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-weight:600}
+.epc.done{background:var(--accent);color:#fff;border-color:transparent}
+.nu{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.nu::-webkit-scrollbar{display:none}
+.nuc{flex:none;width:260px;display:flex;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px;cursor:pointer}
+.nuimg{width:48px;aspect-ratio:2/3;border-radius:8px;background:var(--card2) center/cover;flex:none}
+.nuc .ctitle{font-size:13px}
+#nextup{margin-bottom:16px}
+
+/* settings */
+.set label{display:block;font-weight:600;margin:14px 0 4px}
+.set input[type=text]{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;outline:0}
+.hint{color:var(--muted);font-size:12.5px;margin-top:4px}
+.prof{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.prof img,.prof .av{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none;display:grid;place-items:center;background:var(--card2);font-weight:700}
+.prof .grow{flex:1;min-width:0;overflow-wrap:anywhere}
+.prof .tag{font-size:11px;padding:1px 7px;border-radius:99px;background:var(--accent);color:#fff;vertical-align:1px}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:10px}
+.iconbtn.me{overflow:hidden;padding:0;font-weight:700}
+.iconbtn.me img{width:100%;height:100%;object-fit:cover}
+.iconbtn.expired{opacity:.55;border-color:var(--bad)}
+details.hint summary{cursor:pointer}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 24px);transform:translate(-50%,30px);background:var(--card2);border:1px solid var(--line);padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:80;font-weight:600}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* bottom nav (mobile) */
+nav.bottom{display:none}
+
+@media (max-width:760px){
+  .bar{flex-wrap:wrap;gap:10px}
+  .search{order:3;flex-basis:100%;max-width:none}
+  .tabs{display:none}
+  .logo{flex:1}
+  .grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .ftoggle{display:inline-flex}
+  .filters .fbody{display:none}
+  .filters.open .fbody{display:block}
+  .filters{padding:10px 14px}
+  nav.bottom{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:40;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(11,11,18,.88);backdrop-filter:blur(18px);border-top:1px solid var(--line)}
+  nav.bottom button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font-size:11px;font-weight:600}
+  nav.bottom button.on{color:var(--accent)}
+  nav.bottom svg{width:22px;height:22px}
+  .scrim{align-items:flex-end;padding:0}
+  .modal{border-radius:22px 22px 0 0;max-height:92vh}
+  .mcover{width:100px}.mtitle{font-size:20px;margin-top:70px}
+}
+@media (min-width:761px){.ftoggle{display:none}}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="logo"><i></i>Kuro</div>
+  <div class="search" id="searchWrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Search anime…" autocomplete="off">
+  </div>
+  <div class="tabs">
+    <button class="tab" data-view="discover">Discover</button>
+    <button class="tab" data-view="list">My List <b id="cnt1">0</b></button>
+  </div>
+  <button class="iconbtn" id="settingsBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+</div></header>
+
+<main>
+  <!-- DISCOVER -->
+  <section id="v-discover">
+    <div id="nextup" style="display:none"><h2 class="sec">Next up</h2><div class="nu" id="nuRow"></div></div>
+    <div class="filters" id="filters">
+      <button class="btn ftoggle" id="ftoggle">⚙ Filters <span id="fcount"></span></button>
+      <div class="fbody">
+        <div class="frow">
+          <div class="field"><label>Sort</label><select id="f-sort">
+            <option value="TRENDING_DESC">Trending</option><option value="POPULARITY_DESC">Most popular</option>
+            <option value="SCORE_DESC">Top rated</option><option value="START_DATE_DESC">Newest</option>
+            <option value="FAVOURITES_DESC">Most favourited</option></select></div>
+          <div class="field"><label>Format</label><select id="f-format"><option value="">Any</option><option>TV</option><option>TV_SHORT</option><option>MOVIE</option><option>OVA</option><option>ONA</option><option>SPECIAL</option></select></div>
+          <div class="field"><label>Status</label><select id="f-status"><option value="">Any</option><option value="RELEASING">Airing</option><option value="FINISHED">Finished</option><option value="NOT_YET_RELEASED">Upcoming</option></select></div>
+          <div class="field"><label>Season</label><select id="f-season"><option value="">Any</option><option value="WINTER">Winter</option><option value="SPRING">Spring</option><option value="SUMMER">Summer</option><option value="FALL">Fall</option></select></div>
+          <div class="field"><label>Year</label><select id="f-year"><option value="">Any</option></select></div>
+          <div class="field"><label>Min score: <span id="scoreV">0</span></label><input type="range" id="f-score" min="0" max="90" step="5" value="0"></div>
+        </div>
+        <div class="chips" id="genreChips"></div>
+        <div class="fbottom"><span class="hint" id="resCount"></span><button class="link" id="reset">Reset filters</button></div>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <button class="more" id="more" style="display:none">Load more</button>
+  </section>
+
+  <!-- LIST -->
+  <section id="v-list" style="display:none">
+    <div class="sub" id="subtabs"></div>
+    <div class="lbar">
+      <input id="lq" type="search" placeholder="Filter my list…">
+      <select id="lgenre"><option value="">All genres</option></select>
+      <select id="lsort"><option value="added">Recently added</option><option value="title">Title A–Z</option><option value="score">Score</option><option value="year">Year</option></select>
+    </div>
+    <div class="grid" id="lgrid"></div>
+  </section>
+</main>
+
+<nav class="bottom">
+  <button data-view="discover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>Discover</button>
+  <button data-view="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>My List</button>
+  <button id="navSet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Settings</button>
+</nav>
+
+<div class="scrim" id="scrim"><div class="modal" id="modal"></div></div>
+<div id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const GENRES=['Action','Adventure','Comedy','Drama','Fantasy','Horror','Mahou Shoujo','Mecha','Music','Mystery','Psychological','Romance','Sci-Fi','Slice of Life','Sports','Supernatural','Thriller'];
+const STATUSES=[['planning','Plan to watch'],['watching','Watching'],['completed','Completed'],['dropped','Dropped']];
+const DEFAULT_PROVIDER='https://anikototv.bz/search?keyword={query}';
+
+/* ---------- storage & profiles ---------- */
+const store={
+  get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
+  del(k){try{localStorage.removeItem(k)}catch{}}
+};
+// A profile is an AniList account. Its list is cached per browser under kuro.list.<userId>
+// and synced with AniList, so it follows the user to any browser they sign in on.
+// kuro.list (no suffix) is the guest list for use without an account.
+let settings=store.get('kuro.settings',{provider:DEFAULT_PROVIDER}); // device settings: provider, clientId
+let profiles=store.get('kuro.profiles',{});  // userId -> {id,name,avatar,token,lastSync,pendingDel}
+let pendingTok=null;
+if(settings.token){ // one-time migration from the single-account layout
+  if(settings.user){
+    const u=settings.user;profiles[u.id]={id:u.id,name:u.name,token:settings.token,lastSync:settings.lastSync};
+    store.set('kuro.list.'+u.id,store.get('kuro.list',{}));store.del('kuro.list');store.set('kuro.active',u.id);store.set('kuro.profiles',profiles);
+  }else pendingTok=settings.token;
+  delete settings.token;delete settings.user;delete settings.lastSync;store.set('kuro.settings',settings);
+}
+const activeId=store.get('kuro.active',null);
+const me=()=>profiles[activeId]||null;
+const listKey=()=>me()?'kuro.list.'+me().id:'kuro.list';
+let list=store.get(listKey(),{});          // id -> item
+const saveList=()=>{store.set(listKey(),list);updateCounts();scheduleSync()};
+const saveSettings=()=>store.set('kuro.settings',settings);
+const saveProfiles=()=>store.set('kuro.profiles',profiles);
+function switchProfile(id,msg){store.set('kuro.active',id);try{if(msg)sessionStorage.setItem('kuro.toast',msg)}catch{}location.replace(location.pathname+location.search)}
+
+/* ---------- AniList ---------- */
+const QUERY=`query($page:Int,$perPage:Int,$search:String,$genre_in:[String],$format:MediaFormat,$season:MediaSeason,$seasonYear:Int,$status:MediaStatus,$sort:[MediaSort],$score:Int){
+Page(page:$page,perPage:$perPage){pageInfo{hasNextPage total}
+media(type:ANIME,search:$search,genre_in:$genre_in,format:$format,season:$season,seasonYear:$seasonYear,status:$status,sort:$sort,averageScore_greater:$score,isAdult:false){
+id idMal title{romaji english} coverImage{large color} bannerImage description(asHtml:false) genres format episodes duration status season seasonYear averageScore popularity
+studios(isMain:true){nodes{name}} nextAiringEpisode{episode airingAt} trailer{id site} siteUrl}}}`;
+async function anilist(vars){
+  const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:QUERY,variables:vars})});
+  if(!r.ok)throw new Error(r.status===429?'Rate limited, wait a moment':'AniList error '+r.status);
+  const j=await r.json(); if(j.errors)throw new Error(j.errors[0].message); return j.data.Page;
+}
+const titleOf=m=>m.title.english||m.title.romaji;
+function slim(m){return{id:m.id,idMal:m.idMal,title:m.title,cover:m.coverImage.large,color:m.coverImage.color,banner:m.bannerImage,
+  desc:m.description,genres:m.genres,format:m.format,episodes:m.episodes,duration:m.duration,status:m.status,season:m.season,year:m.seasonYear,
+  score:m.averageScore,pop:m.popularity,studio:m.studios?.nodes?.[0]?.name,next:m.nextAiringEpisode,trailer:m.trailer,url:m.siteUrl}}
+
+/* ---------- state ---------- */
+const F={sort:'TRENDING_DESC',format:'',status:'',season:'',year:'',score:0,genres:new Set(),q:''};
+let page=1,hasNext=false,loading=false,cache={},view='discover',listStatus='watching';
+
+/* ---------- filters UI ---------- */
+(function init(){
+  const y=new Date().getFullYear()+1;
+  for(let i=y;i>=1990;i--)$('#f-year').insertAdjacentHTML('beforeend',`<option>${i}</option>`);
+  $('#genreChips').innerHTML=GENRES.map(g=>`<button class="chip" data-g="${g}">${g}</button>`).join('');
+  $('#lgenre').insertAdjacentHTML('beforeend',GENRES.map(g=>`<option>${g}</option>`).join(''));
+  $('#genreChips').onclick=e=>{const g=e.target.dataset.g;if(!g)return;F.genres.has(g)?F.genres.delete(g):F.genres.add(g);e.target.classList.toggle('on');run()};
+  for(const k of ['sort','format','status','season','year']) $('#f-'+k).onchange=e=>{F[k]=e.target.value;run()};
+  $('#f-score').oninput=e=>$('#scoreV').textContent=e.target.value;
+  $('#f-score').onchange=e=>{F.score=+e.target.value;run()};
+  $('#reset').onclick=()=>{Object.assign(F,{sort:'TRENDING_DESC',format:'',status:'',season:'',year:'',score:0,q:''});F.genres.clear();
+    $('#q').value='';$$('.filters select').forEach(s=>s.selectedIndex=0);$('#f-score').value=0;$('#scoreV').textContent=0;$$('.chip.on').forEach(c=>c.classList.remove('on'));run()};
+  $('#ftoggle').onclick=()=>$('#filters').classList.toggle('open');
+  let t;$('#q').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{
+    if(view==='list'){$('#lq').value=e.target.value;renderList();return}
+    F.q=e.target.value.trim();run()},350)};
+  $('#more').onclick=()=>{page++;load(true)};
+})();
+
+function vars(){
+  const v={page,perPage:24,sort:[F.sort]};
+  if(F.q){v.search=F.q.replace(/[’‘`´]/g,"'");v.sort=['SEARCH_MATCH']}
+  if(F.format)v.format=F.format; if(F.status)v.status=F.status; if(F.season)v.season=F.season;
+  if(F.year)v.seasonYear=+F.year; if(F.score)v.score=F.score; if(F.genres.size)v.genre_in=[...F.genres];
+  return v;
+}
+/* punctuation-tolerant search */
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\p{L}\p{N}]+/gu,'');
+function searchVariants(q){
+  const base=q.replace(/[’‘`´]/g,"'");
+  const spaced=base.replace(/[^\p{L}\p{N}\s]+/gu,' ');
+  return [base,base.replace(/'\w*/g,''),spaced,spaced.replace(/\b(\p{L}{3,})s\b/gu,'$1')]
+    .map(s=>s.replace(/\s+/g,' ').trim()).filter((s,i,a)=>s&&a.indexOf(s)===i);
+}
+function run(){page=1;$('#grid').innerHTML='';updateFcount();load(false)}
+function updateFcount(){const n=F.genres.size+['format','status','season','year'].filter(k=>F[k]).length+(F.score?1:0);$('#fcount').textContent=n?`(${n})`:''}
+async function load(append){
+  if(loading)return;loading=true;
+  const g=$('#grid');
+  if(!append)g.innerHTML=Array(12).fill('<div class="skel"></div>').join('');
+  $('#more').style.display='none';
+  try{
+    let p=await anilist(vars());
+    if(!p.media.length&&F.q&&!append){ // relax punctuation step by step until something matches
+      for(const s of searchVariants(F.q).slice(1)){
+        const v=vars();v.search=s;p=await anilist(v);if(p.media.length)break;
+      }
+    }
+    const items=p.media.map(slim);items.forEach(m=>cache[m.id]=m);
+    if(!append)g.innerHTML='';
+    g.insertAdjacentHTML('beforeend',items.map(m=>cardHTML(m)).join(''));
+    if(!g.children.length)g.innerHTML='<div class="empty" style="grid-column:1/-1">No anime match.<br><span class="hint">Try fewer filters (a minimum score hides brand-new shows) or tap Reset filters.</span></div>';
+    hasNext=p.pageInfo.hasNextPage;$('#more').style.display=hasNext?'block':'none';
+    $('#resCount').textContent=p.pageInfo.total?`${p.pageInfo.total.toLocaleString()} results`:'';
+  }catch(e){
+    if(!append)g.innerHTML=`<div class="empty" style="grid-column:1/-1">⚠ ${esc(e.message)}<br><br><button class="btn" onclick="run()">Retry</button></div>`;else toast(e.message);
+  }
+  loading=false;
+}
+
+/* ---------- cards ---------- */
+const scoreCls=s=>s>=75?'s':s>=60?'m':'l';
+function cardHTML(m,showProg){
+  const e=list[m.id],inList=!!e;
+  const meta=[m.format?.replace('_',' '),m.year,m.episodes?m.episodes+' ep':null].filter(Boolean).join(' · ');
+  const pct=showProg&&m.episodes?Math.min(100,(e.progress||0)/m.episodes*100):0;
+  return `<div class="card" data-id="${m.id}">
+    <div class="cover" style="background-image:url('${esc(m.cover)}');background-color:${esc(m.color||'')}" data-open="${m.id}">
+      ${m.score?`<span class="badge ${scoreCls(m.score)}">★ ${(m.score/10).toFixed(1)}</span>`:''}
+      <button class="add ${inList?'in':''}" data-add="${m.id}" aria-label="${inList?'In list':'Add to list'}">${inList?'✓':'+'}</button>
+      <div class="cinfo"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)}${showProg&&e.status==='watching'?` · ep ${e.progress||0}`:''}</div></div>
+    </div>${showProg&&m.episodes?`<div class="prog"><i style="width:${pct}%"></i></div>`:''}</div>`;
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-add]');
+  if(a){e.stopPropagation();const id=+a.dataset.add;
+    if(list[id])openModal(id);else{addToList(id,'planning');toast('Added to Plan to watch');refreshCards()}return}
+  const o=e.target.closest('[data-open]');if(o)openModal(+o.dataset.open);
+});
+function renderNext(){
+  const items=Object.values(list).filter(x=>x.status==='watching'&&(!x.episodes||(x.progress||0)<x.episodes)).sort((a,b)=>(b.updated||0)-(a.updated||0)).slice(0,12);
+  $('#nextup').style.display=items.length?'':'none';
+  $('#nuRow').innerHTML=items.map(x=>`<div class="nuc" data-open="${x.id}"><div class="nuimg" style="background-image:url('${esc(x.cover)}')"></div><div><div class="ctitle">${esc(titleOf(x))}</div><div class="cmeta">Next: Ep ${(x.progress||0)+1}${x.episodes?' / '+x.episodes:''}</div></div></div>`).join('');
+}
+function refreshCards(){
+  renderNext();
+  if(view==='discover')$$('#grid .card').forEach(c=>{const m=cache[c.dataset.id];if(m)c.outerHTML=cardHTML(m)});
+  else renderList();
+}
+function addToList(id,status){
+  const m=cache[id]||list[id];if(!m)return;
+  list[id]={...m,status,progress:list[id]?.progress||0,added:list[id]?.added||Date.now(),updated:Date.now(),synced:list[id]?.synced,entryId:list[id]?.entryId};
+  saveList();
+}
+
+/* ---------- list view ---------- */
+function updateCounts(){$('#cnt1').textContent=Object.keys(list).length}
+function renderList(){
+  const all=Object.values(list);
+  $('#subtabs').innerHTML=STATUSES.map(([k,l])=>`<button class="chip ${k===listStatus?'on':''}" data-ls="${k}">${l} · ${all.filter(x=>x.status===k).length}</button>`).join('');
+  const q=norm($('#lq').value),g=$('#lgenre').value,s=$('#lsort').value;
+  let items=all.filter(x=>x.status===listStatus&&(!g||x.genres?.includes(g))&&(!q||norm(x.title.english).includes(q)||norm(x.title.romaji).includes(q)));
+  items.sort((a,b)=>s==='title'?titleOf(a).localeCompare(titleOf(b)):s==='score'?(b.score||0)-(a.score||0):s==='year'?(b.year||0)-(a.year||0):b.added-a.added);
+  $('#lgrid').innerHTML=items.length?items.map(m=>cardHTML(m,true)).join(''):`<div class="empty" style="grid-column:1/-1">Nothing here yet.<br>Tap + on any anime in Discover to add it.</div>`;
+}
+$('#subtabs').onclick=e=>{const k=e.target.dataset.ls;if(k){listStatus=k;renderList()}};
+['#lq','#lgenre','#lsort'].forEach(s=>$(s).oninput=renderList);
+
+/* ---------- views ---------- */
+function setView(v){
+  view=v;$('#v-discover').style.display=v==='discover'?'':'none';$('#v-list').style.display=v==='list'?'':'none';
+  $$('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  $('#q').placeholder=v==='list'?'Search my list…':'Search anime…';
+  if(v==='list')renderList();
+  scrollTo({top:0});
+}
+$$('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+
+/* ---------- detail modal ---------- */
+if(!settings.provider||settings.provider==='https://anikoto.to/filter?keyword={query}')settings.provider=DEFAULT_PROVIDER;
+const hasProvider=()=>/^https?:\/\/.+/i.test(settings.provider||'');
+function watchUrl(m){return settings.provider.replace('{query}',encodeURIComponent(titleOf(m))).replace('{romaji}',encodeURIComponent(m.title.romaji))}
+let curModal=null,keepTop=null,details={},epAll=false;
+function openModal(id,keep){
+  const m=cache[id]||list[id];if(!m)return;const e=list[id];
+  keepTop=keep?$('#modal').scrollTop:null;curModal=id;if(!keep)epAll=false;
+  const desc=(m.desc||'No synopsis available.').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'');
+  const nxt=m.next?`Ep ${m.next.episode} · ${new Date(m.next.airingAt*1000).toLocaleString([], {weekday:'short',hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'})}`:'—';
+  const stat=(l,v)=>`<div class="stat"><small>${l}</small><b>${esc(v||'—')}</b></div>`;
+  $('#modal').innerHTML=`
+    <div class="banner" style="background-image:url('${esc(m.banner||m.cover)}')"><button class="close" id="mclose">✕</button></div>
+    <div class="mbody">
+      <div class="mtop"><div class="mcover" style="background-image:url('${esc(m.cover)}')"></div>
+        <div><div class="mtitle">${esc(titleOf(m))}</div><div class="msub">${esc(m.title.romaji!==titleOf(m)?m.title.romaji:'')}</div>
+        <div class="chips" style="margin-top:8px">${(m.genres||[]).map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div></div></div>
+      <div class="stats">
+        ${stat('Score',m.score?(m.score/10).toFixed(1)+' / 10':'')}${stat('Format',m.format?.replace('_',' '))}
+        ${stat('Episodes',m.episodes?m.episodes+(m.duration?` × ${m.duration}m`:''):'')}${stat('Status',m.status?.replace(/_/g,' '))}
+        ${stat('Season',m.season?`${m.season[0]+m.season.slice(1).toLowerCase()} ${m.year||''}`:'')}${stat('Studio',m.studio)}
+        ${stat('Next episode',nxt)}${stat('Popularity',m.pop?.toLocaleString())}
+      </div>
+      <div id="trailer"></div>
+      <div class="desc">${esc(desc).replace(/\n/g,'<br>')}</div>
+      <div class="seg" id="seg">${STATUSES.map(([k,l])=>`<button data-st="${k}" class="${e?.status===k?'on':''}">${l}</button>`).join('')}</div>
+      ${e&&e.status==='watching'?`<div class="stepper"><button id="epm">−</button><b>Episode ${e.progress||0}${m.episodes?' / '+m.episodes:''}</b><button id="epp">+</button></div>`:''}
+      <h3 class="sh">Where to watch</h3>
+      <div class="actions" id="wtwb"><span class="hint">Loading…</span></div>
+      <h3 class="sh">Episodes <span class="hint" style="text-transform:none;letter-spacing:0">· tap an episode to mark it watched</span></h3>
+      <div id="eps"><span class="hint">Loading…</span></div>
+      <h3 class="sh">More</h3>
+      <div class="actions">
+        ${hasProvider()?`<a class="btn primary" href="${esc(watchUrl(m))}" target="_blank" rel="noopener">▶ Watch</a>`:`<button class="btn primary" id="wset">▶ Set up Watch link</button>`}
+        ${m.trailer?.site==='youtube'&&/^[\w-]{6,20}$/.test(m.trailer.id||'')?`<button class="btn" id="trl">▶ Trailer</button>`:''}
+        <a class="btn" href="${esc(m.url)}" target="_blank" rel="noopener">AniList</a>
+        ${m.idMal?`<a class="btn" href="https://myanimelist.net/anime/${m.idMal}" target="_blank" rel="noopener">MAL</a>`:''}
+        ${e?`<button class="btn danger" id="rm">Remove</button>`:''}
+      </div>
+    </div>`;
+  $('#scrim').classList.add('open');document.body.style.overflow='hidden';
+  $('#mclose').onclick=closeModal;
+  $('#seg').onclick=ev=>{const s=ev.target.dataset.st;if(!s)return;addToList(id,s);
+    if(s==='completed'&&m.episodes){list[id].progress=m.episodes;list[id].updated=Date.now();saveList()}refreshCards();openModal(id)};
+  if($('#epp'))$('#epp').onclick=()=>step(id,1),$('#epm').onclick=()=>step(id,-1);
+  if($('#wset'))$('#wset').onclick=openSettings;
+  if($('#trl'))$('#trl').onclick=()=>{const t=$('#trailer');t.innerHTML=t.innerHTML?'':`<iframe src="https://www.youtube-nocookie.com/embed/${m.trailer.id}?autoplay=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;if(t.innerHTML)t.scrollIntoView({block:'center',behavior:'smooth'})};
+  fillDetails(id);
+  if($('#rm'))$('#rm').onclick=()=>{const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId];saveProfiles()}saveList();closeModal();refreshCards();toast('Removed')};
+}
+function step(id,d){const e=list[id],max=e.episodes||9999;e.progress=Math.max(0,Math.min(max,(e.progress||0)+d));e.updated=Date.now();saveList();refreshCards();openModal(id)}
+function closeModal(){$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
+
+/* where to watch + episodes (fetched on open, not stored) */
+const DETAIL_Q=`query($id:Int){Media(id:$id,type:ANIME){episodes nextAiringEpisode{episode} externalLinks{site url type color isDisabled} streamingEpisodes{title thumbnail url site}}}`;
+async function loadDetails(id){
+  if(details[id])return details[id];
+  try{
+    const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:DETAIL_Q,variables:{id}})});
+    const j=await r.json();details[id]=j.data?.Media||{};return details[id];
+  }catch{return null}
+}
+const okUrl=u=>/^https?:\/\//i.test(u||'');
+function epNum(s,i){const m=/(?:episode|ep\.?)\s*(\d+)/i.exec(s.title||'');return m?+m[1]:i+1}
+function wtwHTML(d){
+  const seen=new Set();
+  const links=(d.externalLinks||[]).filter(l=>l.type==='STREAMING'&&!l.isDisabled&&okUrl(l.url)&&!seen.has(l.site)&&seen.add(l.site));
+  return links.length?links.map(l=>`<a class="btn" href="${esc(l.url)}" target="_blank" rel="noopener" style="border-left:4px solid ${/^#[0-9a-f]{3,8}$/i.test(l.color||'')?l.color:'var(--accent)'}">${esc(l.site)}</a>`).join(''):'<span class="hint">No official streaming links are listed for this title yet.</span>';
+}
+function epsHTML(id,d){
+  const m=cache[id]||list[id],prog=list[id]?.progress||0,meta={};
+  (d.streamingEpisodes||[]).forEach((s,i)=>{const n=epNum(s,i);if(!meta[n])meta[n]=s});
+  const keys=Object.keys(meta).map(Number);
+  const n=m.episodes||d.episodes||(d.nextAiringEpisode?d.nextAiringEpisode.episode-1:0)||Math.max(prog,...keys,0);
+  if(!n)return '<span class="hint">Episode count not known yet.</span>';
+  const win=n>60&&!epAll,from=win?Math.max(1,prog-2):1,to=win?Math.min(n,from+59):n;
+  let h=win?`<div class="hint" style="margin-bottom:6px">Showing episodes ${from}–${to} of ${n}</div>`:'';
+  if(keys.length){
+    for(let k=from;k<=to;k++){
+      const s=meta[k],t=(s?.title||'').replace(/^\s*Episode\s*\d+\s*[-–:]?\s*/i,'')||'Episode '+k;
+      h+=`<div class="ep ${k<=prog?'done':''}" data-ep="${k}"><div class="epth" style="${s&&okUrl(s.thumbnail)?`background-image:url('${esc(s.thumbnail)}')`:''}"></div><div class="epm"><b>${k}</b> ${esc(t)}</div>${s&&okUrl(s.url)?`<a class="epw" href="${esc(s.url)}" target="_blank" rel="noopener" title="Watch on ${esc(s.site)}">▶</a>`:''}<span class="tick">${k<=prog?'✓':''}</span></div>`;
+    }
+  }else{
+    h+='<div class="epg">';for(let k=from;k<=to;k++)h+=`<button class="epc ${k<=prog?'done':''}" data-ep="${k}">${k}</button>`;h+='</div>';
+  }
+  if(win)h+=`<button class="btn" id="epall" style="margin-top:8px">Show all ${n} episodes</button>`;
+  return h;
+}
+function fillDetails(id){
+  loadDetails(id).then(d=>{
+    if(curModal!==id||!$('#eps'))return;
+    if(!d){$('#wtwb').innerHTML=$('#eps').innerHTML='<span class="hint">Couldn’t load details. Check your connection.</span>';return}
+    $('#wtwb').innerHTML=wtwHTML(d);$('#eps').innerHTML=epsHTML(id,d);
+    if(keepTop!=null)$('#modal').scrollTop=keepTop;
+  });
+}
+function epTap(id,k){
+  if(!list[id])addToList(id,'watching');
+  const e=list[id],tot=e.episodes||details[id]?.episodes||0;
+  e.progress=e.progress===k?k-1:k;
+  if(tot&&e.progress>=tot)e.status='completed';
+  else if(e.progress>0&&(e.status==='planning'||e.status==='dropped'||e.status==='completed'))e.status='watching';
+  e.updated=Date.now();saveList();refreshCards();openModal(id,true);
+}
+$('#modal').addEventListener('click',ev=>{
+  if(ev.target.id==='epall'){epAll=true;keepTop=$('#modal').scrollTop;fillDetails(curModal);return}
+  const row=ev.target.closest('[data-ep]');
+  if(row&&curModal&&!ev.target.closest('a'))epTap(curModal,+row.dataset.ep);
+});
+$('#scrim').onclick=e=>{if(e.target.id==='scrim')closeModal()};
+addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+/* ---------- settings ---------- */
+function openSettings(){
+  $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" style="top:10px">✕</button>
+    <h2 style="margin:0 0 4px">Settings</h2>
+    <label>Episode provider link</label>
+    <input type="text" id="prov" value="${esc(settings.provider)}">
+    <div class="hint">Template used by the “Watch” button. <code>{query}</code> becomes the anime title. Open your episode site, search for any title, copy the results page URL here, and replace the search word with <code>{query}</code>, e.g. <code>https://your-site/search?keyword={query}</code>. Only use an address you trust.</div>
+    <label>Profile</label>
+    <div class="hint" style="margin:0 0 6px">Sign in with AniList and your list follows you to any browser or device you sign in on. Without an account the list stays in this browser only.</div>
+    ${Object.values(profiles).map(p=>{const on=me()?.id===p.id;return `<div class="prof${on?' on':''}">
+      ${p.avatar?`<img src="${esc(p.avatar)}" alt="">`:`<span class="av">${esc(p.name[0]||'?')}</span>`}
+      <div class="grow"><b>${esc(p.name)}</b>${on?' <span class="tag">active</span>':''}
+        <div class="hint" style="margin:0">${!p.token?'Signed out of AniList, sign in again to sync':p.lastSync?'Last sync '+new Date(p.lastSync).toLocaleString():'Not synced yet'}</div></div>
+      ${on&&p.token?`<button class="btn sm" id="syncNow">Sync now</button>`:''}
+      ${!on?`<button class="btn sm" data-switch="${p.id}">Switch</button>`:''}
+      <button class="btn sm danger" data-signout="${p.id}">Sign out</button></div>`}).join('')}
+    ${me()?`<div class="prof"><span class="av">?</span><div class="grow"><b>No account</b><div class="hint" style="margin:0">Guest list, this browser only</div></div><button class="btn sm" data-switch="">Switch</button></div>`:''}
+    ${settings.clientId?'':`<input type="text" id="cid" inputmode="numeric" placeholder="AniList Client ID" value="">`}
+    <div class="actions" style="margin-top:8px"><button class="btn primary" id="conn">${me()&&!me().token?'Sign in again':Object.keys(profiles).length?'Add AniList account':'Sign in with AniList'}</button></div>
+    <details class="hint" style="margin-top:8px"><summary>AniList app setup${settings.clientId?' (Client ID '+esc(settings.clientId)+')':''}</summary>
+      One-time setup: at anilist.co/settings/developer create a client, set its Redirect URL to <code>${esc(location.origin+location.pathname)}</code>, and paste its Client ID here. Use this same address and Client ID in every browser.
+      To add a second account, log out on anilist.co first, otherwise AniList signs you straight back in as the current one.
+      ${settings.clientId?`<div style="margin-top:6px"><input type="text" id="cid" inputmode="numeric" placeholder="AniList Client ID" value="${esc(settings.clientId)}"></div>`:''}</details>
+    <label>Backup</label>
+    <div class="actions"><button class="btn" id="exp">Export list</button><label class="btn" style="margin:0">Import list<input type="file" id="imp" accept="application/json" hidden></label></div>
+    <div class="actions" style="margin-top:20px"><button class="btn primary" id="save">Save</button></div></div>`;
+  $('#scrim').classList.add('open');
+  $('#mclose').onclick=closeModal;
+  $('#save').onclick=()=>{settings.provider=$('#prov').value.trim()||DEFAULT_PROVIDER;const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;saveSettings();closeModal();toast('Saved')};
+  $('#conn').onclick=()=>{const c=($('#cid')?.value||settings.clientId||'').trim();if(!/^\d+$/.test(c))return toast('Enter the numeric AniList Client ID (see AniList app setup)');settings.clientId=c;saveSettings();location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+c+'&response_type=token'};
+  if($('#syncNow'))$('#syncNow').onclick=async()=>{await sync(true);openSettings()};
+  $$('[data-switch]').forEach(b=>b.onclick=()=>switchProfile(b.dataset.switch?+b.dataset.switch:null,b.dataset.switch?'Switched to '+profiles[b.dataset.switch].name:'Using the guest list'));
+  $$('[data-signout]').forEach(b=>b.onclick=async()=>{
+    const p=profiles[b.dataset.signout],on=me()?.id===p.id;
+    if(on&&p.token)await sync(false);
+    const left=on?unsynced():0;
+    if(!confirm(`Sign out ${p.name} in this browser? Their list is kept on AniList and comes back when you sign in again.`+(left?`\n\n${left} change${left>1?'s have':' has'} not reached AniList yet and will be lost.`:'')))return;
+    delete profiles[p.id];saveProfiles();store.del('kuro.list.'+p.id);
+    if(on)switchProfile(null,'Signed out '+p.name);else openSettings();
+  });
+  $('#exp').onclick=()=>{const{token,user,...safe}=settings;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({list,settings:safe},null,1)],{type:'application/json'}));a.download='kuro-watchlist.json';a.click()};
+  $('#imp').onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());
+    // imported entries may come from another account: forget their AniList ids so they get pushed, not treated as removed
+    for(const it of Object.values(j.list||{})){delete it.synced;delete it.entryId;it.updated=it.updated||Date.now()}
+    Object.assign(list,j.list||{});if(j.settings){const{token,user,...s}=j.settings;settings={...settings,...s}}saveList();saveSettings();closeModal();refreshCards();toast('Imported')}catch{toast('Invalid file')}};
+}
+$('#settingsBtn').onclick=openSettings;$('#navSet').onclick=openSettings;
+
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+
+/* ---------- AniList sync ---------- */
+const SMAP={planning:'PLANNING',watching:'CURRENT',completed:'COMPLETED',dropped:'DROPPED'};
+const RMAP={PLANNING:'planning',CURRENT:'watching',COMPLETED:'completed',DROPPED:'dropped',PAUSED:'watching',REPEATING:'watching'};
+const MEDIA_FIELDS=QUERY.slice(QUERY.indexOf('id idMal'),QUERY.lastIndexOf('}}}'));
+const COLL=`query($userId:Int){MediaListCollection(userId:$userId,type:ANIME){lists{entries{id mediaId status progress updatedAt media{${MEDIA_FIELDS}}}}}}`;
+const SAVE=`mutation($mediaId:Int,$status:MediaListStatus,$progress:Int){SaveMediaListEntry(mediaId:$mediaId,status:$status,progress:$progress){id}}`;
+const DEL=`mutation($id:Int){DeleteMediaListEntry(id:$id){deleted}}`;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function gql(query,variables,token=me()?.token){
+  const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json',Authorization:'Bearer '+token},body:JSON.stringify({query,variables})});
+  if(r.status===401)throw new Error('AUTH');
+  if(r.status===429){await sleep(5000);return gql(query,variables,token)}
+  const j=await r.json();
+  if(j.errors){const m=j.errors[0].message||'';if(/invalid token|unauthori[sz]ed/i.test(m))throw new Error('AUTH');throw new Error(m)} // AniList answers bad tokens with 400 "Invalid token"
+  return j.data;
+}
+const unsynced=()=>Object.values(list).filter(it=>!it.synced||it.updated>it.synced).length+(me()?.pendingDel?.length||0);
+let syncing=false,syncAgain=false,syncT;
+function scheduleSync(){if(!me()?.token)return;clearTimeout(syncT);syncT=setTimeout(()=>sync(false),2500)}
+async function sync(manual){
+  const p=me();if(!p?.token)return;
+  if(syncing){syncAgain=true;return}
+  syncing=true;syncAgain=false;
+  try{
+    // 1. removals made on this browser (queued so they survive being offline)
+    p.pendingDel=p.pendingDel||[];
+    while(p.pendingDel.length){
+      try{await gql(DEL,{id:p.pendingDel[0]})}catch(e){if(e.message==='AUTH'||e instanceof TypeError)throw e} // other errors: entry already gone
+      p.pendingDel.shift();saveProfiles();await sleep(700);
+    }
+    // 2. pull: newest change wins per entry
+    const d=await gql(COLL,{userId:p.id});
+    const remote={};
+    for(const l of d.MediaListCollection.lists)for(const e of l.entries)remote[e.mediaId]=e;
+    for(const e of Object.values(remote)){
+      const loc=list[e.mediaId],ms=e.updatedAt*1000;
+      if(!loc||ms>(loc.updated||0)){
+        list[e.mediaId]={...slim(e.media),status:RMAP[e.status]||'planning',progress:e.progress||0,added:loc?.added||ms||Date.now(),updated:ms,synced:Date.now(),entryId:e.id};
+      }else if(!loc.entryId)loc.entryId=e.id;
+    }
+    // removed on another browser/device: drop entries that were in sync here but are gone on AniList
+    for(const [k,it] of Object.entries(list))if(!remote[k]&&it.entryId&&it.synced&&it.updated<=it.synced)delete list[k];
+    store.set(listKey(),list);updateCounts();refreshCards();renderNext();if(view==='list')renderList();
+    // 3. push local changes
+    for(const it of Object.values(list)){
+      if(it.synced&&it.updated<=it.synced)continue;
+      const r=await gql(SAVE,{mediaId:it.id,status:SMAP[it.status],progress:it.progress||0});
+      it.entryId=r.SaveMediaListEntry.id;it.synced=Date.now();store.set(listKey(),list);await sleep(700);
+    }
+    p.lastSync=Date.now();saveProfiles();
+    if(manual)toast('Synced ✓');
+  }catch(e){
+    if(e.message==='AUTH'){delete p.token;saveProfiles();renderProfileBtn();toast(`AniList sign-in expired for ${p.name}, sign in again in Settings`)}
+    else toast('Sync failed: '+(e instanceof TypeError?'offline?':e.message));
+  }
+  syncing=false;
+  if(syncAgain)scheduleSync();
+}
+// Back from AniList sign-in: the token arrives in the URL hash. Work out which account it is,
+// store it as a profile, offer to move the guest list into it, then switch to it.
+const authing=(async function handleAuth(){
+  const tok=new URLSearchParams(location.hash.slice(1)).get('access_token')||pendingTok;
+  if(!tok)return false;
+  history.replaceState(null,'',location.pathname+location.search);
+  try{
+    const v=(await gql('{Viewer{id name avatar{medium}}}',{},tok)).Viewer;
+    const isNew=!profiles[v.id];
+    profiles[v.id]={...profiles[v.id],id:v.id,name:v.name,avatar:v.avatar?.medium||'',token:tok};saveProfiles();
+    const guest=store.get('kuro.list',{}),n=Object.keys(guest).length;
+    if(isNew&&n&&confirm(`Add the ${n} title${n>1?'s':''} saved in this browser without an account to ${v.name}'s list?`)){
+      const mine=store.get('kuro.list.'+v.id,{});
+      for(const it of Object.values(guest)){delete it.synced;delete it.entryId}
+      store.set('kuro.list.'+v.id,{...guest,...mine});store.del('kuro.list');
+    }
+    switchProfile(v.id,'Signed in as '+v.name);
+  }catch(e){toast('AniList sign-in failed: '+(e.message==='AUTH'?'token rejected':e.message))}
+  return true;
+})();
+
+function renderProfileBtn(){
+  const p=me(),b=$('#settingsBtn');if(!p)return;
+  b.classList.add('me');b.title=p.name+(p.token?'':' (signed out, sign in again in Settings)');b.setAttribute('aria-label','Profile and settings');
+  b.innerHTML=p.avatar?`<img src="${esc(p.avatar)}" alt="">`:`<span>${esc(p.name[0]||'?')}</span>`;
+  b.classList.toggle('expired',!p.token);
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&me()?.token&&Date.now()-(me().lastSync||0)>60000)sync(false)});
+
+renderProfileBtn();updateCounts();renderNext();setView('discover');load(false);
+authing.then(a=>{if(!a&&me()?.token)sync(false)});
+try{const m=sessionStorage.getItem('kuro.toast');if(m){sessionStorage.removeItem('kuro.toast');toast(m)}}catch{}
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
