@@ -134,6 +134,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .nuc{flex:none;width:260px;display:flex;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px;cursor:pointer}
 .nuimg{width:48px;aspect-ratio:2/3;border-radius:8px;background:var(--card2) center/cover;flex:none}
 .nuc .ctitle{font-size:13px}
+.nuc .new{color:var(--accent);font-weight:700}
+.nuc.soon{opacity:.7}
 #nextup{margin-bottom:16px}
 
 /* settings */
@@ -243,8 +245,9 @@ nav.bottom{display:none}
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const GENRES=['Action','Adventure','Comedy','Drama','Fantasy','Horror','Mahou Shoujo','Mecha','Music','Mystery','Psychological','Romance','Sci-Fi','Slice of Life','Sports','Supernatural','Thriller'];
-const STATUSES=[['planning','Plan to watch'],['watching','Watching'],['completed','Completed'],['dropped','Dropped']];
-const DEFAULT_PROVIDER='https://anikototv.bz/search?keyword={query}';
+const STATUSES=[['planning','Plan to watch'],['watching','Watching'],['repeating','Rewatching'],['paused','Paused'],['completed','Completed'],['dropped','Dropped']];
+const ACTIVE=['watching','repeating']; // statuses that show episode progress and appear in Next up
+const DEFAULT_PROVIDER=''; // no default Watch link: each user may set their own in Settings (the button is hidden until then)
 // Built-in AniList client (public id, implicit grant, no secret). Its Redirect URL is the hosted address,
 // so it is only used there; other addresses (localhost, LAN) need their own client in Settings.
 const HOSTED_URL='https://michaelgon98.github.io/kuro-watchlist/',BUILTIN_CLIENT_ID='58014';
@@ -293,7 +296,9 @@ async function anilist(vars){
 const titleOf=m=>m.title.english||m.title.romaji;
 function slim(m){return{id:m.id,idMal:m.idMal,title:m.title,cover:m.coverImage.large,color:m.coverImage.color,banner:m.bannerImage,
   desc:m.description,genres:m.genres,format:m.format,episodes:m.episodes,duration:m.duration,status:m.status,season:m.season,year:m.seasonYear,
-  score:m.averageScore,pop:m.popularity,studio:m.studios?.nodes?.[0]?.name,next:m.nextAiringEpisode,trailer:m.trailer,url:m.siteUrl}}
+  score:m.averageScore,pop:m.popularity,studio:m.studios?.nodes?.[0]?.name,next:m.nextAiringEpisode,trailer:m.trailer,url:m.siteUrl,mstatus:m.status}}
+// media fields safe to copy onto a list item: `status` there means the list status, so the airing status goes in `mstatus`
+function freshMedia(m){const{status,...f}=slim(m);return f}
 
 /* ---------- state ---------- */
 const F={sort:'TRENDING_DESC',format:'',status:'',season:'',year:'',score:0,genres:new Set(),q:''};
@@ -369,7 +374,7 @@ function cardHTML(m,showProg){
     <div class="cover" style="background-image:url('${esc(m.cover)}');background-color:${esc(m.color||'')}" data-open="${m.id}">
       ${m.score?`<span class="badge ${scoreCls(m.score)}">★ ${(m.score/10).toFixed(1)}</span>`:''}
       <button class="add ${inList?'in':''}" data-add="${m.id}" aria-label="${inList?'In list':'Add to list'}">${inList?'✓':'+'}</button>
-      <div class="cinfo"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)}${showProg&&e.status==='watching'?` · ep ${e.progress||0}`:''}</div></div>
+      <div class="cinfo"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)}${showProg&&(ACTIVE.includes(e.status)||e.status==='paused')?` · ep ${e.progress||0}`:''}</div></div>
     </div>${showProg&&m.episodes?`<div class="prog"><i style="width:${pct}%"></i></div>`:''}</div>`;
 }
 document.addEventListener('click',e=>{
@@ -378,10 +383,45 @@ document.addEventListener('click',e=>{
     if(list[id])openModal(id);else{addToList(id,'planning');toast('Added to Plan to watch');refreshCards()}return}
   const o=e.target.closest('[data-open]');if(o)openModal(+o.dataset.open);
 });
+// "in 3h" within a day, otherwise "Tue 17:00"
+function whenText(sec){
+  const d=sec*1000-Date.now();if(d<=0)return 'now';
+  if(d<36e5)return 'in '+Math.max(1,Math.round(d/6e4))+'m';
+  if(d<864e5)return 'in '+Math.round(d/36e5)+'h';
+  return new Date(sec*1000).toLocaleString([],{weekday:'short',hour:'2-digit',minute:'2-digit'});
+}
+// Next episode for a list item: is it out yet, and how many aired episodes are unwatched?
+function nextInfo(x){
+  const ep=(x.progress||0)+1,nx=x.next&&x.next.airingAt*1000>Date.now()?x.next:null;
+  const aired=nx?nx.episode-1:x.mstatus==='NOT_YET_RELEASED'?0:(x.episodes||Infinity);
+  return{ep,out:ep<=aired,behind:nx?aired-ep+1:0,nx}; // "N new" only makes sense for shows still airing
+}
 function renderNext(){
-  const items=Object.values(list).filter(x=>x.status==='watching'&&(!x.episodes||(x.progress||0)<x.episodes)).sort((a,b)=>(b.updated||0)-(a.updated||0)).slice(0,12);
+  const items=Object.values(list).filter(x=>ACTIVE.includes(x.status)&&(!x.episodes||(x.progress||0)<x.episodes)).map(x=>({x,n:nextInfo(x)}))
+    // episodes you can watch now first (most recently touched first), then upcoming ones by air time
+    .sort((a,b)=>(b.n.out-a.n.out)||(a.n.out?(b.x.updated||0)-(a.x.updated||0):(a.n.nx?.airingAt||9e9)-(b.n.nx?.airingAt||9e9))).slice(0,12);
   $('#nextup').style.display=items.length?'':'none';
-  $('#nuRow').innerHTML=items.map(x=>`<div class="nuc" data-open="${x.id}"><div class="nuimg" style="background-image:url('${esc(x.cover)}')"></div><div><div class="ctitle">${esc(titleOf(x))}</div><div class="cmeta">Next: Ep ${(x.progress||0)+1}${x.episodes?' / '+x.episodes:''}</div></div></div>`).join('');
+  $('#nuRow').innerHTML=items.map(({x,n})=>{
+    const tot=x.episodes?' / '+x.episodes:'';
+    const sub=n.out?`Next: Ep ${n.ep}${tot}${n.behind>1?` · <b class="new">${n.behind} new</b>`:''}`
+      :n.nx?`Ep ${n.ep} airs ${esc(whenText(n.nx.airingAt))}`:`Ep ${n.ep} not aired yet`;
+    return `<div class="nuc${n.out?'':' soon'}" data-open="${x.id}"><div class="nuimg" style="background-image:url('${esc(x.cover)}')"></div><div><div class="ctitle">${esc(titleOf(x))}</div><div class="cmeta">${sub}</div></div></div>`}).join('');
+}
+// Refresh airing info (next episode, episode count) for unfinished shows in the list, also without an account.
+// Uses the public AniList API, max once per 30 min unless a stored "next episode" time has passed.
+const AIR_Q=`query($ids:[Int]){Page(perPage:50){media(id_in:$ids,type:ANIME){${QUERY.slice(QUERY.indexOf('id idMal'),QUERY.lastIndexOf('}}}'))}}}}`;
+async function refreshAiring(force){
+  const its=Object.values(list).filter(x=>x.status!=='completed'&&x.status!=='dropped'&&(x.next||x.mstatus!=='FINISHED'));
+  const stale=its.some(x=>x.next&&x.next.airingAt*1000<Date.now());
+  if(!its.length||(!force&&!stale&&Date.now()-(store.get('kuro.airAt',0))<18e5))return;
+  try{
+    for(let i=0;i<its.length;i+=50){
+      const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:AIR_Q,variables:{ids:its.slice(i,i+50).map(x=>x.id)}})});
+      if(!r.ok)return;
+      for(const m of (await r.json()).data.Page.media)if(list[m.id])Object.assign(list[m.id],freshMedia(m));
+    }
+    store.set(listKey(),list);store.set('kuro.airAt',Date.now());renderNext();if(view==='list')renderList();
+  }catch{}
 }
 function refreshCards(){
   renderNext();
@@ -418,7 +458,7 @@ function setView(v){
 $$('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
 
 /* ---------- detail modal ---------- */
-if(!settings.provider||settings.provider==='https://anikoto.to/filter?keyword={query}')settings.provider=DEFAULT_PROVIDER;
+if(settings.provider==='https://anikoto.to/filter?keyword={query}')settings.provider=''; // dead address from an early version
 const hasProvider=()=>/^https?:\/\/.+/i.test(settings.provider||'');
 function watchUrl(m){return settings.provider.replace('{query}',encodeURIComponent(titleOf(m))).replace('{romaji}',encodeURIComponent(m.title.romaji))}
 let curModal=null,keepTop=null,details={},epAll=false;
@@ -436,21 +476,21 @@ function openModal(id,keep){
         <div class="chips" style="margin-top:8px">${(m.genres||[]).map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div></div></div>
       <div class="stats">
         ${stat('Score',m.score?(m.score/10).toFixed(1)+' / 10':'')}${stat('Format',m.format?.replace('_',' '))}
-        ${stat('Episodes',m.episodes?m.episodes+(m.duration?` × ${m.duration}m`:''):'')}${stat('Status',m.status?.replace(/_/g,' '))}
+        ${stat('Episodes',m.episodes?m.episodes+(m.duration?` × ${m.duration}m`:''):'')}${stat('Status',(m.mstatus||cache[id]?.status||'').replace(/_/g,' '))}
         ${stat('Season',m.season?`${m.season[0]+m.season.slice(1).toLowerCase()} ${m.year||''}`:'')}${stat('Studio',m.studio)}
         ${stat('Next episode',nxt)}${stat('Popularity',m.pop?.toLocaleString())}
       </div>
       <div id="trailer"></div>
       <div class="desc">${esc(desc).replace(/\n/g,'<br>')}</div>
       <div class="seg" id="seg">${STATUSES.map(([k,l])=>`<button data-st="${k}" class="${e?.status===k?'on':''}">${l}</button>`).join('')}</div>
-      ${e&&e.status==='watching'?`<div class="stepper"><button id="epm">−</button><b>Episode ${e.progress||0}${m.episodes?' / '+m.episodes:''}</b><button id="epp">+</button></div>`:''}
+      ${e&&(ACTIVE.includes(e.status)||e.status==='paused')?`<div class="stepper"><button id="epm">−</button><b>Episode ${e.progress||0}${m.episodes?' / '+m.episodes:''}</b><button id="epp">+</button></div>`:''}
       <h3 class="sh">Where to watch</h3>
       <div class="actions" id="wtwb"><span class="hint">Loading…</span></div>
       <h3 class="sh">Episodes <span class="hint" style="text-transform:none;letter-spacing:0">· tap an episode to mark it watched</span></h3>
       <div id="eps"><span class="hint">Loading…</span></div>
       <h3 class="sh">More</h3>
       <div class="actions">
-        ${hasProvider()?`<a class="btn primary" href="${esc(watchUrl(m))}" target="_blank" rel="noopener">▶ Watch</a>`:`<button class="btn primary" id="wset">▶ Set up Watch link</button>`}
+        ${hasProvider()?`<a class="btn primary" href="${esc(watchUrl(m))}" target="_blank" rel="noopener">▶ Watch</a>`:''}
         ${m.trailer?.site==='youtube'&&/^[\w-]{6,20}$/.test(m.trailer.id||'')?`<button class="btn" id="trl">▶ Trailer</button>`:''}
         <a class="btn" href="${esc(m.url)}" target="_blank" rel="noopener">AniList</a>
         ${m.idMal?`<a class="btn" href="https://myanimelist.net/anime/${m.idMal}" target="_blank" rel="noopener">MAL</a>`:''}
@@ -462,7 +502,6 @@ function openModal(id,keep){
   $('#seg').onclick=ev=>{const s=ev.target.dataset.st;if(!s)return;addToList(id,s);
     if(s==='completed'&&m.episodes){list[id].progress=m.episodes;list[id].updated=Date.now();saveList()}refreshCards();openModal(id)};
   if($('#epp'))$('#epp').onclick=()=>step(id,1),$('#epm').onclick=()=>step(id,-1);
-  if($('#wset'))$('#wset').onclick=openSettings;
   if($('#trl'))$('#trl').onclick=()=>{const t=$('#trailer');t.innerHTML=t.innerHTML?'':`<iframe src="https://www.youtube-nocookie.com/embed/${m.trailer.id}?autoplay=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;if(t.innerHTML)t.scrollIntoView({block:'center',behavior:'smooth'})};
   fillDetails(id);
   if($('#rm'))$('#rm').onclick=()=>{const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId];saveProfiles()}saveList();closeModal();refreshCards();toast('Removed')};
@@ -518,7 +557,7 @@ function epTap(id,k){
   const e=list[id],tot=e.episodes||details[id]?.episodes||0;
   e.progress=e.progress===k?k-1:k;
   if(tot&&e.progress>=tot)e.status='completed';
-  else if(e.progress>0&&(e.status==='planning'||e.status==='dropped'||e.status==='completed'))e.status='watching';
+  else if(e.progress>0&&['planning','dropped','completed','paused'].includes(e.status))e.status='watching';
   e.updated=Date.now();saveList();refreshCards();openModal(id,true);
 }
 $('#modal').addEventListener('click',ev=>{
@@ -533,9 +572,9 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 function openSettings(){
   $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" style="top:10px">✕</button>
     <h2 style="margin:0 0 4px">Settings</h2>
-    <label>Episode provider link</label>
-    <input type="text" id="prov" value="${esc(settings.provider)}">
-    <div class="hint">Template used by the “Watch” button. <code>{query}</code> becomes the anime title. Open your episode site, search for any title, copy the results page URL here, and replace the search word with <code>{query}</code>, e.g. <code>https://your-site/search?keyword={query}</code>. Only use an address you trust.</div>
+    <label>Your Watch link (optional)</label>
+    <input type="text" id="prov" value="${esc(settings.provider||'')}" placeholder="https://your-site/search?keyword={query}">
+    <div class="hint">Adds a “Watch” button to each anime that opens this address, with <code>{query}</code> replaced by the title. Leave empty to hide the button; the official “Where to watch” links are always shown. Saved in this browser only. Only use an address you trust.</div>
     <label>Profile</label>
     <div class="hint" style="margin:0 0 6px">Sign in with AniList and your list follows you to any browser or device you sign in on. Without an account the list stays in this browser only.</div>
     ${Object.values(profiles).map(p=>{const on=me()?.id===p.id;return `<div class="prof${on?' on':''}">
@@ -558,7 +597,7 @@ function openSettings(){
     <div class="actions" style="margin-top:20px"><button class="btn primary" id="save">Save</button></div></div>`;
   $('#scrim').classList.add('open');
   $('#mclose').onclick=closeModal;
-  $('#save').onclick=()=>{settings.provider=$('#prov').value.trim()||DEFAULT_PROVIDER;const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
+  $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
   $('#conn').onclick=()=>{const t=$('#cid')?.value.trim();if(t&&/^\d+$/.test(t))settings.clientId=t;else if(t==='')delete settings.clientId;saveSettings();
     const c=clientId();if(!c)return toast('Enter the numeric AniList Client ID (see AniList app setup)');
     location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+c+'&response_type=token'};
@@ -583,8 +622,8 @@ $('#settingsBtn').onclick=openSettings;$('#navSet').onclick=openSettings;
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
 
 /* ---------- AniList sync ---------- */
-const SMAP={planning:'PLANNING',watching:'CURRENT',completed:'COMPLETED',dropped:'DROPPED'};
-const RMAP={PLANNING:'planning',CURRENT:'watching',COMPLETED:'completed',DROPPED:'dropped',PAUSED:'watching',REPEATING:'watching'};
+const SMAP={planning:'PLANNING',watching:'CURRENT',repeating:'REPEATING',paused:'PAUSED',completed:'COMPLETED',dropped:'DROPPED'};
+const RMAP=Object.fromEntries(Object.entries(SMAP).map(([k,v])=>[v,k]));
 const MEDIA_FIELDS=QUERY.slice(QUERY.indexOf('id idMal'),QUERY.lastIndexOf('}}}'));
 const COLL=`query($userId:Int){MediaListCollection(userId:$userId,type:ANIME){lists{entries{id mediaId status progress updatedAt media{${MEDIA_FIELDS}}}}}}`;
 const SAVE=`mutation($mediaId:Int,$status:MediaListStatus,$progress:Int){SaveMediaListEntry(mediaId:$mediaId,status:$status,progress:$progress){id}}`;
@@ -618,9 +657,14 @@ async function sync(manual){
     for(const l of d.MediaListCollection.lists)for(const e of l.entries)remote[e.mediaId]=e;
     for(const e of Object.values(remote)){
       const loc=list[e.mediaId],ms=e.updatedAt*1000;
-      if(!loc||ms>(loc.updated||0)){
+      // remote wins if newer; on an equal time the local copy is unchanged since the last pull, so remote status is
+      // authoritative (fixes entries that older versions stored as 'watching' for PAUSED/REPEATING)
+      if(!loc||ms>(loc.updated||0)||(ms===loc.updated&&RMAP[e.status]&&RMAP[e.status]!==loc.status)){
         list[e.mediaId]={...slim(e.media),status:RMAP[e.status]||'planning',progress:e.progress||0,added:loc?.added||ms||Date.now(),updated:ms,synced:Date.now(),entryId:e.id};
-      }else if(!loc.entryId)loc.entryId=e.id;
+      }else{
+        Object.assign(loc,freshMedia(e.media)); // fresh airing info, episode count etc.; does not count as a local change
+        if(!loc.entryId)loc.entryId=e.id;
+      }
     }
     // removed on another browser/device: drop entries that were in sync here but are gone on AniList
     for(const [k,it] of Object.entries(list))if(!remote[k]&&it.entryId&&it.synced&&it.updated<=it.synced)delete list[k];
@@ -667,10 +711,11 @@ function renderProfileBtn(){
   b.innerHTML=p.avatar?`<img src="${esc(p.avatar)}" alt="">`:`<span>${esc(p.name[0]||'?')}</span>`;
   b.classList.toggle('expired',!p.token);
 }
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&me()?.token&&Date.now()-(me().lastSync||0)>60000)sync(false)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)return;refreshAiring();renderNext();if(me()?.token&&Date.now()-(me().lastSync||0)>60000)sync(false)});
 
 renderProfileBtn();updateCounts();renderNext();setView('discover');load(false);
 authing.then(a=>{if(!a&&me()?.token)sync(false)});
+refreshAiring();
 try{const m=sessionStorage.getItem('kuro.toast');if(m){sessionStorage.removeItem('kuro.toast');toast(m)}}catch{}
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
