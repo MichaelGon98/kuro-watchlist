@@ -109,6 +109,37 @@ img.nuimg,img.epth{object-fit:cover;display:block}
 .sub::-webkit-scrollbar{display:none}
 .lbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .lbar input,.lbar select{width:auto;flex:1;min-width:140px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;outline:0}
+.lbar select{flex:0 1 auto;min-width:0}
+.lbar #lq{min-width:180px}
+.lsortw{display:flex;gap:6px;flex:0 1 auto}
+.ibtn{flex:none;min-width:40px;height:40px;padding:0 10px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--text);display:inline-grid;place-items:center}
+.ibtn svg{width:18px;height:18px}
+.ibtn[aria-pressed=true]{color:var(--accent);border-color:var(--accent)}
+.vtog{display:flex;flex:none;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.vtog button{width:40px;height:38px;display:grid;place-items:center;color:var(--muted)}
+.vtog button svg{width:18px;height:18px}
+.vtog button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
+.lsum{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin:-4px 0 12px;min-height:20px}
+.lsum:empty{display:none}
+.lsum button{color:var(--accent);font-weight:600;font-size:13px}
+/* compact list rows */
+#lgrid.rows{display:flex;flex-direction:column;gap:6px}
+.lrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 10px 6px 6px;cursor:pointer;transition:border-color .15s}
+.lrow:hover{border-color:var(--hover)}
+.lrow .nuimg{width:38px;border-radius:6px}
+.lrow .grow{flex:1;min-width:0}
+.lrow .ctitle{font-size:14px;-webkit-line-clamp:1}
+.lrow .cmeta{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow .new{color:var(--accent);font-weight:700}
+.lst{display:inline-block;padding:1px 7px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-size:11px;margin-right:6px;color:var(--text)}
+.lpr{flex:none;width:120px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.lpr .prog{margin-top:4px;border-radius:3px;overflow:hidden}
+.lsc{flex:none;width:44px;text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.lsc.s{color:var(--good)}.lsc.m{color:var(--warn)}.lsc.l{color:var(--bad)}.lsc.mine{color:var(--accent2)}
+.lrow .plus,.lrow .lpad{flex:none;width:48px;text-align:center;padding-left:0;padding-right:0}
+/* stats share */
+.shead{display:flex;justify-content:flex-end;margin-bottom:12px}
+.shprev{display:block;width:100%;max-width:380px;margin:14px auto 4px;border-radius:14px;border:1px solid var(--line);box-shadow:0 10px 30px #0006;aspect-ratio:4/5;background:var(--card2)}
 
 /* modal */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
@@ -329,6 +360,18 @@ nav.bottom{display:none}
   .tabs{display:none}
   .logo{flex:1}
   .grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .lbar{gap:8px}
+  .lbar #lq{display:none} /* the header search box filters My List on phones */
+  .lbar select{flex:1 1 40%}
+  .lsortw{flex:1 1 100%}
+  .lsortw select{flex:1}
+  .lpr{width:64px}
+  .lpr .prog{display:none}
+  .lsc{width:34px}
+  .lrow{gap:10px}
+  .lrow .ctitle{-webkit-line-clamp:2;font-size:13.5px}
+  .lrow .lpad{display:none}
+  .lrow .plus{width:auto;padding:7px 10px}
   .ftoggle{display:inline-flex}
   .filters .fbody{display:none}
   .filters.open .fbody{display:block}
@@ -400,8 +443,18 @@ nav.bottom{display:none}
     <div class="lbar">
       <input id="lq" type="search" placeholder="Filter my list…" aria-label="Filter my list">
       <select id="lgenre" aria-label="Genre"><option value="">All genres</option></select>
-      <select id="lsort" aria-label="Sort my list"><option value="added">Recently added</option><option value="title">Title A–Z</option><option value="score">Score</option><option value="mine">My rating</option><option value="year">Year</option></select>
+      <select id="lformat" aria-label="Format"><option value="">All formats</option><option value="TV">TV</option><option value="TV_SHORT">TV short</option><option value="MOVIE">Movie</option><option value="OVA">OVA</option><option value="ONA">ONA</option><option value="SPECIAL">Special</option><option value="MUSIC">Music</option></select>
+      <select id="lair" aria-label="Airing"><option value="">Any airing state</option><option value="new">New episodes to watch</option><option value="RELEASING">Airing now</option><option value="FINISHED">Finished airing</option><option value="NOT_YET_RELEASED">Not yet aired</option></select>
+      <div class="lsortw">
+        <select id="lsort" aria-label="Sort my list"><option value="added">Recently added</option><option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="score">AniList score</option><option value="mine">My rating</option><option value="pop">Popularity</option><option value="year">Year</option><option value="progress">Progress</option><option value="left">Episodes left</option><option value="airing">Next episode airs</option><option value="length">Length</option></select>
+        <button class="ibtn" id="ldir" aria-pressed="false" aria-label="Reverse sort order" title="Reverse sort order"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></svg></button>
+        <div class="vtog" role="group" aria-label="Layout">
+          <button data-lv="grid" aria-pressed="true" aria-label="Grid view" title="Grid view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></button>
+          <button data-lv="compact" aria-pressed="false" aria-label="Compact view" title="Compact view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><rect x="3.5" y="4.5" width="3" height="3" rx=".5"/><rect x="3.5" y="10.5" width="3" height="3" rx=".5"/><rect x="3.5" y="16.5" width="3" height="3" rx=".5"/></svg></button>
+        </div>
+      </div>
     </div>
+    <div class="lsum" id="lsum" aria-live="polite"></div>
     <div class="grid" id="lgrid"></div>
   </section>
 
@@ -585,7 +638,7 @@ function cardHTML(m,showProg){
   const pct=showProg&&m.episodes?Math.min(100,(e.progress||0)/m.episodes*100):0;
   return `<div class="card" data-id="${m.id}">
     <div class="cover" style="background-color:${esc(m.color||'')}" data-open="${m.id}">${pic(m.cover,'cimg')}
-      ${showProg&&e?.myScore&&settings.rate!==false?`<span class="badge mine">♥ ${e.myScore/10}</span>`
+      ${showProg&&e?.myScore&&settings.rate!==false&&lui.sort!=='score'?`<span class="badge mine">♥ ${e.myScore/10}</span>`
         :m.score?`<span class="badge ${scoreCls(m.score)}">★ ${(m.score/10).toFixed(1)}</span>`:''}
       <div class="cinfo" role="button" tabindex="0"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)}${showProg&&(ACTIVE.includes(e.status)||e.status==='paused')?` · ep ${e.progress||0}`:''}</div></div>
       ${showProg&&ACTIVE.includes(e.status)&&nextInfo(e).out&&!(e.episodes&&e.progress>=e.episodes)
@@ -711,16 +764,70 @@ function addToList(id,status){
 
 /* ---------- list view ---------- */
 function updateCounts(){$('#cnt1').textContent=Object.keys(list).length}
+// My List view options, remembered in this browser: status tab, filters, sort, direction, layout
+const LUI_DEF={status:'watching',genre:'',format:'',air:'',sort:'added',rev:false,layout:'grid'};
+let lui={...LUI_DEF,...store.get('kuro.listUi',{})};
+listStatus=lui.status;
+const SEASON_I={WINTER:0,SPRING:1,SUMMER:2,FALL:3};
+// value to sort by (null = unknown, always listed last) and the natural direction (1 = smallest first)
+const LSORT={
+  added:[x=>x.added||0,-1], updated:[x=>x.updated||x.added||0,-1], title:[x=>titleOf(x).toLowerCase(),1],
+  score:[x=>x.score||null,-1], mine:[x=>x.myScore||null,-1], pop:[x=>x.pop||null,-1],
+  year:[x=>x.year?x.year*4+(SEASON_I[x.season]??0):null,-1],
+  progress:[x=>x.episodes?(x.progress||0)/x.episodes:null,-1],
+  left:[x=>x.episodes?Math.max(0,x.episodes-(x.progress||0)):null,1],
+  airing:[x=>x.next?.airingAt*1000>Date.now()?x.next.airingAt:null,1],
+  length:[x=>x.episodes?x.episodes*(x.duration||24):null,-1]};
+function airOk(x,a){
+  if(!a)return true;
+  if(a==='new'){const n=nextInfo(x);return(ACTIVE.includes(x.status)||x.status==='paused')&&n.out&&!(x.episodes&&(x.progress||0)>=x.episodes)}
+  const ms=x.mstatus||(x.next?'RELEASING':'');
+  return ms===a||(a==='FINISHED'&&ms==='CANCELLED');
+}
+const listFiltered=()=>!!($('#lq').value.trim()||lui.genre||lui.format||lui.air);
 function renderList(){
   const all=Object.values(list);
-  $('#subtabs').innerHTML=STATUSES.map(([k,l])=>`<button class="chip ${k===listStatus?'on':''}" data-ls="${k}" aria-pressed="${k===listStatus}">${l} · ${all.filter(x=>x.status===k).length}</button>`).join('');
-  const q=norm($('#lq').value),g=$('#lgenre').value,s=$('#lsort').value;
-  let items=all.filter(x=>x.status===listStatus&&(!g||x.genres?.includes(g))&&(!q||norm(x.title.english).includes(q)||norm(x.title.romaji).includes(q)));
-  items.sort((a,b)=>s==='title'?titleOf(a).localeCompare(titleOf(b)):s==='score'?(b.score||0)-(a.score||0):s==='mine'?(b.myScore||0)-(a.myScore||0):s==='year'?(b.year||0)-(a.year||0):b.added-a.added);
-  $('#lgrid').innerHTML=items.length?items.map(m=>cardHTML(m,true)).join(''):`<div class="empty" style="grid-column:1/-1">Nothing here yet.<br>Tap + on any anime in Discover to add it.</div>`;
+  lui.status=listStatus;store.set('kuro.listUi',lui);
+  $('#subtabs').innerHTML=[['all','All'],...STATUSES].map(([k,l])=>`<button class="chip ${k===listStatus?'on':''}" data-ls="${k}" aria-pressed="${k===listStatus}">${l} · ${k==='all'?all.length:all.filter(x=>x.status===k).length}</button>`).join('');
+  $('#lgenre').value=lui.genre;$('#lformat').value=lui.format;$('#lair').value=lui.air;$('#lsort').value=lui.sort;
+  $('#ldir').setAttribute('aria-pressed',lui.rev);
+  $$('.vtog [data-lv]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lv===lui.layout));
+  const q=norm($('#lq').value),inTab=all.filter(x=>listStatus==='all'||x.status===listStatus);
+  let items=inTab.filter(x=>(!lui.genre||x.genres?.includes(lui.genre))&&(!lui.format||x.format===lui.format)&&airOk(x,lui.air)
+    &&(!q||norm(x.title?.english).includes(q)||norm(x.title?.romaji).includes(q)));
+  const[key,dir0]=LSORT[lui.sort]||LSORT.added,dir=lui.rev?-dir0:dir0;
+  items=items.map(x=>({x,v:key(x)})).sort((a,b)=>{
+    if(a.v==null||b.v==null)return(a.v==null)-(b.v==null)||titleOf(a.x).localeCompare(titleOf(b.x));
+    const c=typeof a.v==='string'?a.v.localeCompare(b.v):a.v-b.v;
+    return c*dir||titleOf(a.x).localeCompare(titleOf(b.x))}).map(o=>o.x);
+  const filt=listFiltered();
+  $('#lsum').innerHTML=filt&&inTab.length?`<span>${items.length} of ${inTab.length} shown</span><button id="lclear">Clear filters</button>`:'';
+  const g=$('#lgrid');g.classList.toggle('rows',lui.layout==='compact');
+  g.innerHTML=items.length?items.map(m=>lui.layout==='compact'?rowHTML(m):cardHTML(m,true)).join('')
+    :filt&&inTab.length?`<div class="empty" style="grid-column:1/-1">Nothing matches these filters.<br><button class="link" id="lclear2">Clear filters</button></div>`
+    :`<div class="empty" style="grid-column:1/-1">Nothing here yet.<br>Tap + on any anime in Discover to add it.</div>`;
+}
+// One compact row of My List: cover, title, meta, progress, score, +1
+function rowHTML(m){
+  const e=list[m.id],n=nextInfo(e),prog=e.progress||0;
+  const stName=listStatus==='all'?(STATUSES.find(s=>s[0]===e.status)||[])[1]:'';
+  const meta=[m.format?.replace('_',' '),m.year,m.episodes?m.episodes+' ep':null].filter(Boolean).join(' · ');
+  const act=ACTIVE.includes(e.status),fin=e.episodes&&prog>=e.episodes;
+  const extra=act&&!fin?(n.out&&n.behind>1?` · <b class="new">${n.behind} new</b>`:!n.out&&n.nx?` · Ep ${n.ep} ${esc(whenText(n.nx.airingAt))}`:''):'';
+  const showProg=e.status!=='planning';
+  const pr=showProg?`<div class="lpr">${e.status==='completed'?(m.episodes?`${m.episodes} / ${m.episodes}`:'Done'):`${prog}${m.episodes?' / '+m.episodes:''} ep`}${m.episodes?`<div class="prog"><i style="width:${Math.min(100,(e.status==='completed'?m.episodes:prog)/m.episodes*100)}%"></i></div>`:''}</div>`:'<div class="lpr"></div>';
+  const mine=e.myScore&&settings.rate!==false&&lui.sort!=='score';
+  const sc=mine?`<span class="lsc mine" title="My rating">♥ ${e.myScore/10}</span>`:m.score?`<span class="lsc ${scoreCls(m.score)}" title="AniList score">★ ${(m.score/10).toFixed(1)}</span>`:'<span class="lsc"></span>';
+  const plus=act&&n.out&&!fin?`<button class="plus" data-plus="${m.id}" aria-label="Mark episode ${prog+1} watched">+1</button>`:'<span class="lpad"></span>';
+  return `<div class="lrow" data-open="${m.id}">${pic(m.cover,'nuimg')}<div class="grow" role="button" tabindex="0"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${stName?`<span class="lst">${esc(stName)}</span>`:''}${esc(meta)}${extra}</div></div>${pr}${sc}${plus}</div>`;
 }
 $('#subtabs').onclick=e=>{const k=e.target.dataset.ls;if(k){listStatus=k;renderList()}};
-['#lq','#lgenre','#lsort'].forEach(s=>$(s).oninput=renderList);
+$('#lq').oninput=renderList;
+for(const[sel,k]of[['#lgenre','genre'],['#lformat','format'],['#lair','air'],['#lsort','sort']])$(sel).oninput=e=>{lui[k]=e.target.value;renderList()};
+$('#ldir').onclick=()=>{lui.rev=!lui.rev;renderList()};
+$('.vtog').onclick=e=>{const b=e.target.closest('[data-lv]');if(b){lui.layout=b.dataset.lv;renderList()}};
+$('#v-list').addEventListener('click',e=>{if(e.target.id==='lclear'||e.target.id==='lclear2'){
+  Object.assign(lui,{genre:'',format:'',air:''});$('#lq').value='';if(view==='list')$('#q').value='';renderList();$('#lq').focus()}});
 
 /* lazy-loaded cover/thumbnail: decorative (alt="") because the title is always next to it */
 const pic=(src,cls)=>src?`<img class="${cls}" src="${esc(src)}" loading="lazy" decoding="async" alt="">`:`<div class="${cls}"></div>`;
@@ -730,25 +837,31 @@ const FORMATS={TV:'TV',TV_SHORT:'TV short',MOVIE:'Movie',OVA:'OVA',ONA:'ONA',SPE
 function fmtTime(min){min=Math.round(min);const d=Math.floor(min/1440),h=Math.floor(min%1440/60),m=min%60;
   return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${m}m`}
 function watchedEps(x){return x.status==='completed'?Math.max(x.progress||0,x.episodes||0):(x.progress||0)}
-function drawStats(){
-  const all=Object.values(list);
-  if(!all.length){$('#stats').innerHTML=`<div class="empty">No stats yet.<br>Add some anime to your list and they will show up here.</div>`;return}
-  const started=all.filter(x=>x.status!=='planning');
+// The numbers behind the Stats tab and the shareable image
+function statsData(){
+  const all=Object.values(list),started=all.filter(x=>x.status!=='planning');
   let eps=0,mins=0,noLen=0;const per=[];
   for(const x of all){const e=watchedEps(x);eps+=e;if(!e)continue;
     if(x.duration){mins+=e*x.duration;per.push({x,m:e*x.duration})}else noLen++}
   const rate=settings.rate!==false,rated=all.filter(x=>x.myScore>0);
   const mean=rated.length?rated.reduce((s,x)=>s+x.myScore,0)/rated.length/10:0;
+  const count=(arr,key)=>{const c={};for(const x of arr)for(const k of [].concat(key(x)||[]))c[k]=(c[k]||0)+1;
+    return Object.entries(c).sort((a,b)=>b[1]-a[1])};
+  return{all,started,eps,mins,noLen,rate,rated,mean,top:per.sort((a,b)=>b.m-a.m).slice(0,5),
+    genres:count(started,x=>x.genres),formats:count(started,x=>x.format),
+    completed:all.filter(x=>x.status==='completed').length,watching:all.filter(x=>ACTIVE.includes(x.status)).length,
+    planning:all.filter(x=>x.status==='planning').length};
+}
+function drawStats(){
+  const d=statsData(),{all,started,eps,mins,noLen,rate,rated,mean,top}=d;
+  if(!all.length){$('#stats').innerHTML=`<div class="empty">No stats yet.<br>Add some anime to your list and they will show up here.</div>`;return}
   const tile=(l,v,s)=>`<div class="tile"><small>${l}</small><b>${v}</b>${s?`<span>${s}</span>`:''}</div>`;
   const bars=(rows,attr)=>{const max=Math.max(1,...rows.map(r=>r.n));
     return rows.map(r=>`<div class="brow"${attr?` data-ls="${r.k}" role="button" tabindex="0"`:''} title="${esc(r.tip||`${r.l}: ${r.n}`)}"><span class="bl">${esc(r.l)}</span>
       <span class="bt"><i style="width:${r.n/max*100}%"></i></span><span class="bv">${r.n}</span></div>`).join('')};
-  const count=(arr,key)=>{const c={};for(const x of arr)for(const k of [].concat(key(x)||[]))c[k]=(c[k]||0)+1;
-    return Object.entries(c).sort((a,b)=>b[1]-a[1])};
-  const genres=count(started,x=>x.genres).slice(0,8).map(([l,n])=>({l,n,tip:`${l}: ${n} show${n>1?'s':''}`}));
-  const formats=count(started,x=>x.format).map(([k,n])=>({l:FORMATS[k]||k,n}));
+  const genres=d.genres.slice(0,8).map(([l,n])=>({l,n,tip:`${l}: ${n} show${n>1?'s':''}`}));
+  const formats=d.formats.map(([k,n])=>({l:FORMATS[k]||k,n}));
   const status=STATUSES.map(([k,l])=>({k,l,n:all.filter(x=>x.status===k).length,tip:`${l}: open in My List`}));
-  const top=per.sort((a,b)=>b.m-a.m).slice(0,5);
   let hist='';
   if(rate&&rated.length){
     const b=Array(10).fill(0);for(const x of rated)b[Math.min(9,Math.max(0,Math.ceil(x.myScore/10)-1))]++;
@@ -757,11 +870,12 @@ function drawStats(){
       <div class="hax">${b.map((_,i)=>`<span>${i+1}</span>`).join('')}</div><div class="hint" style="margin:8px 4px 2px">Out of 10 · ${rated.length} rated</div></div>`;
   }
   $('#stats').innerHTML=`
+    <div class="shead"><button class="btn" id="stShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>Share as image</button></div>
     <div class="tiles">
       ${tile('Anime on list',all.length,`${started.length} started`)}
       ${tile('Episodes watched',eps.toLocaleString())}
       ${tile('Time watched',fmtTime(mins),`${Math.round(mins/60).toLocaleString()} hours`)}
-      ${tile('Completed',all.filter(x=>x.status==='completed').length)}
+      ${tile('Completed',d.completed)}
       ${rate?tile('Your average',rated.length?mean.toFixed(1):'–',rated.length?'out of 10':'rate a show to see it'):''}
     </div>
     ${noLen?`<div class="hint">${noLen} show${noLen>1?'s have':' has'} no episode length on AniList, so ${noLen>1?'they are':'it is'} left out of the time watched.</div>`:''}
@@ -774,8 +888,95 @@ function drawStats(){
     ${hist}
     <div class="hint" style="margin-top:14px">Genres, formats and time count shows you have started (everything except Plan to watch). Rewatches count your current progress once.</div>`;
 }
-$('#stats').onclick=e=>{const r=e.target.closest('[data-ls]');if(r){listStatus=r.dataset.ls;setView('list');return}
+$('#stats').onclick=e=>{if(e.target.closest('#stShare'))return openShare();
+  const r=e.target.closest('[data-ls]');if(r){listStatus=r.dataset.ls;setView('list');return}
   const t=e.target.closest('.toprow');if(t)openModal(+t.dataset.id)};
+
+/* ---------- shareable stats image: drawn on a canvas on the device in the current theme; nothing is uploaded ---------- */
+const loadImg=(src,cors)=>new Promise(res=>{if(!src)return res(null);const i=new Image();if(cors)i.crossOrigin='anonymous';
+  i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src});
+// AniList covers allow CORS, but the copy the page already cached (fetched without CORS) would fail, so ask for a distinct URL
+const coverImg=src=>loadImg(src&&src+(src.includes('?')?'&':'?')+'kuro=1',1);
+async function statsImage(){
+  const d=statsData(),cs=getComputedStyle(document.documentElement),v=k=>cs.getPropertyValue(k).trim();
+  const C={bg:v('--bg'),bg2:v('--bg2'),card:v('--card'),card2:v('--card2'),line:v('--line'),text:v('--text'),muted:v('--muted'),a:v('--accent'),a2:v('--accent2')};
+  const W=1080,H=1350,P=64,cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const x=cv.getContext('2d'),FONT='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+  const font=(w,px)=>{x.font=`${w} ${px}px ${FONT}`};
+  const text=(t,X,Y,col,align='left')=>{x.fillStyle=col;x.textAlign=align;x.fillText(t,X,Y)};
+  const fit=(t,max)=>{t=String(t);if(x.measureText(t).width<=max)return t;while(t&&x.measureText(t+'…').width>max)t=t.slice(0,-1);return t.trimEnd()+'…'};
+  const rr=(X,Y,w,h,r)=>{x.beginPath();x.roundRect?x.roundRect(X,Y,w,h,r):x.rect(X,Y,w,h)};
+  const panel=(X,Y,w,h)=>{rr(X,Y,w,h,24);x.fillStyle=C.card;x.fill();x.lineWidth=2;x.strokeStyle=C.line;x.stroke()};
+  const spaced=on=>{if('letterSpacing' in x)x.letterSpacing=on?'2px':'0px'};
+  const [logo,...covers]=await Promise.all([loadImg('icon-192.png'),...d.top.map(t=>coverImg(t.x.cover))]);
+  // background with two soft accent glows
+  const bg=x.createLinearGradient(0,0,0,H);bg.addColorStop(0,C.bg2);bg.addColorStop(1,C.bg);x.fillStyle=bg;x.fillRect(0,0,W,H);
+  for(const[cx,cy,r,col]of[[W*.9,90,620,C.a],[W*.05,H*.78,560,C.a2]]){
+    x.save();x.globalAlpha=.2;const g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,col);g.addColorStop(1,/^#[0-9a-f]{6}$/i.test(col)?col+'00':'rgba(0,0,0,0)');
+    x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,7);x.fill();x.restore()}
+  // header: logo, title, profile name and date
+  if(logo){x.save();rr(P,64,88,88,22);x.clip();x.drawImage(logo,P,64,88,88);x.restore()}
+  font(800,46);text('Kuro',P+110,106,C.text);
+  font(500,26);text('My anime stats',P+110,142,C.muted);
+  font(700,30);text(fit(look(me()).name,360),W-P,106,C.text,'right');
+  font(500,24);text(new Date().toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}),W-P,142,C.muted,'right');
+  // six tiles
+  const avg=d.rate&&d.rated.length;
+  const tiles=[['Anime on list',d.all.length,`${d.started.length} started`],['Episodes',d.eps.toLocaleString(),'watched'],
+    ['Time watched',fmtTime(d.mins),`${Math.round(d.mins/60).toLocaleString()} hours`],['Completed',d.completed,''],
+    ['Watching now',d.watching,''],avg?['Your average',d.mean.toFixed(1),'out of 10']:['Plan to watch',d.planning,'']];
+  const tw=(W-2*P-40)/3,th=150;
+  tiles.forEach(([l,val,sub],i)=>{const X=P+(i%3)*(tw+20),Y=196+Math.floor(i/3)*(th+20);panel(X,Y,tw,th);
+    font(700,19);spaced(1);text(l.toUpperCase(),X+26,Y+40,C.muted);spaced(0);
+    font(800,54);text(fit(val,tw-52),X+26,Y+100,C.text);
+    if(sub){font(500,20);text(fit(sub,tw-52),X+26,Y+130,C.muted)}});
+  // top genres as bars
+  const grad=(X,w)=>{const g=x.createLinearGradient(X,0,X+w,0);g.addColorStop(0,C.a);g.addColorStop(1,C.a2);return g};
+  font(800,30);text('Top genres',P,576,C.text);
+  panel(P,596,W-2*P,224);
+  const gen=d.genres.slice(0,5),gmax=Math.max(1,...gen.map(g=>g[1]));
+  if(!gen.length){font(500,24);text('Start watching something to see your genres.',P+28,716,C.muted)}
+  gen.forEach(([l,n],i)=>{const Y=616+i*40,bx=P+250,bw=W-2*P-250-90;
+    font(600,23);text(fit(l,210),P+28,Y+27,C.text);
+    x.fillStyle=C.card2;rr(bx,Y+10,bw,20,10);x.fill();
+    x.fillStyle=grad(bx,bw);rr(bx,Y+10,Math.max(20,bw*n/gmax),20,10);x.fill();
+    font(700,23);text(n,W-P-28,Y+27,C.text,'right')});
+  // most time spent: covers
+  font(800,30);text('Most time spent',P,880,C.text);
+  const cw=(W-2*P-4*20)/5,ch=cw*1.5;
+  if(!d.top.length){font(500,24);text('Watch an episode or two to fill this in.',P,940,C.muted)}
+  d.top.forEach(({x:it,m},i)=>{const X=P+i*(cw+20),Y=900,img=covers[i];
+    x.save();rr(X,Y,cw,ch,16);x.clip();x.fillStyle=it.color||C.card2;x.fillRect(X,Y,cw,ch);
+    if(img){const s=Math.max(cw/img.width,ch/img.height),iw=img.width*s,ih=img.height*s;x.drawImage(img,X+(cw-iw)/2,Y+(ch-ih)/2,iw,ih)}
+    x.restore();x.lineWidth=2;x.strokeStyle=C.line;rr(X,Y,cw,ch,16);x.stroke();
+    // title on up to two lines
+    font(700,20);const words=titleOf(it).split(/\s+/);let l1='';
+    while(words.length&&x.measureText((l1+' '+words[0]).trim()).width<=cw)l1=(l1+' '+words.shift()).trim();
+    if(!l1)l1=fit(words.shift()||'',cw);
+    text(l1,X,Y+ch+30,C.text);if(words.length)text(fit(words.join(' '),cw),X,Y+ch+55,C.text);
+    font(500,19);text(fmtTime(m),X,Y+ch+82,C.muted)});
+  // footer
+  x.fillStyle=grad(P,W-2*P);x.fillRect(P,H-62,W-2*P,3);
+  font(600,21);text('Kuro Watchlist',P,H-24,C.muted);text('Data from AniList',W-P,H-24,C.muted,'right');
+  return await new Promise(res=>cv.toBlob(res,'image/png'));
+}
+let shareUrl='';
+async function openShare(){
+  $('#modal').innerHTML=`<div class="mbody" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
+    <h2 style="margin:0 0 2px">Share your stats</h2>
+    <div class="hint" style="margin:0">Made on your device in your current theme. Nothing is uploaded.</div>
+    <img class="shprev" id="shImg" alt="Your anime stats as an image">
+    <div class="actions" id="shAct" style="justify-content:center;margin-top:12px"><span class="hint">Making the image…</span></div></div>`;
+  $('#scrim').classList.add('open');document.body.style.overflow='hidden';
+  $('#mclose').onclick=closeModal;
+  let blob=null;try{blob=await statsImage()}catch(err){console.warn('stats image',err)}
+  if(!$('#shImg'))return; // dialog closed meanwhile
+  if(!blob){$('#shAct').innerHTML='<span class="hint">Sorry, the image could not be made.</span>';return}
+  if(shareUrl)URL.revokeObjectURL(shareUrl);shareUrl=URL.createObjectURL(blob);$('#shImg').src=shareUrl;
+  const file=new File([blob],'kuro-stats.png',{type:'image/png'});let can=false;try{can=!!navigator.canShare?.({files:[file]})}catch{}
+  $('#shAct').innerHTML=`${can?'<button class="btn primary" id="shShare">Share…</button>':''}<a class="btn${can?'':' primary'}" id="shSave" href="${shareUrl}" download="kuro-stats.png">Save image</a>`;
+  if(can)$('#shShare').onclick=async()=>{try{await navigator.share({files:[file],title:'My anime stats'})}catch{}};
+}
 
 /* ---------- views ---------- */
 function setView(v){
