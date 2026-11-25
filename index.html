@@ -301,7 +301,36 @@ details.hint summary{cursor:pointer}
 .spin-cta:hover .dice svg{animation:wob .6s ease}
 @keyframes wob{25%{transform:rotate(-14deg)}60%{transform:rotate(10deg)}}
 .spin-cta b{display:block;font-size:16px}.spin-cta small{color:var(--muted);font-size:13px}
-.spin-cta .go{margin-left:auto;font-weight:700;color:var(--accent)}
+.spin-cta .go{margin-left:auto;font-weight:700;color:var(--accent);flex:none;white-space:nowrap;padding-left:6px}
+.spin-cta>span:nth-child(2){flex:1;min-width:0}
+/* discover extras: season links, nudges, sequels, recommendations */
+.seasonlinks{display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 18px}
+.seasonlinks .chip{color:var(--text);font-weight:600}
+.hrow{display:grid;grid-auto-flow:column;grid-auto-columns:150px;gap:12px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px;scrollbar-width:thin}
+.hrow .card:hover{transform:none}
+.relc{display:flex;flex-direction:column;gap:6px;min-width:0}
+.relwhy{font-size:12px;line-height:1.3;color:var(--muted)}
+.relwhy b{display:block;color:var(--text);font-size:12.5px}
+.newb{display:inline-block;background:var(--accent);color:var(--on-accent);border-radius:999px;padding:0 6px;font-size:11px;font-weight:700;margin-right:4px}
+.recsec h2 span{color:var(--text);text-transform:none;letter-spacing:0;font-size:14px}
+.nuc.nudge{width:300px}
+.nudge .ndx{flex:none;align-self:center;width:28px;height:28px;border-radius:50%;color:var(--muted);font-size:14px}
+.nudge .ndx:hover{background:var(--card2);color:var(--text)}
+.nudge .plus{padding:7px 10px}
+/* season chart */
+.snhead{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:14px}
+.snnav{display:flex;align-items:center;gap:8px}
+.snnav h2{margin:0;font-size:22px;min-width:150px;text-align:center}
+.snopts{display:flex;gap:12px;align-items:center;margin-left:auto;flex-wrap:wrap}
+.snopts select{width:auto}
+.snopts label{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted)}
+.snopts input{accent-color:var(--accent);width:16px;height:16px}
+#snBody .grid{margin-bottom:22px}
+/* studio link in the detail sheet */
+.statlink{text-align:left;cursor:pointer;color:inherit;font:inherit}
+.statlink:hover{border-color:var(--accent)}
+.statlink b{color:var(--accent)}
+.stgrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));margin-top:12px}
 .rp .switch{display:flex;align-items:center;gap:10px;margin:10px 0 4px;cursor:pointer;font-weight:600;font-size:14px}
 .rp .switch input{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:99px;background:var(--card2);border:1px solid var(--line);position:relative;flex:none;cursor:pointer;transition:.2s;margin:0}
 .rp .switch input::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.2s}
@@ -402,6 +431,10 @@ nav.bottom{display:none}
   .lpr .prog{display:none}
   .lsc{width:34px}
   .lrow{gap:10px}
+  .hrow{grid-auto-columns:128px}
+  .nuc.nudge{width:calc(100vw - 56px);max-width:340px}
+  .snopts{margin-left:0;width:100%}
+  .snnav{width:100%;justify-content:space-between}
   .selbar{bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 10px)}
   #v-list.selmode{padding-bottom:150px}
   body:has(#v-list.selmode) #toast{bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 130px)}
@@ -444,7 +477,11 @@ nav.bottom{display:none}
   <section id="v-discover">
     <button class="spin-cta" id="spinBtn"><span class="dice"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/></svg></span>
       <span><b>Random pick</b><small>Spin for something you haven't seen</small></span><span class="go" aria-hidden="true">Spin ›</span></button>
+    <div class="seasonlinks" id="seasonLinks"></div>
     <div id="nextup" style="display:none"><h2 class="sec">Next up</h2><div class="nu" id="nuRow"></div></div>
+    <div id="nudges" style="display:none"><h2 class="sec" style="margin-top:18px">Pick up again</h2><div class="nu" id="ndRow"></div></div>
+    <div id="rels" style="display:none;margin-top:18px"><h2 class="sec">From your shows</h2><div class="hrow" id="relRow"></div></div>
+    <div id="recs" style="margin-top:18px"></div>
     <div class="filters" id="filters">
       <button class="btn ftoggle" id="ftoggle">⚙ Filters <span id="fcount"></span></button>
       <div class="fbody">
@@ -472,6 +509,20 @@ nav.bottom{display:none}
     <div class="wkhead"><div class="sub" id="wkmode" role="group" aria-label="Which shows"><button class="chip on" data-wk="mine" aria-pressed="true">My shows</button><button class="chip" data-wk="all" aria-pressed="false">All popular</button></div>
       <button class="chip" id="icsBtn" title="Download the next 4 weeks of episodes from your list as a calendar file">📅 Add to calendar</button></div>
     <div id="wk"></div>
+  </section>
+
+  <!-- SEASON CHART (opened from Discover) -->
+  <section id="v-season" style="display:none">
+    <div class="snhead">
+      <button class="link" id="snBack">‹ Discover</button>
+      <div class="snnav"><button class="ibtn" id="snPrev" aria-label="Previous season">‹</button><h2 id="snTitle" aria-live="polite"></h2><button class="ibtn" id="snNext" aria-label="Next season">›</button></div>
+      <div class="snopts">
+        <select id="snSort" aria-label="Sort season chart"><option value="pop">Most popular</option><option value="score">Top rated</option><option value="title">Title A–Z</option></select>
+        <label><input type="checkbox" id="snHide"> Hide shows on my list</label>
+      </div>
+    </div>
+    <div class="hint" id="snSum" style="margin:-4px 0 14px"></div>
+    <div id="snBody"></div>
   </section>
 
   <!-- LIST -->
@@ -664,6 +715,7 @@ let page=1,hasNext=false,loading=false,cache={},view='discover',listStatus='watc
   $('#ftoggle').onclick=()=>$('#filters').classList.toggle('open');
   let t;$('#q').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{
     if(view==='list'){$('#lq').value=e.target.value;renderList();return}
+    if(view==='season')setView('discover');
     if(view==='week'||view==='stats')setView('discover');
     F.q=e.target.value.trim();run()},350)};
   $('#more').onclick=()=>{page++;load(true)};
@@ -858,7 +910,9 @@ async function refreshAiring(force){
 }
 function refreshCards(){
   renderNext();
-  if(view==='discover')$$('#grid .card').forEach(c=>{const m=cache[c.dataset.id];if(m)c.outerHTML=cardHTML(m)});
+  $$('#modal .card').forEach(c=>{const m=cache[c.dataset.id]||list[c.dataset.id];if(m)c.outerHTML=cardHTML(m)}); // e.g. a studio page
+  if(view==='discover'){$$('#grid .card').forEach(c=>{const m=cache[c.dataset.id];if(m)c.outerHTML=cardHTML(m)});drawExtras()}
+  else if(view==='season')drawSeason();
   else if(view==='week')drawWeek();
   else redrawList();
 }
@@ -1124,8 +1178,11 @@ async function openShare(){
 /* ---------- views ---------- */
 function setView(v){
   if(v!=='list'&&selMode)setSel(false);
-  view=v;for(const k of ['discover','week','list','stats'])$('#v-'+k).style.display=v===k?'':'none';
-  $$('[data-view]').forEach(b=>{b.classList.toggle('on',b.dataset.view===v);b.dataset.view===v?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
+  view=v;for(const k of ['discover','week','list','stats','season'])$('#v-'+k).style.display=v===k?'':'none';
+  const nv=v==='season'?'discover':v; // the season chart belongs to Discover
+  $$('[data-view]').forEach(b=>{b.classList.toggle('on',b.dataset.view===nv);b.dataset.view===nv?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
+  if(v==='season')loadSeason();
+  if(v==='discover'&&typeof loadExtras==='function')loadExtras();
   $('#q').placeholder=v==='list'?'Search my list…':'Search anime…';
   if(v==='list')renderList();
   if(v==='stats')drawStats();
@@ -1155,7 +1212,7 @@ function openModal(id,keep){
       <div class="stats">
         ${stat('Score',m.score?(m.score/10).toFixed(1)+' / 10':'')}${stat('Format',m.format?.replace('_',' '))}
         ${stat('Episodes',m.episodes?m.episodes+(m.duration?` × ${m.duration}m`:''):'')}${stat('Status',(m.mstatus||cache[id]?.status||'').replace(/_/g,' '))}
-        ${stat('Season',m.season?`${m.season[0]+m.season.slice(1).toLowerCase()} ${m.year||''}`:'')}${stat('Studio',m.studio)}
+        ${stat('Season',m.season?`${m.season[0]+m.season.slice(1).toLowerCase()} ${m.year||''}`:'')}${m.studio?`<button class="stat statlink" id="studioBtn" aria-label="Studio ${esc(m.studio)}: see their other anime"><small>Studio</small><b>${esc(m.studio)} ›</b></button>`:stat('Studio','')}
         ${stat('Next episode',nxt)}${stat('Popularity',m.pop?.toLocaleString())}
       </div>
       <div id="trailer"></div>
@@ -1190,6 +1247,7 @@ function openModal(id,keep){
   if($('#epp'))$('#epp').onclick=()=>step(id,1),$('#epm').onclick=()=>step(id,-1);
   if($('#trl'))$('#trl').onclick=()=>{const t=$('#trailer');t.innerHTML=t.innerHTML?'':`<iframe src="https://www.youtube-nocookie.com/embed/${m.trailer.id}?autoplay=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;if(t.innerHTML)t.scrollIntoView({block:'center',behavior:'smooth'})};
   fillDetails(id);
+  if($('#studioBtn'))$('#studioBtn').onclick=()=>openStudio(m.studio,id);
   if($('#rm'))$('#rm').onclick=()=>{const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId];saveProfiles()}saveList();closeModal();refreshCards();toast('Removed')};
 }
 function step(id,d){bump(id,d);openModal(id)}
@@ -1758,6 +1816,195 @@ function rpShow(it){
   $('#rpOpen').onclick=()=>openModal(m.id);
 }
 $('#spinBtn').onclick=openRandom;
+
+/* ================= Phase 2: discovery ================= */
+async function pubQ(query,variables){ // public AniList query, returns data
+  const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query,variables})});
+  if(!r.ok)throw new Error(r.status===429?'AniList is busy, try again in a minute':'AniList error '+r.status);
+  const j=await r.json();if(j.errors)throw new Error(j.errors[0].message);return j.data;
+}
+const DAY=864e5;
+const agoLong=t=>{const d=(Date.now()-t)/DAY;return d<1.5?'yesterday':d<14?Math.round(d)+' days ago':d<60?Math.round(d/7)+' weeks ago':d<365?Math.round(d/30)+' months ago':'over a year ago'};
+function loadExtras(){drawSeasonLinks();drawNudges();loadRecs();loadRels()}
+function drawExtras(){drawNudges();drawRecs();drawRels()}
+
+/* ----- season chart: everything airing in a season, grouped by format ----- */
+const SEASONS=['WINTER','SPRING','SUMMER','FALL'];
+const seasonName=(s,y)=>s[0]+s.slice(1).toLowerCase()+' '+y;
+const seasonNow=(off=0)=>{const d=new Date();let i=Math.floor(d.getMonth()/3)+off,y=d.getFullYear();y+=Math.floor(i/4);i=((i%4)+4)%4;return{season:SEASONS[i],year:y}};
+let sn=seasonNow(),snCache={};
+function drawSeasonLinks(){const a=seasonNow(),b=seasonNow(1);
+  $('#seasonLinks').innerHTML=`<button class="chip" data-sn="0">📅 ${seasonName(a.season,a.year)} chart</button><button class="chip" data-sn="1">🔮 ${seasonName(b.season,b.year)} preview</button>`}
+$('#seasonLinks').onclick=e=>{const b=e.target.closest('[data-sn]');if(b){sn=seasonNow(+b.dataset.sn);setView('season')}};
+$('#snBack').onclick=()=>setView('discover');
+const snMove=d=>{let i=SEASONS.indexOf(sn.season)+d,y=sn.year;if(i<0){i=3;y--}if(i>3){i=0;y++}sn={season:SEASONS[i],year:y};loadSeason()};
+$('#snPrev').onclick=()=>snMove(-1);$('#snNext').onclick=()=>snMove(1);
+$('#snSort').oninput=drawSeason;$('#snHide').oninput=drawSeason;
+async function loadSeason(){
+  const key=sn.season+sn.year;$('#snTitle').textContent=seasonName(sn.season,sn.year);
+  if(snCache[key]&&Date.now()-snCache[key].at<18e5)return drawSeason();
+  $('#snSum').textContent='';$('#snBody').innerHTML=`<div class="grid">${'<div class="skel"></div>'.repeat(10)}</div>`;
+  try{
+    const items=[];
+    for(let page=1;page<=4;page++){
+      const pg=await anilist({page,perPage:50,season:sn.season,seasonYear:sn.year,sort:['POPULARITY_DESC']});
+      for(const m of pg.media){const x=slim(m);cache[x.id]=cache[x.id]||x;items.push(x)}
+      if(!pg.pageInfo.hasNextPage)break;
+    }
+    snCache[key]={at:Date.now(),items};if(sn.season+sn.year===key)drawSeason();
+  }catch(e){$('#snBody').innerHTML=`<div class="empty">⚠ ${esc(e.message)}<br><br><button class="btn" id="snRetry">Retry</button></div>`;$('#snRetry').onclick=loadSeason}
+}
+const SN_GROUPS=[['TV','TV'],['TV_SHORT','TV short'],['ONA','ONA'],['MOVIE','Movies'],['OVA','OVA'],['SPECIAL','Specials']];
+function drawSeason(){
+  const c=snCache[sn.season+sn.year];if(!c)return;
+  const srt=$('#snSort').value,hide=$('#snHide').checked;
+  let items=c.items.filter(m=>!hide||!list[m.id]);
+  items.sort((a,b)=>srt==='score'?(b.score||0)-(a.score||0):srt==='title'?titleOf(a).localeCompare(titleOf(b)):(b.pop||0)-(a.pop||0));
+  const mine=c.items.filter(m=>list[m.id]).length;
+  $('#snSum').textContent=`${c.items.length} anime${c.items.length>=200?' (the 200 most popular)':''} · ${mine} on your list`;
+  const known=SN_GROUPS.map(g=>g[0]);
+  const groups=[...SN_GROUPS,['other','Other']].map(([k,l])=>[l,items.filter(m=>k==='other'?!known.includes(m.format):m.format===k)]).filter(g=>g[1].length);
+  $('#snBody').innerHTML=groups.length?groups.map(([l,its])=>`<h2 class="sec">${l} · ${its.length}</h2><div class="grid">${its.map(m=>cardHTML(m)).join('')}</div>`).join('')
+    :`<div class="empty">${hide&&c.items.length?'Everything this season is already on your list.':'Nothing listed for this season yet.'}</div>`;
+}
+
+/* ----- pick up again: paused shows, nearly finished dropped shows, and Watching shows untouched for a month ----- */
+const nudgeKey=()=>'kuro.nudge.'+prefKey(); // {mediaId: hidden until (ms)}
+function nudgeItems(){
+  const hid=store.get(nudgeKey(),{}),now=Date.now();
+  return Object.values(list).filter(x=>{
+    if((hid[x.id]||0)>now)return false;const idle=now-(x.updated||x.added||now),left=x.episodes?x.episodes-(x.progress||0):null;
+    if(x.status==='paused')return idle>14*DAY&&left!==0;
+    if(x.status==='dropped')return idle>14*DAY&&x.episodes&&x.progress>=x.episodes/2&&left>0;
+    if(ACTIVE.includes(x.status))return idle>30*DAY&&nextInfo(x).out&&left!==0;
+    return false}).sort((a,b)=>(a.updated||0)-(b.updated||0)).slice(0,8);
+}
+function drawNudges(){
+  const its=nudgeItems();$('#nudges').style.display=its.length?'':'none';
+  $('#ndRow').innerHTML=its.map(x=>{const left=x.episodes?x.episodes-(x.progress||0):0,act=ACTIVE.includes(x.status);
+    const why=`${x.status==='paused'?'Paused':x.status==='dropped'?'Dropped':'Last watched'} ${agoLong(x.updated||x.added)}`+(left?` · ${left} ep${left>1?'s':''} left`:'');
+    return `<div class="nuc nudge" data-open="${x.id}">${pic(x.cover,'nuimg')}<div class="grow" role="button" tabindex="0"><div class="ctitle">${esc(titleOf(x))}</div><div class="cmeta">${esc(why)}</div></div>`
+      +(act?`<button class="plus" data-plus="${x.id}" aria-label="Mark episode ${(x.progress||0)+1} watched">+1</button>`:`<button class="plus" data-resume="${x.id}" aria-label="Resume ${esc(titleOf(x))}">Resume</button>`)
+      +`<button class="ndx" data-snooze="${x.id}" aria-label="Hide ${esc(titleOf(x))} here for 30 days" title="Hide for 30 days">✕</button></div>`}).join('');
+}
+$('#ndRow').addEventListener('click',e=>{
+  const r=e.target.closest('[data-resume]'),z=e.target.closest('[data-snooze]');if(!r&&!z)return;e.stopPropagation();
+  if(r){const id=+r.dataset.resume,x=list[id];if(!x)return;const prev={status:x.status,updated:x.updated};x.status='watching';x.updated=Date.now();saveList();refreshCards();
+    toast(`Back to Watching · ${titleOf(x)}`,()=>{Object.assign(x,prev);x.updated=Date.now();saveList();refreshCards()})}
+  else{const id=+z.dataset.snooze,h=store.get(nudgeKey(),{});h[id]=Date.now()+30*DAY;store.set(nudgeKey(),h);drawNudges();
+    toast('Hidden here for 30 days',()=>{const h2=store.get(nudgeKey(),{});delete h2[id];store.set(nudgeKey(),h2);drawNudges()})}
+});
+
+/* ----- "Because you liked X": AniList recommendations for your favourite started shows (same source as Random pick) ----- */
+let recData=null,recBusy=false;
+async function loadRecs(){
+  const started=Object.values(list).filter(x=>x.status!=='planning'&&x.status!=='dropped');
+  if(!started.length){recData=null;return drawRecs()}
+  const seeds=started.sort((a,b)=>(b.myScore||60)-(a.myScore||60)||(b.updated||0)-(a.updated||0)).slice(0,8),key=seeds.map(x=>x.id).join();
+  if(recBusy||(recData&&recData.key===key&&Date.now()-recData.at<18e5))return drawRecs();
+  recBusy=true;
+  try{
+    const pg=(await pubQ(RP_REC,{ids:seeds.map(x=>x.id)})).Page,by={};
+    for(const sm of pg.media)by[sm.id]=(sm.recommendations?.nodes||[]).filter(n=>(n.rating||0)>0&&rpOk(n.mediaRecommendation)).map(n=>{const m=slim(n.mediaRecommendation);cache[m.id]=cache[m.id]||m;return m});
+    const rows=seeds.filter(x=>(by[x.id]||[]).length>=3).map(x=>({seed:x.id,items:by[x.id].slice(0,12)}));
+    const day=Math.floor(Date.now()/DAY),start=rows.length?day%rows.length:0; // a different pair of shows each day
+    recData={key,at:Date.now(),rows:[...rows.slice(start),...rows.slice(0,start)].slice(0,2)};
+  }catch{}
+  recBusy=false;drawRecs();
+}
+function drawRecs(){
+  $('#recs').innerHTML=(recData?.rows||[]).filter(r=>list[r.seed]).map(r=>`<div class="recsec"><h2 class="sec">Because you liked <span>${esc(titleOf(list[r.seed]))}</span></h2>
+    <div class="hrow">${r.items.map(m=>cardHTML(m)).join('')}</div></div>`).join('');
+}
+
+/* ----- "From your shows": sequels and prequels of shows you watched that are not on your list.
+   New announcements (not seen before) get a "New" badge, a toast and, when alerts are on, a notification. ----- */
+const REL_Q=`query($p:Int,$ids:[Int]){Page(page:$p,perPage:50){pageInfo{hasNextPage}media(id_in:$ids,type:ANIME){id relations{edges{relationType node{type isAdult startDate{year month day} ${MEDIA_FIELDS}}}}}}}`;
+const relKey=()=>'kuro.rel.'+prefKey(),relSeenKey=()=>'kuro.relSeen.'+prefKey();
+let relBusy=false;
+function relLabel(o){const m=o.m,sd=o.sd||{};
+  if(m.status==='RELEASING')return[0,'Airing now'];
+  if(m.status==='NOT_YET_RELEASED'){
+    if(sd.year&&sd.month){const d=new Date(sd.year,sd.month-1,sd.day||1);return[1,'Starts '+(sd.day?d.toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}):d.toLocaleDateString([],{month:'long',year:'numeric'})),d.getTime()]}
+    return[2,sd.year?'Coming in '+sd.year:'Announced',sd.year?new Date(sd.year,11,31).getTime():9e15]}
+  if(m.status==='HIATUS')return[5,'On hiatus'];
+  return o.rel==='SEQUEL'?[3,'Out now, not seen yet']:[4,'Prequel you have not seen'];
+}
+async function loadRels(){
+  const seeds=Object.values(list).filter(x=>['completed','watching','repeating','paused'].includes(x.status)).sort((a,b)=>(b.updated||0)-(a.updated||0)).slice(0,150);
+  const key=seeds.map(x=>x.id).sort((a,b)=>a-b).join(),c=store.get(relKey(),null);
+  if(!seeds.length){store.del(relKey());return drawRels()}
+  if(relBusy||(c&&c.key===key&&Date.now()-c.at<12*36e5))return drawRels();
+  relBusy=true;
+  try{
+    const ids=seeds.map(x=>x.id),found=new Map();
+    for(let i=0;i<ids.length;i+=50){
+      const pg=(await pubQ(REL_Q,{p:1,ids:ids.slice(i,i+50)})).Page;
+      for(const sm of pg.media)for(const ed of sm.relations?.edges||[]){const n=ed.node;
+        if(n.type!=='ANIME'||n.isAdult||!['SEQUEL','PREQUEL'].includes(ed.relationType))continue;
+        const prev=found.get(n.id);if(prev&&prev.rel==='SEQUEL')continue;
+        found.set(n.id,{rel:ed.relationType,src:sm.id,sd:n.startDate,m:slim(n)})}
+    }
+    store.set(relKey(),{key,at:Date.now(),items:[...found.values()]});
+    // new announcements: upcoming or airing sequels we have not shown before (the first run only learns, so nothing floods in)
+    const seenRaw=store.get(relSeenKey(),null),seen=new Set(seenRaw||[]),fresh=[];
+    for(const o of found.values())if(!seen.has(o.m.id)){if(seenRaw&&o.rel==='SEQUEL'&&relLabel(o)[0]<=2)fresh.push(o);seen.add(o.m.id)}
+    store.set(relSeenKey(),[...seen]);
+    if(fresh.length){
+      const h=store.get('kuro.relNew.'+prefKey(),{});for(const o of fresh)h[o.m.id]=Date.now();store.set('kuro.relNew.'+prefKey(),h);
+      const t=fresh.length===1?`New: a sequel to ${titleOf(list[fresh[0].src]||{title:{}})}`:`${fresh.length} new sequels to shows you watched`;
+      toast(t);
+      if(alertsOn())(await navigator.serviceWorker.ready).showNotification(t,{body:fresh.map(o=>titleOf(o.m)).slice(0,3).join(' · '),icon:'icon-192.png',badge:'favicon-32.png',tag:'kuro-rel',data:{id:fresh[0].m.id}});
+    }
+  }catch{}
+  relBusy=false;drawRels();
+}
+function drawRels(){
+  const c=store.get(relKey(),null),newMap=store.get('kuro.relNew.'+prefKey(),{});
+  const its=(c?.items||[]).filter(o=>!list[o.m.id]||newMap[o.m.id]).map(o=>{cache[o.m.id]=cache[o.m.id]||o.m;const[r,l,t]=relLabel(o);return{...o,r,l,t:t||0}})
+    .filter(o=>list[o.src]).sort((a,b)=>a.r-b.r||a.t-b.t||(b.m.pop||0)-(a.m.pop||0)).slice(0,16);
+  $('#rels').style.display=its.length?'':'none';
+  $('#relRow').innerHTML=its.map(o=>{const isNew=Date.now()-(newMap[o.m.id]||0)<14*DAY;
+    return `<div class="relc">${cardHTML(o.m)}<div class="relwhy"><b>${isNew?'<span class="newb">New</span>':''}${esc(o.l)}</b>${o.rel==='SEQUEL'?'Sequel to':'Prequel to'} ${esc(titleOf(list[o.src]))}</div></div>`}).join('');
+}
+
+/* ----- studio pages: tap Studio in a show's details ----- */
+// AniList gives at most 25 per page here, so 4 pages are loaded at a time (100 shows), with "Load more" for the rest
+const STUDIO_Q=`query($s:String,$p:Int){Studio(search:$s){id name siteUrl media(sort:POPULARITY_DESC,isMain:true,page:$p,perPage:25){pageInfo{total hasNextPage} nodes{type isAdult ${MEDIA_FIELDS}}}}}`;
+let stItems=[],stFilter='all',stName='',stPage=0,stMore=false,stTotal=0;
+async function stLoad(){
+  for(let i=0;i<4;i++){
+    const st=(await pubQ(STUDIO_Q,{s:stName,p:++stPage})).Studio;if(!st)throw new Error('Studio not found on AniList');
+    for(const n of st.media?.nodes||[])if(n.type==='ANIME'&&!n.isAdult&&!stItems.some(x=>x.id===n.id)){const m=slim(n);cache[m.id]=cache[m.id]||m;stItems.push(m)}
+    stTotal=st.media?.pageInfo?.total||stItems.length;stMore=!!st.media?.pageInfo?.hasNextPage;if(!stMore)break;
+  }
+}
+async function openStudio(name,back){
+  curModal=null;stFilter='all';stName=name;stItems=[];stPage=0;
+  const backM=back&&(cache[back]||list[back]);
+  $('#modal').innerHTML=`<div class="mbody" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
+    ${backM?`<button class="link" id="stBack">‹ ${esc(titleOf(backM))}</button>`:''}
+    <h2 style="margin:6px 0 2px">${esc(name)}</h2><div class="hint" id="stSum" style="margin:0">Loading…</div>
+    <div class="sub" id="stFil" role="group" aria-label="Show" style="margin-top:12px"></div>
+    <div class="grid stgrid" id="stGrid"></div><button class="more" id="stMoreBtn" style="display:none">Load more</button></div>`;
+  $('#modal').scrollTop=0;$('#scrim').classList.add('open');document.body.style.overflow='hidden';
+  $('#mclose').onclick=closeModal;if($('#stBack'))$('#stBack').onclick=()=>openModal(back);
+  try{
+    await stLoad();if(!$('#stGrid'))return;
+    drawStudio();
+    $('#stMoreBtn').onclick=async e=>{e.target.disabled=true;e.target.textContent='Loading…';try{await stLoad()}catch(er){toast(er.message)}if(!$('#stGrid'))return;e.target.disabled=false;e.target.textContent='Load more';drawStudio()};
+  }catch(e){if($('#stSum'))$('#stSum').textContent='⚠ '+e.message}
+}
+function drawStudio(){
+  const f={all:()=>true,new:m=>!list[m.id],seen:m=>list[m.id]&&list[m.id].status!=='planning'};
+  $('#stFil').innerHTML=[['all','All'],['new','Not on my list'],['seen','Seen']].map(([k,l])=>`<button class="chip ${k===stFilter?'on':''}" data-stf="${k}" aria-pressed="${k===stFilter}">${l} · ${stItems.filter(f[k]).length}</button>`).join('');
+  const seen=stItems.filter(f.seen).length,plan=stItems.filter(m=>list[m.id]?.status==='planning').length;
+  $('#stSum').textContent=`${stTotal} anime${stMore?` (the ${stItems.length} most popular loaded)`:''} · you've seen ${seen}${plan?` · ${plan} planned`:''}`;
+  $('#stMoreBtn').style.display=stMore?'block':'none';
+  const its=stItems.filter(f[stFilter]);
+  $('#stGrid').innerHTML=its.length?its.map(m=>cardHTML(m)).join(''):'<div class="empty" style="grid-column:1/-1">Nothing here.</div>';
+}
+$('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-stf]');if(b){stFilter=b.dataset.stf;drawStudio()}});
 
 renderProfileBtn();updateCounts();renderNext();setView('discover');load(false);
 openFromHash();
