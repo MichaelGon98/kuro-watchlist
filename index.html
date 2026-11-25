@@ -313,6 +313,19 @@ details.hint summary{cursor:pointer}
 .relwhy b{display:block;color:var(--text);font-size:12.5px}
 .newb{display:inline-block;background:var(--accent);color:var(--on-accent);border-radius:999px;padding:0 6px;font-size:11px;font-weight:700;margin-right:4px}
 .recsec h2 span{color:var(--text);text-transform:none;letter-spacing:0;font-size:14px}
+/* Top 10: big outlined rank numbers behind the covers */
+.t10head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.t10head h2{margin:0}
+.t10tabs{display:flex;gap:6px;flex-wrap:wrap}
+.t10tabs .chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.t10row{display:grid;grid-auto-flow:column;grid-auto-columns:max-content;gap:6px;overflow-x:auto;overflow-y:hidden;padding:4px 0 8px;margin-bottom:20px;scrollbar-width:thin}
+.t10{display:flex;align-items:flex-end}
+.t10 .rk{font-size:132px;font-weight:900;line-height:.78;letter-spacing:-6px;color:transparent;-webkit-text-stroke:3px var(--accent);margin-right:-22px;user-select:none;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 35%,transparent),transparent 80%);-webkit-background-clip:text;background-clip:text}
+.t10 .card{width:140px;flex:none;position:relative;z-index:1;box-shadow:-8px 0 18px rgba(0,0,0,.45)}
+.t10 .card:hover{transform:none}
+.t10:first-child .rk{-webkit-text-stroke-color:#f5c542;background-image:linear-gradient(180deg,rgba(245,197,66,.4),transparent 80%)}
+.t10ld{color:var(--muted);font-size:13px;padding:30px 0}
 .nuc.nudge{width:300px}
 .nudge .ndx{flex:none;align-self:center;width:28px;height:28px;border-radius:50%;color:var(--muted);font-size:14px}
 .nudge .ndx:hover{background:var(--card2);color:var(--text)}
@@ -488,6 +501,8 @@ nav.bottom{display:none}
   .lsc{width:34px}
   .lrow{gap:10px}
   .hrow{grid-auto-columns:128px}
+  .t10 .rk{font-size:104px;-webkit-text-stroke-width:2.5px;margin-right:-18px}
+  .t10 .card{width:118px}
   .nuc.nudge{width:calc(100vw - 56px);max-width:340px}
   .snopts{margin-left:0;width:100%}
   .snnav{width:100%;justify-content:space-between}
@@ -541,6 +556,9 @@ nav.bottom{display:none}
     <div id="nudges" style="display:none"><h2 class="sec" style="margin-top:18px">Pick up again</h2><div class="nu" id="ndRow"></div></div>
     <div id="rels" style="display:none;margin-top:18px"><h2 class="sec">From your shows</h2><div class="hrow" id="relRow"></div></div>
     <div id="recs" style="margin-top:18px"></div>
+    <div id="top10"><div class="t10head"><h2 class="sec">Top 10</h2><div class="t10tabs" role="group" aria-label="Top 10 list">
+      <button class="chip" data-t10="TRENDING_DESC">Trending now</button><button class="chip" data-t10="SCORE_DESC">All-time best</button><button class="chip" data-t10="POPULARITY_DESC">Most popular</button></div></div>
+      <div class="t10row" id="t10Row"></div></div>
     <div class="filters" id="filters">
       <button class="btn ftoggle" id="ftoggle">⚙ Filters <span id="fcount"></span></button>
       <div class="fbody">
@@ -1944,8 +1962,8 @@ async function pubQ(query,variables){ // public AniList query, returns data
 }
 const DAY=864e5;
 const agoLong=t=>{const d=(Date.now()-t)/DAY;return d<1.5?'yesterday':d<14?Math.round(d)+' days ago':d<60?Math.round(d/7)+' weeks ago':d<365?Math.round(d/30)+' months ago':'over a year ago'};
-function loadExtras(){drawSeasonLinks();drawNudges();loadRecs();loadRels()}
-function drawExtras(){drawNudges();drawRecs();drawRels()}
+function loadExtras(){drawSeasonLinks();drawNudges();loadRecs();loadRels();loadTop10()}
+function drawExtras(){drawNudges();drawRecs();drawRels();drawTop10()}
 
 /* ----- season chart: everything airing in a season, grouped by format ----- */
 const SEASONS=['WINTER','SPRING','SUMMER','FALL'];
@@ -2025,16 +2043,42 @@ async function loadRecs(){
   try{
     const pg=(await pubQ(RP_REC,{ids:seeds.map(x=>x.id)})).Page,by={};
     for(const sm of pg.media)by[sm.id]=(sm.recommendations?.nodes||[]).filter(n=>(n.rating||0)>0&&rpOk(n.mediaRecommendation)).map(n=>{const m=slim(n.mediaRecommendation);cache[m.id]=cache[m.id]||m;return m});
-    const rows=seeds.filter(x=>(by[x.id]||[]).length>=3).map(x=>({seed:x.id,items:by[x.id].slice(0,12)}));
-    const day=Math.floor(Date.now()/DAY),start=rows.length?day%rows.length:0; // a different pair of shows each day
-    recData={key,at:Date.now(),rows:[...rows.slice(start),...rows.slice(0,start)].slice(0,2)};
+    // one row: take turns between your favourite shows, starting with a different one each day
+    const srcs=seeds.filter(x=>(by[x.id]||[]).length),day=Math.floor(Date.now()/DAY),start=srcs.length?day%srcs.length:0;
+    const order=[...srcs.slice(start),...srcs.slice(0,start)],items=[],seen=new Set();
+    for(let i=0;i<12&&items.length<16;i++)for(const x of order){const m=by[x.id][i];
+      if(m&&!seen.has(m.id)&&!list[m.id]){seen.add(m.id);items.push({m,seed:x.id});if(items.length>=16)break}}
+    recData={key,at:Date.now(),items};
   }catch{}
   recBusy=false;drawRecs();
 }
 function drawRecs(){
-  $('#recs').innerHTML=(recData?.rows||[]).filter(r=>list[r.seed]).map(r=>`<div class="recsec"><h2 class="sec">Because you liked <span>${esc(titleOf(list[r.seed]))}</span></h2>
-    <div class="hrow">${r.items.map(m=>cardHTML(m)).join('')}</div></div>`).join('');
+  const its=(recData?.items||[]).filter(o=>list[o.seed]);
+  $('#recs').innerHTML=its.length?`<div class="recsec"><h2 class="sec">Picked for you</h2>
+    <div class="hrow">${its.map(o=>`<div class="relc">${cardHTML(o.m)}<div class="relwhy">Because you liked ${esc(titleOf(list[o.seed]))}</div></div>`).join('')}</div></div>`:'';
 }
+
+/* ----- Top 10: AniList's trending / best-rated / most popular, with big rank numbers ----- */
+const T10_Q=`query($sort:[MediaSort]){Page(perPage:10){media(type:ANIME,isAdult:false,sort:$sort){${MEDIA_FIELDS}}}}`;
+const t10Data={};let t10Tab=(()=>{try{return localStorage.getItem('kuro.t10Tab')||'TRENDING_DESC'}catch{return'TRENDING_DESC'}})();
+async function loadTop10(){
+  const tab=t10Tab,d=t10Data[tab];drawTop10();
+  if(d&&(d.busy||Date.now()-d.at<36e5))return;
+  t10Data[tab]={...(d||{}),busy:true};
+  try{const ms=(await pubQ(T10_Q,{sort:[tab]})).Page.media.map(x=>{const m=slim(x);cache[m.id]=cache[m.id]||m;return m});
+    t10Data[tab]={at:Date.now(),items:ms}}
+  catch(e){t10Data[tab]={at:0,items:d?.items||null,err:e.message}}
+  if(tab===t10Tab)drawTop10();
+}
+function drawTop10(){
+  document.querySelectorAll('[data-t10]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t10===t10Tab));
+  const d=t10Data[t10Tab],row=$('#t10Row');
+  if(!d?.items){row.innerHTML=`<div class="t10ld">${d?.err?esc(d.err):'Loading…'}</div>`;return}
+  row.innerHTML=d.items.map((m,i)=>`<div class="t10"><span class="rk" aria-hidden="true">${i+1}</span>${cardHTML(m)}</div>`).join('');
+  row.setAttribute('aria-label','Top 10, '+document.querySelector(`[data-t10="${t10Tab}"]`).textContent);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-t10]');if(!b)return;
+  t10Tab=b.dataset.t10;try{localStorage.setItem('kuro.t10Tab',t10Tab)}catch{}$('#t10Row').scrollLeft=0;loadTop10()});
 
 /* ----- "From your shows": sequels and prequels of shows you watched that are not on your list.
    New announcements (not seen before) get a "New" badge, a toast and, when alerts are on, a notification. ----- */
