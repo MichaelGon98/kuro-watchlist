@@ -85,8 +85,8 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 - App is functional locally. Verified in a browser pane against live AniList data: Discover, filters, add to list, detail sheet, Where to watch, episode list/tap, Next up, scrollbars, punctuation-tolerant search.
 - Profiles (2026-11-25) verified in the browser pane: migration from the old layout, profile switching, guest list, settings UI on desktop and phone width, sync logic against a mocked AniList (queued delete, remote-removed entry dropped, local add pushed, remote add pulled), expired-token handling against the real AniList (it answers a bad token with HTTP 400 "Invalid token").
 - **Not verified:** a real AniList login/sync round trip, incl. the guest-list merge prompt on first sign-in (needs the owner's Client ID and a hosted Redirect URL); the in-app trailer player; the phone layout after the later features; Firefox scrollbar look.
-- Not yet hosted anywhere.
-- The project folder is not a git repository.
+- **Hosted** on GitHub Pages: https://michaelgon98.github.io/kuro-watchlist/ (public repo https://github.com/MichaelGon98/kuro-watchlist, branch `main`, root folder). Verified loading there with no console errors and the service worker registered.
+- The project folder is a git repo; commits use the GitHub noreply address (set in the repo's local git config). **To deploy: commit and `git push`**; Pages rebuilds in about a minute.
 
 ## 8. Known issues / caveats
 
@@ -102,11 +102,10 @@ All in the project root (originally `C:\Projects\Anime Watchlist Tracker App` on
 
 ## 9. Next ideas (not started)
 
-- **Next step for profiles:** host permanently (Netlify / GitHub Pages) and register that address as the AniList Redirect URL; verify sign-in and sync end to end in two browsers.
+- **Next step for profiles:** owner registers `https://michaelgon98.github.io/kuro-watchlist/` as the AniList client's Redirect URL, then verify sign-in and sync end to end in two browsers.
 - "This week" airing schedule with countdowns for shows being watched.
 - Jellyfin/Plex "Play from my library" button for anime the owner owns.
 - PNG icons (192/512) and maskable icon for installability.
-- Optional: git init + private GitHub repo for cross-machine work.
 
 ## 10. Change Log
 
@@ -147,4 +146,8 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `sw.js`: cache name bumped to `kuro-v2` so the new page replaces the cached one.
 
 ### 2026-11-25 — Git repo for GitHub Pages hosting
-- Ran `git init` (branch `main`) and added `.gitignore` excluding `.claude/` (machine-local launch config). Why: the owner chose GitHub Pages hosting and installed the GitHub CLI. Next: owner runs `gh auth login`, then a public repo is created and Pages turned on (free Pages needs a public repo). Nothing committed or pushed yet.
+- Ran `git init` (branch `main`) and added `.gitignore` excluding `.claude/` (machine-local launch config). Why: the owner chose GitHub Pages hosting and installed the GitHub CLI. Free Pages needs a public repo; the owner agreed to publish all project files.
+
+### 2026-11-25 — Hosted on GitHub Pages
+- Owner signed in with `gh auth login`. Set repo-local git identity to the GitHub noreply address (keeps the owner's email out of public history), committed everything, created public repo `MichaelGon98/kuro-watchlist`, pushed `main`, enabled Pages (branch `main`, `/`).
+- Live at https://michaelgon98.github.io/kuro-watchlist/; checked: Discover loads, no console errors, service worker registers, Settings shows that address as the Redirect URL. Why: a fixed HTTPS address is needed for profiles/AniList sign-in to work across browsers and on the phone.
