@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kuro Watchlist</title>
 <meta name="theme-color" content="#0b0b12">
-<script>/* apply the active profile's theme before first paint (see applyPrefs) */try{const a=JSON.parse(localStorage.getItem('kuro.active')),t=(JSON.parse(localStorage.getItem('kuro.prefs'))||{})[a==null?'guest':String(a)]?.theme;if(t)document.documentElement.dataset.theme=t==='auto'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t}catch(e){}</script>
+<script>/* apply the active profile's theme before first paint (see applyPrefs) */try{const a=JSON.parse(localStorage.getItem('kuro.active')),t=(JSON.parse(localStorage.getItem('kuro.prefs'))||{})[a==null?'guest':String(a)]?.theme;if(t)document.documentElement.dataset.theme=t==='auto'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;const ac=(JSON.parse(localStorage.getItem('kuro.prefs'))||{})[a==null?'guest':String(a)]?.accent;if(ac)document.documentElement.style.setProperty('--accent',ac)}catch(e){}</script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
@@ -121,6 +121,39 @@ img.nuimg,img.epth{object-fit:cover;display:block}
 .vtog button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
 .lsum{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin:-4px 0 12px;min-height:20px}
 .lsum:empty{display:none}
+.wkhead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.wkhead .sub{flex:1;min-width:0}
+#icsBtn{flex:none;color:var(--text)}
+/* sync status line (My List) */
+.syncbar{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin:-2px 0 10px;flex-wrap:wrap}
+.syncbar .link{font-size:12.5px}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.sdot.ok{background:var(--good)}.sdot.warn{background:var(--warn)}.sdot.bad{background:var(--bad)}
+.sdot.spin{background:var(--accent);animation:sdp 1s ease-in-out infinite}
+@keyframes sdp{50%{opacity:.25}}
+/* bulk select */
+#lgrid.selmode .add,#lgrid.selmode .plus{display:none}
+#lgrid.selmode .card,#lgrid.selmode .lrow{cursor:pointer}
+#lgrid.selmode .card::after,#lgrid.selmode .lrow::after{content:"";position:absolute;z-index:4;top:8px;right:8px;width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:rgba(11,11,18,.55);box-shadow:0 1px 4px #0008}
+#lgrid.selmode .lrow{position:relative;padding-right:44px}
+#lgrid.selmode .lrow::after{top:50%;margin-top:-12px;border-color:var(--muted);background:transparent;box-shadow:none}
+#lgrid.selmode .sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+#lgrid.selmode .sel::after{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center/14px no-repeat!important;border-color:var(--accent)!important}
+#v-list.selmode{padding-bottom:90px}
+.selbar{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:45;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:8px 10px;box-shadow:0 10px 30px #0008;width:max-content;max-width:calc(100vw - 24px)}
+.selbar[hidden]{display:none}
+body:has(#v-list.selmode) #toast{bottom:calc(var(--nav-h) + 90px)}
+.selbar b{padding:0 6px;font-size:14px;white-space:nowrap}
+.selbar select{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 8px;color:var(--text);width:auto}
+.selbar button:disabled,.selbar select:disabled{opacity:.45;pointer-events:none}
+/* accent picker */
+.acc{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.acc button{width:32px;height:32px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px var(--line)}
+.acc button.on{border-color:var(--text)}
+.acc .chip{width:auto;height:auto;border-radius:999px;border:1px solid var(--line);box-shadow:none}
+.acc .chip.on{border-color:transparent}
+.acc input[type=color]{width:44px;height:34px;padding:0 2px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.acc small{width:100%;color:var(--muted);font-size:12px;margin-top:2px}
 .lsum button{color:var(--accent);font-weight:600;font-size:13px}
 /* compact list rows */
 #lgrid.rows{display:flex;flex-direction:column;gap:6px}
@@ -369,6 +402,9 @@ nav.bottom{display:none}
   .lpr .prog{display:none}
   .lsc{width:34px}
   .lrow{gap:10px}
+  .selbar{bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 10px)}
+  #v-list.selmode{padding-bottom:150px}
+  body:has(#v-list.selmode) #toast{bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 130px)}
   .lrow .ctitle{-webkit-line-clamp:2;font-size:13.5px}
   .lrow .lpad{display:none}
   .lrow .plus{width:auto;padding:7px 10px}
@@ -433,12 +469,14 @@ nav.bottom{display:none}
 
   <!-- THIS WEEK -->
   <section id="v-week" style="display:none">
-    <div class="sub" id="wkmode" role="group" aria-label="Which shows"><button class="chip on" data-wk="mine" aria-pressed="true">My shows</button><button class="chip" data-wk="all" aria-pressed="false">All popular</button></div>
+    <div class="wkhead"><div class="sub" id="wkmode" role="group" aria-label="Which shows"><button class="chip on" data-wk="mine" aria-pressed="true">My shows</button><button class="chip" data-wk="all" aria-pressed="false">All popular</button></div>
+      <button class="chip" id="icsBtn" title="Download the next 4 weeks of episodes from your list as a calendar file">📅 Add to calendar</button></div>
     <div id="wk"></div>
   </section>
 
   <!-- LIST -->
   <section id="v-list" style="display:none">
+    <div class="syncbar" id="syncbar" aria-live="polite"></div>
     <div class="sub" id="subtabs" role="group" aria-label="List status"></div>
     <div class="lbar">
       <input id="lq" type="search" placeholder="Filter my list…" aria-label="Filter my list">
@@ -447,6 +485,7 @@ nav.bottom{display:none}
       <select id="lair" aria-label="Airing"><option value="">Any airing state</option><option value="new">New episodes to watch</option><option value="RELEASING">Airing now</option><option value="FINISHED">Finished airing</option><option value="NOT_YET_RELEASED">Not yet aired</option></select>
       <div class="lsortw">
         <select id="lsort" aria-label="Sort my list"><option value="added">Recently added</option><option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="score">AniList score</option><option value="mine">My rating</option><option value="pop">Popularity</option><option value="year">Year</option><option value="progress">Progress</option><option value="left">Episodes left</option><option value="airing">Next episode airs</option><option value="length">Length</option></select>
+        <button class="ibtn" id="lsel" aria-pressed="false" aria-label="Select several" title="Select several"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12l3 3 5-6"/></svg></button>
         <button class="ibtn" id="ldir" aria-pressed="false" aria-label="Reverse sort order" title="Reverse sort order"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></svg></button>
         <div class="vtog" role="group" aria-label="Layout">
           <button data-lv="grid" aria-pressed="true" aria-label="Grid view" title="Grid view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></button>
@@ -456,6 +495,13 @@ nav.bottom{display:none}
     </div>
     <div class="lsum" id="lsum" aria-live="polite"></div>
     <div class="grid" id="lgrid"></div>
+    <div class="selbar" id="selbar" role="region" aria-label="Selected anime" hidden>
+      <b id="selN">0 selected</b>
+      <button class="btn sm" id="selAll">Select all</button>
+      <select id="selSt" aria-label="Move selected to"><option value="">Move to…</option></select>
+      <button class="btn sm danger" id="selRm">Remove</button>
+      <button class="btn sm" id="selDone">Done</button>
+    </div>
   </section>
 
   <!-- STATS -->
@@ -509,7 +555,7 @@ const activeId=store.get('kuro.active',null);
 const me=()=>profiles[activeId]||null;
 const listKey=()=>me()?'kuro.list.'+me().id:'kuro.list';
 let list=store.get(listKey(),{});          // id -> item
-const saveList=()=>{store.set(listKey(),list);updateCounts();scheduleSync()};
+const saveList=()=>{store.set(listKey(),list);updateCounts();scheduleSync();if(view==='list')renderSyncBar()};
 const saveSettings=()=>store.set('kuro.settings',settings);
 const saveProfiles=()=>store.set('kuro.profiles',profiles);
 // Per-profile look, kept in this browser only (AniList has no place to store it):
@@ -518,6 +564,17 @@ let prefsAll=store.get('kuro.prefs',{});
 const prefKey=()=>me()?String(me().id):'guest';
 const myPrefs=()=>prefsAll[prefKey()]||{};
 const savePrefs=p=>{prefsAll[prefKey()]=p;store.set('kuro.prefs',prefsAll)};
+// Watch history, per profile, in this browser: [time, mediaId, firstEp, lastEp] each time episodes are marked watched
+// (+1, the stepper, episode taps). Status changes (e.g. "Completed") are not logged: they are not watching.
+// Feeds the coming diary, streaks and year-in-review. Kept to the last 5000 entries.
+const histKey=()=>'kuro.hist.'+prefKey();
+let hist=store.get(histKey(),[]);
+const saveHist=()=>{if(hist.length>5000)hist=hist.slice(-5000);store.set(histKey(),hist)};
+function logWatch(id,from,to){if(!(to>from))return;hist.push([Date.now(),id,from+1,to]);saveHist()}
+// progress went down to `to`: forget the logged episodes above it
+function unlogWatch(id,to){let ch=0;
+  for(let i=hist.length-1;i>=0;i--){const h=hist[i];if(h[1]!==id||h[3]<=to)continue;ch=1;if(h[2]>to)hist.splice(i,1);else h[3]=to}
+  if(ch)saveHist()}
 const PCOLORS=['#8b7bff','#ff6bd6','#38bdf8','#4ade80','#fbbf24','#f87171','#f97316','#a3a3c2'];
 // Display name and avatar for a profile (p = AniList profile or null for guest), honouring the user's customisation
 function look(p,pr=prefsAll[p?String(p.id):'guest']||{}){
@@ -533,16 +590,39 @@ const THEMES=[['dark','Midnight','#0b0b12','#8b7bff','#ff6bd6'],['sakura','Sakur
   ['auto','Auto','linear-gradient(135deg,#f4f4f9 50%,#0b0b12 50%)','#8b7bff','#e0479e']];
 // 'auto' follows the device: Light when it is in light mode, Midnight otherwise (also in the <head> script)
 const sysLight=matchMedia('(prefers-color-scheme: light)');
-let themeArg; // the theme being previewed in Edit profile, if any
-// Applies the active profile's look (theme, colour) to the whole page; `t` previews a theme without saving
-function applyPrefs(t){
-  themeArg=t;let want=t||myPrefs().theme;if(want==='auto')want=sysLight.matches?'light':'dark';
+let themeArg,accentArg; // the theme / accent being previewed in Edit profile, if any
+// Applies the active profile's look (theme, colour, accent) to the whole page; `t` / `a` preview a theme / accent without saving
+// (a: undefined = the saved one, null = the theme's own)
+function applyPrefs(t,a){
+  themeArg=t;accentArg=a;let want=t||myPrefs().theme;if(want==='auto')want=sysLight.matches?'light':'dark';
   const th=THEMES.find(x=>x[0]===want)||THEMES[0],h=document.documentElement;
   h.style.setProperty('--me',myPrefs().color||PCOLORS[0]);h.dataset.theme=th[0];
+  setAccent(a!==undefined?a:myPrefs().accent,th[0]==='light');
   document.querySelector('meta[name=theme-color]').content=th[2]; // phone status bar / installed app title bar
 }
+/* custom accent: the chosen colour, lightened on dark themes / darkened on Light so text in it stays readable;
+   --accent2 (gradient partner) is the same colour turned 40° round the colour wheel */
+const hexHsl=hex=>{const n=parseInt(hex.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;
+  let h=0;if(d)h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;return[(h*60+360)%360,d?d/(1-Math.abs(2*l-1)):0,l]};
+const hslHex=(h,s,l)=>{const f=k=>{const kk=(k+h/30)%12,c=l-s*Math.min(l,1-l)*Math.max(-1,Math.min(kk-3,9-kk,1));return Math.round(c*255).toString(16).padStart(2,'0')};return'#'+f(0)+f(8)+f(4)};
+const lum=hex=>{const n=parseInt(hex.slice(1),16),c=v=>(v/=255)<=.03928?v/12.92:((v+.055)/1.055)**2.4;return .2126*c(n>>16&255)+.7152*c(n>>8&255)+.0722*c(n&255)};
+const okHex=c=>/^#[0-9a-f]{6}$/i.test(c||'');
+function accentSet(hex,light){
+  // keep the picked shade when it already reads well, otherwise step it darker (Light) or lighter (dark themes):
+  // about 3:1 against white on Light, about 4.5:1 against the near-black backgrounds
+  const[h,s,l0]=hexHsl(hex);let l=l0;
+  if(light)while(lum(hslHex(h,s,l))>.26&&l>.15)l-=.02;else while(lum(hslHex(h,s,l))<.2&&l<.9)l+=.02;
+  const a=hslHex(h,s,l),a2=hslHex((h+40)%360,s,l);
+  return{a,a2,on:lum(a)>.35?'#0b0b12':'#ffffff'};
+}
+function setAccent(hex,light){
+  const st=document.documentElement.style;
+  if(!okHex(hex)){for(const k of ['--accent','--accent2','--on-accent'])st.removeProperty(k);return}
+  const{a,a2,on}=accentSet(hex,light);st.setProperty('--accent',a);st.setProperty('--accent2',a2);st.setProperty('--on-accent',on);
+}
+const ACCENTS=['#8b7bff','#ff6bd6','#ff7eb6','#f43f5e','#fb923c','#fbbf24','#a3e635','#4ade80','#2dd4bf','#38bdf8','#6366f1','#e2e8f0'];
 // follow the device live; also re-check when the app comes back to the foreground (a phone may switch at sunset while it is hidden)
-const autoRecheck=()=>{if((themeArg||myPrefs().theme)==='auto')applyPrefs(themeArg)};
+const autoRecheck=()=>{if((themeArg||myPrefs().theme)==='auto')applyPrefs(themeArg,accentArg)};
 sysLight.addEventListener('change',autoRecheck);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoRecheck()});
 function switchProfile(id,msg){store.set('kuro.active',id);try{if(msg)sessionStorage.setItem('kuro.toast',msg)}catch{}location.replace(location.pathname+location.search)}
@@ -685,6 +765,33 @@ const WK_Q=withIds=>`query($p:Int,${withIds?'$ids:[Int],':''}$from:Int,$to:Int){
 airingSchedules(${withIds?'mediaId_in:$ids,':''}airingAt_greater:$from,airingAt_lesser:$to,sort:TIME){episode airingAt media{isAdult ${QUERY.slice(QUERY.indexOf('id idMal'),QUERY.lastIndexOf('}}}'))}}}}}`;
 let wkMode='mine',wkData=null,wkKey='',wkAt=0;
 const wkIds=()=>Object.values(list).filter(x=>x.status!=='completed'&&x.status!=='dropped').map(x=>x.id).sort((a,b)=>a-b);
+// "Add to calendar": the next 4 weeks of episodes from My shows as an .ics file (a snapshot: download again for changes)
+const ICS_Q=`query($p:Int,$ids:[Int],$from:Int,$to:Int){Page(page:$p,perPage:50){pageInfo{hasNextPage}airingSchedules(mediaId_in:$ids,airingAt_greater:$from,airingAt_lesser:$to,sort:TIME){episode airingAt mediaId}}}`;
+async function exportIcs(){
+  const ids=wkIds();if(!ids.length)return toast('Add some shows to your list first');
+  const b=$('#icsBtn');b.disabled=true;b.textContent='📅 Making calendar…';
+  try{
+    const from=Math.floor(Date.now()/1000)-3600,to=from+28*86400,out=[];
+    for(let p=1;p<=10;p++){
+      const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:ICS_Q,variables:{p,ids,from,to}})});
+      if(!r.ok)throw new Error(r.status===429?'Rate limited, wait a moment':'AniList error '+r.status);
+      const pg=(await r.json()).data.Page;out.push(...pg.airingSchedules);if(!pg.pageInfo.hasNextPage)break;
+    }
+    if(!out.length)return toast('Nothing from your list airs in the next 4 weeks');
+    const t=d=>new Date(d).toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+    const tx=v=>String(v).replace(/[\\;,]/g,m=>'\\'+m).replace(/\r?\n/g,'\\n');
+    const fold=l=>{let o='';while(l.length>74){o+=l.slice(0,74)+'\r\n ';l=l.slice(74)}return o+l};
+    const now=t(Date.now()),lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Kuro Watchlist//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Kuro airing'];
+    for(const s of out){const m=list[s.mediaId];if(!m)continue;const st=s.airingAt*1000;
+      lines.push('BEGIN:VEVENT',`UID:kuro-${s.mediaId}-${s.episode}@kuro-watchlist`,`DTSTAMP:${now}`,`DTSTART:${t(st)}`,`DTEND:${t(st+(m.duration||24)*60000)}`,
+        `SUMMARY:${tx(`${titleOf(m)} · Ep ${s.episode}${m.episodes?' / '+m.episodes:''}`)}`,`DESCRIPTION:${tx('Original broadcast time, from AniList. Tracked in Kuro.')}`,...(okUrl(m.url)?[`URL:${m.url}`]:[]),'END:VEVENT')}
+    lines.push('END:VCALENDAR');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.map(fold).join('\r\n')+'\r\n'],{type:'text/calendar'}));a.download='kuro-airing.ics';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    toast(`${out.length} episode${out.length>1?'s':''} saved to kuro-airing.ics. Open it to add them to your calendar.`);
+  }catch(e){toast('Could not make the calendar: '+(e instanceof TypeError?'offline?':e.message))}
+  finally{b.disabled=false;b.textContent='📅 Add to calendar'}
+}
+$('#icsBtn').onclick=exportIcs;
 async function loadWeek(force){
   const ids=wkMode==='mine'?wkIds():null,key=wkMode+':'+(ids||[]).join(',');
   if(!force&&wkData&&key===wkKey&&Date.now()-wkAt<6e5)return drawWeek();
@@ -802,11 +909,47 @@ function renderList(){
     return c*dir||titleOf(a.x).localeCompare(titleOf(b.x))}).map(o=>o.x);
   const filt=listFiltered();
   $('#lsum').innerHTML=filt&&inTab.length?`<span>${items.length} of ${inTab.length} shown</span><button id="lclear">Clear filters</button>`:'';
+  renderSyncBar();
   const g=$('#lgrid');g.classList.toggle('rows',lui.layout==='compact');
   g.innerHTML=items.length?items.map(m=>lui.layout==='compact'?rowHTML(m):cardHTML(m,true)).join('')
     :filt&&inTab.length?`<div class="empty" style="grid-column:1/-1">Nothing matches these filters.<br><button class="link" id="lclear2">Clear filters</button></div>`
     :`<div class="empty" style="grid-column:1/-1">Nothing here yet.<br>Tap + on any anime in Discover to add it.</div>`;
+  if(selMode){const vis=new Set(items.map(x=>x.id));for(const id of sel)if(!vis.has(id))sel.delete(id)} // only act on what is shown
+  markSel();
 }
+/* ---------- bulk edit: select several shows, then move them to a status or remove them ---------- */
+let selMode=false;const sel=new Set();
+const selItems=()=>$$('#lgrid .card,#lgrid .lrow');
+const selId=el=>+(el.dataset.id||el.dataset.open);
+function markSel(){
+  $('#lgrid').classList.toggle('selmode',selMode);$('#v-list').classList.toggle('selmode',selMode);
+  $('#lsel').setAttribute('aria-pressed',selMode);$('#selbar').hidden=!selMode;
+  for(const el of selItems()){const on=selMode&&sel.has(selId(el));el.classList.toggle('sel',on);
+    const b=el.querySelector('[role=button]');if(b){if(selMode)b.setAttribute('aria-pressed',on);else b.removeAttribute('aria-pressed')}}
+  if(!selMode)return;
+  const n=sel.size,all=selItems().length;
+  $('#selN').textContent=n?`${n} selected`:'Tap shows to select';
+  $('#selAll').textContent=n&&n===all?'Select none':'Select all';
+  $('#selSt').disabled=$('#selRm').disabled=!n;
+}
+function setSel(on){selMode=on;sel.clear();markSel();if(on)toast('Tap shows to select them')}
+$('#selSt').insertAdjacentHTML('beforeend',STATUSES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(''));
+$('#lsel').onclick=()=>setSel(!selMode);
+$('#selDone').onclick=()=>setSel(false);
+$('#selAll').onclick=()=>{const ids=selItems().map(selId);if(sel.size===ids.length)sel.clear();else ids.forEach(i=>sel.add(i));markSel()};
+// in select mode a tap (or Enter) on a show selects it instead of opening it
+$('#lgrid').addEventListener('click',e=>{if(!selMode)return;const el=e.target.closest('.card,.lrow');if(!el)return;
+  e.preventDefault();e.stopPropagation();const id=selId(el);sel.has(id)?sel.delete(id):sel.add(id);markSel()},true);
+$('#selSt').onchange=e=>{const st=e.target.value;e.target.value='';if(!st||!sel.size)return;
+  const ids=[...sel].filter(id=>list[id]),prev=ids.map(id=>({id,status:list[id].status,progress:list[id].progress||0})),now=Date.now();
+  for(const id of ids){const x=list[id];x.status=st;if(st==='completed'&&x.episodes)x.progress=Math.max(x.progress||0,x.episodes);x.updated=now}
+  saveList();sel.clear();refreshCards();
+  toast(`${ids.length} moved to ${STATUSES.find(s=>s[0]===st)[1]}`,()=>{for(const q of prev){const x=list[q.id];if(x)Object.assign(x,{status:q.status,progress:q.progress,updated:Date.now()})}saveList();refreshCards()})};
+$('#selRm').onclick=()=>{const ids=[...sel].filter(id=>list[id]);if(!ids.length)return;
+  if(!confirm(`Remove ${ids.length} anime from your list?`+(me()?.token?' They are removed from AniList too.':'')))return;
+  for(const id of ids){const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId]}}
+  if(me())saveProfiles();saveList();sel.clear();refreshCards();toast(`Removed ${ids.length}`)};
+addEventListener('keydown',e=>{if(e.key==='Escape'&&selMode&&!$('#scrim').classList.contains('open'))setSel(false)});
 // One compact row of My List: cover, title, meta, progress, score, +1
 function rowHTML(m){
   const e=list[m.id],n=nextInfo(e),prog=e.progress||0;
@@ -980,6 +1123,7 @@ async function openShare(){
 
 /* ---------- views ---------- */
 function setView(v){
+  if(v!=='list'&&selMode)setSel(false);
   view=v;for(const k of ['discover','week','list','stats'])$('#v-'+k).style.display=v===k?'':'none';
   $$('[data-view]').forEach(b=>{b.classList.toggle('on',b.dataset.view===v);b.dataset.view===v?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
   $('#q').placeholder=v==='list'?'Search my list…':'Search anime…';
@@ -1055,6 +1199,7 @@ function bump(id,d){
   const e=list[id];if(!e)return null;const prev={status:e.status,progress:e.progress||0};
   const tot=e.episodes||details[id]?.episodes||0;
   e.progress=Math.max(0,Math.min(tot||9999,(e.progress||0)+d));
+  if(e.progress>prev.progress)logWatch(id,prev.progress,e.progress);else if(e.progress<prev.progress)unlogWatch(id,e.progress);
   if(d>0&&tot&&e.progress>=tot)e.status='completed';
   else if(d>0&&['planning','paused','dropped'].includes(e.status))e.status='watching';
   e.updated=Date.now();saveList();refreshCards();
@@ -1064,7 +1209,7 @@ function bump(id,d){
 function plusOne(id){
   const prev=bump(id,1),e=list[id];if(!prev)return;
   const done=e.status==='completed'&&prev.status!=='completed';
-  toast(done?`Finished · ${titleOf(e)}`:`Ep ${e.progress} watched · ${titleOf(e)}`,()=>{Object.assign(e,prev,{updated:Date.now()});saveList();refreshCards()});
+  toast(done?`Finished · ${titleOf(e)}`:`Ep ${e.progress} watched · ${titleOf(e)}`,()=>{unlogWatch(id,prev.progress);Object.assign(e,prev,{updated:Date.now()});saveList();refreshCards()});
 }
 function closeModal(){applyPrefs()/* drops an unsaved theme preview */;$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
 
@@ -1113,8 +1258,9 @@ function fillDetails(id){
 }
 function epTap(id,k){
   if(!list[id])addToList(id,'watching');
-  const e=list[id],tot=e.episodes||details[id]?.episodes||0;
+  const e=list[id],tot=e.episodes||details[id]?.episodes||0,was=e.progress||0;
   e.progress=e.progress===k?k-1:k;
+  if(e.progress>was)logWatch(id,was,e.progress);else if(e.progress<was)unlogWatch(id,e.progress);
   if(tot&&e.progress>=tot)e.status='completed';
   else if(e.progress>0&&['planning','dropped','completed','paused'].includes(e.status))e.status='watching';
   e.updated=Date.now();saveList();refreshCards();openModal(id,true);
@@ -1143,8 +1289,8 @@ function openerSel(o){
 function dlgFocusKey(){
   const a=document.activeElement,md=$('#modal');if(!a||a===md||!md.contains(a))return null;
   if(a.id)return '#'+a.id;
-  const r=a.closest('[data-st],[data-sc],[data-ep],[data-col],[data-th]');if(!r)return null;
-  const k=['st','sc','ep','col','th'].find(k=>k in r.dataset);
+  const r=a.closest('[data-st],[data-sc],[data-ep],[data-col],[data-th],[data-acc]');if(!r)return null;
+  const k=['st','sc','ep','col','th','acc'].find(k=>k in r.dataset);
   return `[data-${k}="${CSS.escape(r.dataset[k])}"]`+(r===a?'':' .'+a.classList[0]);
 }
 function dlgRefocus(){if(!dlgFocus)return;const el=$('#modal').querySelector(dlgFocus);if(el){el.focus({preventScroll:true});dlgFocus=null}}
@@ -1225,10 +1371,11 @@ function openSettings(){
     delete profiles[p.id];saveProfiles();store.del('kuro.list.'+p.id);delete prefsAll[p.id];store.set('kuro.prefs',prefsAll); // photo/nickname too: a shared browser keeps nothing
     if(on)switchProfile(null,'Signed out '+p.name);else openSettings();
   });
-  $('#exp').onclick=()=>{const{token,user,...safe}=settings;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({list,settings:safe},null,1)],{type:'application/json'}));a.download='kuro-watchlist.json';a.click()};
+  $('#exp').onclick=()=>{const{token,user,...safe}=settings;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({list,settings:safe,history:hist},null,1)],{type:'application/json'}));a.download='kuro-watchlist.json';a.click()};
   $('#imp').onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());
     // imported entries may come from another account: forget their AniList ids so they get pushed, not treated as removed
     for(const it of Object.values(j.list||{})){delete it.synced;delete it.entryId;it.updated=it.updated||Date.now()}
+    if(Array.isArray(j.history)){const have=new Set(hist.map(h=>h.join()));for(const h of j.history)if(Array.isArray(h)&&h.length===4&&h.every(Number.isFinite)&&!have.has(h.join()))hist.push(h);hist.sort((a,b)=>a[0]-b[0]);saveHist()}
     Object.assign(list,j.list||{});if(j.settings){const{token,user,...s}=j.settings;settings={...settings,...s}}saveList();saveSettings();closeModal();refreshCards();toast('Imported')}catch{toast('Invalid file')}};
 }
 // Profile editor: picture (AniList / own photo / initial), nickname and colour. Stored in this browser only.
@@ -1255,16 +1402,28 @@ function openProfileEditor(){
       <div class="themes">${THEMES.map(([k,n,bg,a1,a2])=>`<button data-th="${k}" class="${(d.theme||'dark')===k?'on':''}" aria-label="${n} theme">
         <i style="background:${bg}"><b style="background:linear-gradient(135deg,${a1},${a2})"></b></i>${n}</button>`).join('')}</div>
       <div class="hint">Auto follows your device: Light in light mode, Midnight in dark mode.</div>
+      <label>Accent colour</label>
+      <div class="acc" role="group" aria-label="Accent colour">
+        <button class="chip ${!d.accent?'on':''}" data-acc="" aria-pressed="${!d.accent}">Theme default</button>
+        ${ACCENTS.map(c=>`<button data-acc="${c}" class="${d.accent===c?'on':''}" style="background:${c}" aria-label="Accent ${c}" aria-pressed="${d.accent===c}"></button>`).join('')}
+        <input type="color" id="accPick" value="${okHex(d.accent)?d.accent:'#8b7bff'}" aria-label="Pick any accent colour" title="Pick any colour">
+        ${(()=>{const fav=[...new Set(Object.values(list).filter(x=>okHex(x.color)&&!ACCENTS.includes(x.color.toLowerCase())).sort((a,b)=>(b.myScore||0)-(a.myScore||0)||(b.updated||0)-(a.updated||0)).slice(0,24).map(x=>x.color.toLowerCase()))].slice(0,6);
+          return fav.length?`<small>From your shows' covers</small>${fav.map(c=>`<button data-acc="${c}" class="${d.accent===c?'on':''}" style="background:${c}" aria-label="Accent ${c}" aria-pressed="${d.accent===c}"></button>`).join('')}`:''})()}
+      </div>
+      <div class="hint">Buttons, highlights and charts use it. It is adjusted a little on each theme so text stays readable.</div>
       <label for="nick">Display name</label>
       <input type="text" id="nick" maxlength="30" value="${esc(d.nick||'')}" placeholder="${esc(p?.name||'Guest')}">
       <div class="hint">Saved in this browser only. Your AniList name and picture are not changed. Each profile keeps its own theme.</div>
       <div class="actions" style="margin-top:20px"><button class="btn primary" id="psave">Save</button><button class="btn" id="pback">Cancel</button>
-        ${myPrefs().nick||myPrefs().picMode||myPrefs().color?'<button class="btn danger" id="preset">Reset</button>':''}</div></div>`;
-    $('#mclose').onclick=()=>{applyPrefs();closeModal()};$('#pback').onclick=()=>{applyPrefs();openSettings()}; // undo an unsaved preview
+        ${myPrefs().nick||myPrefs().picMode||myPrefs().color||myPrefs().accent?'<button class="btn danger" id="preset">Reset</button>':''}</div></div>`;
+    $('#mclose').onclick=()=>{applyPrefs();closeModal()};
+    const accPrev=()=>applyPrefs(d.theme||'dark',d.accent||null);
+    $$('[data-acc]').forEach(b=>b.onclick=()=>{d.accent=b.dataset.acc||undefined;accPrev();const st=$('#modal').scrollTop;draw();$('#modal').scrollTop=st});
+    $('#accPick').oninput=e=>{d.accent=e.target.value.toLowerCase();accPrev();$$('[data-acc]').forEach(b=>{const on=b.dataset.acc===d.accent;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})};$('#pback').onclick=()=>{applyPrefs();openSettings()}; // undo an unsaved preview
     $('#nick').oninput=e=>{d.nick=e.target.value.trim();$('.pcard .pname').textContent=d.nick||p?.name||'Guest'};
     $$('[data-pm]').forEach(b=>b.onclick=()=>{const m=b.dataset.pm;if(m==='photo'&&!d.pic)return $('#pfile0').click();d.picMode=m;draw()});
     $$('[data-col]').forEach(b=>b.onclick=()=>{d.color=b.dataset.col;draw()});
-    $$('[data-th]').forEach(b=>b.onclick=()=>{d.theme=b.dataset.th==='dark'?undefined:b.dataset.th;applyPrefs(d.theme||'dark');const st=$('#modal').scrollTop;draw();$('#modal').scrollTop=st}); // live preview
+    $$('[data-th]').forEach(b=>b.onclick=()=>{d.theme=b.dataset.th==='dark'?undefined:b.dataset.th;applyPrefs(d.theme||'dark',d.accent||null);const st=$('#modal').scrollTop;draw();$('#modal').scrollTop=st}); // live preview
     const pick=async e=>{const f=e.target.files[0];if(!f)return;try{d.pic=await squareJpeg(f,192);d.picMode='photo';draw()}catch{toast('Could not read that image')}};
     $('#pfile0').onchange=pick;if($('#pfile'))$('#pfile').onchange=pick;
     $('#psave').onclick=()=>{d.nick=$('#nick').value.trim();savePrefs(d);renderProfileBtn();openSettings();toast('Profile saved')};
@@ -1309,11 +1468,22 @@ const unsynced=()=>Object.values(list).filter(it=>!it.synced||it.updated>it.sync
 const VIEWER_Q='{Viewer{id name avatar{large medium} bannerImage}}';
 const viewerInfo=v=>({id:v.id,name:v.name,avatar:v.avatar?.medium||'',avatarL:v.avatar?.large||v.avatar?.medium||'',banner:v.bannerImage||'',infoAt:Date.now()});
 let syncing=false,syncAgain=false,syncT;
+// "Synced 3 min ago · Sync now" line at the top of My List
+const ago=t=>{const s=(Date.now()-t)/1000;return s<45?'just now':s<3600?Math.max(1,Math.round(s/60))+' min ago':s<86400?Math.round(s/3600)+' h ago':'on '+new Date(t).toLocaleDateString([],{day:'numeric',month:'short'})};
+function renderSyncBar(){
+  const el=$('#syncbar');if(!el)return;const p=me(),n=p?.token?unsynced():0;
+  el.innerHTML=!p?`<span class="sdot"></span><span>This list is saved in this browser only.</span><button class="link" id="sbSign">Sign in to sync</button>`
+    :!p.token?`<span class="sdot bad"></span><span>AniList sign-in expired, changes are kept here until you sign in again.</span><button class="link" id="sbSign">Sign in</button>`
+    :syncing?`<span class="sdot spin"></span><span>Syncing with AniList…</span>`
+    :`<span class="sdot ${n?'warn':'ok'}"></span><span title="${p.lastSync?esc(new Date(p.lastSync).toLocaleString()):''}">${p.lastSync?'Synced with AniList '+ago(p.lastSync):'Not synced yet'}${n?` · ${n} change${n>1?'s':''} waiting`:''}</span><button class="link" id="sbSync">Sync now</button>`;
+}
+$('#syncbar').onclick=e=>{if(e.target.id==='sbSync')sync(true);else if(e.target.id==='sbSign')openSettings()};
+setInterval(()=>{if(view==='list'&&!document.hidden)renderSyncBar()},30000);
 function scheduleSync(){if(!me()?.token)return;clearTimeout(syncT);syncT=setTimeout(()=>sync(false),2500)}
 async function sync(manual){
   const p=me();if(!p?.token)return;
   if(syncing){syncAgain=true;return}
-  syncing=true;syncAgain=false;
+  syncing=true;syncAgain=false;renderSyncBar();
   try{
     // 1. removals made on this browser (queued so they survive being offline)
     p.pendingDel=p.pendingDel||[];
@@ -1357,7 +1527,7 @@ async function sync(manual){
     if(e.message==='AUTH'){delete p.token;saveProfiles();renderProfileBtn();toast(`AniList sign-in expired for ${p.name}, sign in again in Settings`)}
     else toast('Sync failed: '+(e instanceof TypeError?'offline?':e.message));
   }
-  syncing=false;
+  syncing=false;renderSyncBar();
   if(syncAgain)scheduleSync();
 }
 // Back from AniList sign-in: the token arrives in the URL hash. Work out which account it is,
