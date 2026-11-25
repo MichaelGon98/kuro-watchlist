@@ -326,6 +326,29 @@ details.hint summary{cursor:pointer}
 .t10 .card:hover{transform:none}
 .t10:first-child .rk{--rkc:#f5c542}
 .t10ld{color:var(--muted);font-size:13px;padding:30px 0}
+/* Live airing countdown */
+.cd{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;line-height:1.5;color:#fff;background:rgba(11,11,18,.72);backdrop-filter:blur(6px);
+  border:1px solid color-mix(in srgb,var(--accent) 60%,transparent);padding:1px 8px;border-radius:999px;margin-bottom:6px;font-variant-numeric:tabular-nums;white-space:nowrap;max-width:100%;overflow:hidden}
+.cd::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;animation:cdp 2s ease-in-out infinite}
+.cd.soon{background:var(--accent);color:var(--on-accent);border-color:transparent;box-shadow:0 0 14px color-mix(in srgb,var(--accent) 60%,transparent)}
+.cd.soon::before{background:var(--on-accent)}
+.cd.out{background:#16a34a;border-color:transparent}.cd.out::before{background:#fff;animation:none}
+@keyframes cdp{50%{opacity:.25}}
+.nuc .cdt{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700}
+/* Character of the day */
+.cotd{display:flex;gap:16px;align-items:center;padding:14px;margin:0 0 20px;border-radius:18px;border:1px solid color-mix(in srgb,var(--ctint,var(--accent)) 40%,var(--line));
+  background:radial-gradient(120% 140% at 0 0,color-mix(in srgb,var(--ctint,var(--accent)) 26%,transparent),transparent 60%),var(--card);position:relative;overflow:hidden}
+.cotd .cimgw{flex:none;width:118px;aspect-ratio:2/3;border-radius:14px;overflow:hidden;background:var(--card2);box-shadow:0 10px 30px #0008,0 0 0 2px color-mix(in srgb,var(--ctint,var(--accent)) 55%,transparent)}
+.cotd .cimgw img{width:100%;height:100%;object-fit:cover;display:block;animation:cpop .6s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes cpop{from{transform:scale(1.15);opacity:0}}
+.cotd .cbody{min-width:0;flex:1}
+.cotd h3{margin:8px 0 2px;font-size:22px;line-height:1.15;letter-spacing:-.01em}
+.cotd h3 small{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-top:2px}
+.cfrom{font-size:13px;color:var(--muted)}
+.cfrom button{color:var(--accent);font-weight:700;padding:0;text-align:left}
+.cotd p{font-size:13.5px;line-height:1.45;margin:8px 0 10px;color:var(--text);opacity:.88;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cotd .hb .btn{text-decoration:none;color:var(--text)}
+@media (max-width:760px){.cotd{gap:12px;padding:12px}.cotd .cimgw{width:96px}.cotd h3{font-size:18px}.cotd p{-webkit-line-clamp:2;font-size:13px}}
 /* Celebrations: confetti rain + a card (Completed! stamp or badge reveal); +1 pop */
 .fxw{position:fixed;inset:0;z-index:70;pointer-events:none;display:grid;place-items:center;transition:opacity .35s}
 .fxw.out{opacity:0}
@@ -627,6 +650,7 @@ nav.bottom{display:none}
     <div id="nextup" style="display:none"><h2 class="sec">Next up</h2><div class="nu" id="nuRow"></div></div>
     <div id="nudges" style="display:none"><h2 class="sec" style="margin-top:18px">Pick up again</h2><div class="nu" id="ndRow"></div></div>
     <div id="rels" style="display:none;margin-top:18px"><h2 class="sec">From your shows</h2><div class="hrow" id="relRow"></div></div>
+    <div id="cotd" hidden style="margin-top:18px"></div>
     <div id="recs" style="margin-top:18px"></div>
     <div id="top10"><div class="t10head"><h2 class="sec">Top 10</h2><div class="t10tabs" role="group" aria-label="Top 10 list">
       <button class="chip" data-t10="TRENDING_DESC">Trending now</button><button class="chip" data-t10="SCORE_DESC">All-time best</button><button class="chip" data-t10="POPULARITY_DESC">Most popular</button></div></div>
@@ -922,7 +946,7 @@ function cardHTML(m,showProg){
     <div class="cover" style="background-color:${esc(m.color||'')}" data-open="${m.id}">${pic(m.cover,'cimg')}
       ${showProg&&e?.myScore&&settings.rate!==false&&lui.sort!=='score'?`<span class="badge mine">♥ ${e.myScore/10}</span>`
         :m.score?`<span class="badge ${scoreCls(m.score)}">★ ${(m.score/10).toFixed(1)}</span>`:''}
-      <div class="cinfo" role="button" tabindex="0"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)}${showProg&&(ACTIVE.includes(e.status)||e.status==='paused')?` · ep ${e.progress||0}`:''}</div></div>
+      <div class="cinfo" role="button" tabindex="0">${cdPill(m,e)}<div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)}${showProg&&(ACTIVE.includes(e.status)||e.status==='paused')?` · ep ${e.progress||0}`:''}</div></div>
       ${showProg&&ACTIVE.includes(e.status)&&nextInfo(e).out&&!(e.episodes&&e.progress>=e.episodes)
         ?`<button class="add plus" data-plus="${m.id}" aria-label="Mark episode ${(e.progress||0)+1} watched">+1</button>`
         :`<button class="add ${inList?'in':''}" data-add="${m.id}" aria-label="${inList?'In list':'Add to list'}">${inList?'✓':'+'}</button>`}
@@ -942,6 +966,17 @@ function whenText(sec){
   if(d<864e5)return 'in '+Math.round(d/36e5)+'h';
   return new Date(sec*1000).toLocaleString([],{weekday:'short',hour:'2-digit',minute:'2-digit'});
 }
+// Live countdown: "2d 4h 12m", under a day "4h 12m 05s"; a 1 s ticker updates every [data-cd] element
+function cdLeft(at){const d=Math.floor(at-Date.now()/1000);if(d<=0)return 'out now';
+  const D=Math.floor(d/86400),h=Math.floor(d%86400/3600),mn=Math.floor(d%3600/60),sc=d%60,p=n=>String(n).padStart(2,'0');
+  return D?`${D}d ${h}h ${p(mn)}m`:h?`${h}h ${p(mn)}m ${p(sc)}s`:`${mn}m ${p(sc)}s`}
+function cdPill(m,e){
+  const nx=e&&ACTIVE.includes(e.status)?(m.next||e.next):null;if(!nx||nx.airingAt*1000<=Date.now()-36e5)return '';
+  return `<span class="cd" data-cd="${nx.airingAt}" data-ep="${nx.episode}">Ep ${nx.episode} in ${cdLeft(nx.airingAt)}</span>`}
+setInterval(()=>{if(document.hidden)return;const now=Date.now()/1000;
+  document.querySelectorAll('[data-cd]').forEach(el=>{const at=+el.dataset.cd,t=cdLeft(at),left=at-now;
+    if(el.dataset.ep){el.textContent=left>0?`Ep ${el.dataset.ep} in ${t}`:`Ep ${el.dataset.ep} out now`;el.classList.toggle('soon',left>0&&left<3600);el.classList.toggle('out',left<=0)}
+    else el.textContent=t})},1000);
 // Next episode for a list item: is it out yet, and how many aired episodes are unwatched?
 function nextInfo(x){
   const ep=(x.progress||0)+1,nx=x.next&&x.next.airingAt*1000>Date.now()?x.next:null;
@@ -956,7 +991,7 @@ function renderNext(){scheduleAlerts();
   $('#nuRow').innerHTML=items.map(({x,n})=>{
     const tot=x.episodes?' / '+x.episodes:'';
     const sub=n.out?`Next: Ep ${n.ep}${tot}${n.behind>1?` · <b class="new">${n.behind} new</b>`:''}`
-      :n.nx?`Ep ${n.ep} airs ${esc(whenText(n.nx.airingAt))}`:`Ep ${n.ep} not aired yet`;
+      :n.nx?`Ep ${n.nx.episode} in <span class="cdt" data-cd="${n.nx.airingAt}">${cdLeft(n.nx.airingAt)}</span>`:`Ep ${n.ep} not aired yet`;
     return `<div class="nuc${n.out?'':' soon'}" data-open="${x.id}">${pic(x.cover,'nuimg')}<div class="grow" role="button" tabindex="0"><div class="ctitle">${esc(titleOf(x))}</div><div class="cmeta">${sub}</div></div>${n.out?`<button class="plus" data-plus="${x.id}" aria-label="Mark episode ${n.ep} watched">+1</button>`:''}</div>`}).join('');
 }
 /* ---------- this week (airing schedule) ---------- */
@@ -2044,8 +2079,8 @@ async function pubQ(query,variables){ // public AniList query, returns data
 }
 const DAY=864e5;
 const agoLong=t=>{const d=(Date.now()-t)/DAY;return d<1.5?'yesterday':d<14?Math.round(d)+' days ago':d<60?Math.round(d/7)+' weeks ago':d<365?Math.round(d/30)+' months ago':'over a year ago'};
-function loadExtras(){drawSeasonLinks();drawNudges();loadRecs();loadRels();loadTop10();loadHero()}
-function drawExtras(){drawNudges();drawRecs();drawRels();drawTop10();drawHero()}
+function loadExtras(){drawSeasonLinks();drawNudges();loadRecs();loadRels();loadTop10();loadHero();loadCotd()}
+function drawExtras(){drawNudges();drawRecs();drawRels();drawTop10();drawHero();drawCotd()}
 
 /* ----- season chart: everything airing in a season, grouped by format ----- */
 const SEASONS=['WINTER','SPRING','SUMMER','FALL'];
@@ -2298,6 +2333,43 @@ function applySeason(){
 }
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',applySeason);
 applySeason();
+
+/* ===== Phase 7: Character of the day — a main character from a show you've started, new each day ===== */
+const CH_Q=`query($id:Int){Media(id:$id){id characters(sort:[ROLE,FAVOURITES_DESC],perPage:10){edges{role node{id name{full native} image{large} description(asHtml:false) favourites siteUrl}}}}}`;
+const cotdKey=()=>'kuro.cotd.'+prefKey();let cotdBusy=false;
+function cotdSeeds(){return Object.values(list).filter(x=>x.status!=='planning')
+  .sort((a,b)=>(b.myScore||0)-(a.myScore||0)||(b.updated||0)-(a.updated||0)).slice(0,25).sort((a,b)=>a.id-b.id)}
+function cleanDesc(t){ // AniList markdown: drop spoilers ~!…!~, "__Age:__ 17" lines, links and emphasis
+  t=(t||'').replace(/~![\s\S]*?!~/g,'').replace(/^\s*__[^_\n]{1,40}:__.*$/gm,'').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/<[^>]+>/g,'').replace(/__|\*\*|~~/g,'').replace(/\s+/g,' ').trim();
+  return t.length>260?t.slice(0,260).replace(/\s+\S*$/,'')+'…':t}
+async function loadCotd(off){
+  const seeds=cotdSeeds(),day=Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/DAY);
+  if(!seeds.length){store.set(cotdKey(),null);return drawCotd()}
+  const old=store.get(cotdKey(),null);if(off==null)off=old?.day===day?old.off||0:0;
+  if(old?.day===day&&old.off===off&&old.ch&&list[old.mid])return drawCotd();
+  if(cotdBusy)return;cotdBusy=true;
+  try{for(let k=0;k<4;k++){ // a few tries in case a show has no characters with art
+      const x=seeds[(day*7+off+k)%seeds.length];
+      const eds=((await pubQ(CH_Q,{id:x.id})).Media?.characters?.edges||[]).filter(e=>e.node?.image?.large&&!/default\.jpg/.test(e.node.image.large));
+      if(!eds.length)continue;
+      const mains=eds.filter(e=>e.role==='MAIN'),pool=(mains.length?mains:eds).slice(0,3),c=pool[(day+off)%pool.length];
+      store.set(cotdKey(),{day,off,mid:x.id,ch:{id:c.node.id,name:c.node.name?.full||'',native:c.node.name?.native||'',img:c.node.image.large,desc:cleanDesc(c.node.description),fav:c.node.favourites||0,url:c.node.siteUrl,role:c.role}});break}
+  }catch{}
+  cotdBusy=false;drawCotd();
+}
+function drawCotd(){
+  const d=store.get(cotdKey(),null),box=$('#cotd'),x=d&&list[d.mid];
+  if(!d?.ch||!x){box.hidden=true;return}
+  const c=d.ch,role=c.role==='MAIN'?'Main character':c.role==='SUPPORTING'?'Supporting':'';box.hidden=false;
+  box.innerHTML=`<div class="cotd" style="--ctint:${okHex(x.color)?x.color:'var(--accent)'}">
+    <div class="cimgw"><img src="${esc(c.img)}" alt="${esc(c.name)}" decoding="async"></div>
+    <div class="cbody"><span class="hk">⭐ Character of the day</span>
+      <h3>${esc(c.name)}${c.native?`<small>${esc(c.native)}</small>`:''}</h3>
+      <div class="cfrom">from <button data-open="${x.id}">${esc(titleOf(x))}</button>${role?' · '+role:''}${c.fav?' · ♥ '+c.fav.toLocaleString():''}</div>
+      ${c.desc?`<p>${esc(c.desc)}</p>`:'<div style="height:10px"></div>'}
+      <div class="hb">${/^https:\/\/anilist\.co\//.test(c.url||'')?`<a class="btn sm" href="${esc(c.url)}" target="_blank" rel="noopener">AniList ↗</a>`:''}<button class="btn sm" id="cotdNext">↻ Another</button></div></div></div>`;
+  $('#cotdNext').onclick=e=>{e.target.disabled=true;e.target.textContent='Finding…';loadCotd((d.off||0)+1)};
+}
 
 /* ----- "From your shows": sequels and prequels of shows you watched that are not on your list.
    New announcements (not seen before) get a "New" badge, a toast and, when alerts are on, a notification. ----- */
