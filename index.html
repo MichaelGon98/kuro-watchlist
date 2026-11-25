@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kuro Watchlist</title>
 <meta name="theme-color" content="#0b0b12">
-<script>/* apply the active profile's theme before first paint (see applyPrefs) */try{const a=JSON.parse(localStorage.getItem('kuro.active')),t=(JSON.parse(localStorage.getItem('kuro.prefs'))||{})[a==null?'guest':String(a)]?.theme;if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script>/* apply the active profile's theme before first paint (see applyPrefs) */try{const a=JSON.parse(localStorage.getItem('kuro.active')),t=(JSON.parse(localStorage.getItem('kuro.prefs'))||{})[a==null?'guest':String(a)]?.theme;if(t)document.documentElement.dataset.theme=t==='auto'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t}catch(e){}</script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
@@ -409,13 +409,22 @@ function look(p,pr=prefsAll[p?String(p.id):'guest']||{}){
 }
 // App themes: CSS variable sets in [data-theme=…] blocks; 'dark' (Midnight) is the :root default
 const THEMES=[['dark','Midnight','#0b0b12','#8b7bff','#ff6bd6'],['sakura','Sakura','#140b11','#ff7eb6','#ffb86b'],['ocean','Ocean','#06111a','#38bdf8','#818cf8'],
-  ['forest','Forest','#08120d','#4ade80','#2dd4bf'],['sunset','Sunset','#140c08','#fb923c','#f43f5e'],['amoled','AMOLED black','#000000','#a78bfa','#f472b6'],['light','Light','#f4f4f9','#6d5dfc','#e0479e']];
+  ['forest','Forest','#08120d','#4ade80','#2dd4bf'],['sunset','Sunset','#140c08','#fb923c','#f43f5e'],['amoled','AMOLED black','#000000','#a78bfa','#f472b6'],['light','Light','#f4f4f9','#6d5dfc','#e0479e'],
+  ['auto','Auto','linear-gradient(135deg,#f4f4f9 50%,#0b0b12 50%)','#8b7bff','#e0479e']];
+// 'auto' follows the device: Light when it is in light mode, Midnight otherwise (also in the <head> script)
+const sysLight=matchMedia('(prefers-color-scheme: light)');
+let themeArg; // the theme being previewed in Edit profile, if any
 // Applies the active profile's look (theme, colour) to the whole page; `t` previews a theme without saving
 function applyPrefs(t){
-  const th=THEMES.find(x=>x[0]===(t||myPrefs().theme))||THEMES[0],h=document.documentElement;
+  themeArg=t;let want=t||myPrefs().theme;if(want==='auto')want=sysLight.matches?'light':'dark';
+  const th=THEMES.find(x=>x[0]===want)||THEMES[0],h=document.documentElement;
   h.style.setProperty('--me',myPrefs().color||PCOLORS[0]);h.dataset.theme=th[0];
   document.querySelector('meta[name=theme-color]').content=th[2]; // phone status bar / installed app title bar
 }
+// follow the device live; also re-check when the app comes back to the foreground (a phone may switch at sunset while it is hidden)
+const autoRecheck=()=>{if((themeArg||myPrefs().theme)==='auto')applyPrefs(themeArg)};
+sysLight.addEventListener('change',autoRecheck);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoRecheck()});
 function switchProfile(id,msg){store.set('kuro.active',id);try{if(msg)sessionStorage.setItem('kuro.toast',msg)}catch{}location.replace(location.pathname+location.search)}
 
 /* ---------- AniList ---------- */
@@ -972,6 +981,7 @@ function openProfileEditor(){
       <label>App theme</label>
       <div class="themes">${THEMES.map(([k,n,bg,a1,a2])=>`<button data-th="${k}" class="${(d.theme||'dark')===k?'on':''}" aria-label="${n} theme">
         <i style="background:${bg}"><b style="background:linear-gradient(135deg,${a1},${a2})"></b></i>${n}</button>`).join('')}</div>
+      <div class="hint">Auto follows your device: Light in light mode, Midnight in dark mode.</div>
       <label for="nick">Display name</label>
       <input type="text" id="nick" maxlength="30" value="${esc(d.nick||'')}" placeholder="${esc(p?.name||'Guest')}">
       <div class="hint">Saved in this browser only. Your AniList name and picture are not changed. Each profile keeps its own theme.</div>
