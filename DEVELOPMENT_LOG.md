@@ -376,3 +376,8 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html` (CSS): the header logo was hard to make out at 32 px. Now 46 px on desktop (40 px on phones) with a thin accent ring and soft shadow; the "Kuro" wordmark is 21 px (20 px on phones). Header grows from about 67 to 71 px.
 - `sw.js`: cache bumped to `kuro-v26`.
 - Tested on localhost at desktop and 375 px: logo 46 / 40 px, no sideways scroll.
+
+### 2026-11-27 — Header logo: no outline, bigger on desktop
+- `index.html` (CSS): removed the accent ring and shadow around the logo (owner didn't like the outline). The icon has its own thin blue rim at the edge; `clip-path:circle(45.5%)` trims it. Desktop: 66 px image (about 60 px visible), "Kuro" 24 px, header about 83 px tall (was 71). Phones: 44 px image (about 40 px visible), same header height as before.
+- `sw.js`: cache bumped to `kuro-v27`.
+- Tested on localhost at 1024 px and 375 px: no ring, no sideways scroll.
