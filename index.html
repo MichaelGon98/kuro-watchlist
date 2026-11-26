@@ -1647,7 +1647,7 @@ function plusOne(id){
 function closeModal(){applyPrefs()/* drops an unsaved theme preview */;$('#modal').classList.remove('wrm');$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
 
 /* where to watch + episodes (fetched on open, not stored) */
-const DETAIL_Q=`query($id:Int){Media(id:$id,type:ANIME){episodes nextAiringEpisode{episode} externalLinks{site url type color isDisabled} streamingEpisodes{title thumbnail url site} relations{edges{relationType node{id type streamingEpisodes{url}}}}}}`;
+const DETAIL_Q=`query($id:Int){Media(id:$id,type:ANIME){episodes startDate{year month day} nextAiringEpisode{episode} externalLinks{site url type color isDisabled} streamingEpisodes{title thumbnail url site} relations{edges{relationType node{id type streamingEpisodes{url}}}}}}`;
 async function loadDetails(id){
   if(details[id])return details[id];
   try{
@@ -1686,6 +1686,32 @@ async function loadKitsu(id,from,to){
   }
   return k;
 }
+// Third source: TVmaze's public API (CORS open, no key). Many anime there have episode names and stills when AniList and Kitsu
+// have none (e.g. Reincarnated as a Sword). TVmaze keeps all seasons under one show, so the entry is matched by title and then
+// by its AniList start date: the episode that aired closest to it (within 10 days) is this entry's episode 1. Only titles are sent.
+const tvmEps={};
+async function loadTvmaze(id,m,d){
+  if(tvmEps[id])return tvmEps[id];
+  const sd=d?.startDate,out={};if(!sd?.year||!sd.month||!m?.title)return tvmEps[id]=out;
+  const start=Date.UTC(sd.year,sd.month-1,sd.day||1),day=864e5,tol=(sd.day?10:31)*day;
+  const base=t=>(t||'').replace(/\s*[:(（].*$/,'').replace(/\s+(season\s*\d+|\d+(st|nd|rd|th)\s+season|part\s*\d+|s\d+)\b.*$/i,'').trim();
+  const names=[...new Set([m.title.english,m.title.romaji].filter(Boolean).flatMap(t=>[t,base(t)]).filter(Boolean))].slice(0,4);
+  const seen=new Set();
+  for(const q of names){
+    let res;try{res=await (await fetch('https://api.tvmaze.com/search/shows?q='+encodeURIComponent(q))).json()}catch{continue}
+    for(const x of (Array.isArray(res)?res:[]).slice(0,3)){
+      const show=x?.show;if(!show?.id||seen.has(show.id))continue;seen.add(show.id);
+      if(show.premiered&&Date.parse(show.premiered)>start+tol)continue; // began after this entry: another show
+      let eps;try{eps=await (await fetch(`https://api.tvmaze.com/shows/${+show.id}/episodes`)).json()}catch{continue}
+      eps=(Array.isArray(eps)?eps:[]).filter(e=>e?.airdate&&e.number);
+      let best=-1,bd=Infinity;eps.forEach((e,i)=>{const dd=Math.abs(Date.parse(e.airdate)-start);if(dd<bd){bd=dd;best=i}});
+      if(best<0||bd>tol)continue;
+      eps.slice(best).forEach((e,k)=>{const th=e.image?.medium||'';out[k+1]={t:/^episode\s*\d+$/i.test(e.name||'')?'':e.name||'',th:okUrl(th)?th.replace(/^http:/,'https:'):''}});
+      return tvmEps[id]=out;
+    }
+  }
+  return tvmEps[id]=out;
+}
 // A still that fails: try once more (the streaming site's image host has the odd hiccup), then Kitsu's still, then the banner slice
 function epImgErr(img){
   if(!img.dataset.retry){img.dataset.retry=1;const u=img.getAttribute('src');img.removeAttribute('src');setTimeout(()=>{if(img.isConnected)img.src=u},1500);return}
@@ -1699,14 +1725,15 @@ function epsWindow(id,d){
   return{n,win,from,to};
 }
 function epsHTML(id,d){
-  const m=cache[id]||list[id],prog=list[id]?.progress||0,meta={},kit=kitsuEps[id]?.eps||{};
+  const m=cache[id]||list[id],prog=list[id]?.progress||0,meta={},kit=kitsuEps[id]?.eps||{},tv=tvmEps[id]||{};
   aniEps(d).forEach((s,i)=>{const n=epNum(s,i);if(!meta[n])meta[n]=s});
   const{n,win,from,to}=epsWindow(id,d);
   if(!n)return '<span class="hint">Episode count not known yet.</span>';
   let h=win?`<div class="hint" style="margin-bottom:6px">Showing episodes ${from}–${to} of ${n}</div>`:'';
   const art=m.banner||m.cover,eb=okUrl(art)?`--eb:url('${esc(art)}');`:'';
   for(let k=from;k<=to;k++){
-    const s=meta[k],kt=kit[k],t=(s?.title||'').replace(/^\s*Episode\s*\d+\s*[-–:]?\s*/i,'')||kt?.t||'',th=s&&okUrl(s.thumbnail)?s.thumbnail:kt?.th||'',alt=kt?.th&&kt.th!==th?kt.th:'';
+    const s=meta[k],t=(s?.title||'').replace(/^\s*Episode\s*\d+\s*[-–:]?\s*/i,'')||kit[k]?.t||tv[k]?.t||'';
+    const ths=[s&&okUrl(s.thumbnail)?s.thumbnail:'',kit[k]?.th,tv[k]?.th].filter(Boolean),th=ths[0]||'',alt=ths.find(x=>x!==th)||'';
     h+=`<div class="ep ${k<=prog?'done':''}" data-ep="${k}"><div class="epth" style="${eb}--ebp:${(k*37)%100}%"><span class="epn">${k}</span>${th?`<img src="${esc(th)}"${alt?` data-alt="${esc(alt)}"`:''} loading="lazy" decoding="async" alt="" onerror="epImgErr(this)">`:''}</div>
       <div class="epm" role="button" tabindex="0" aria-pressed="${k<=prog}">${t?`<b>${k}</b> ${esc(t)}`:`<b>Episode ${k}</b>`}</div>${s&&okUrl(s.url)?`<a class="epw" href="${esc(s.url)}" target="_blank" rel="noopener" title="Watch on ${esc(s.site)}">▶</a>`:''}<span class="tick">${k<=prog?'✓':''}</span></div>`;
   }
@@ -1719,9 +1746,14 @@ function fillDetails(id){
     if(!d){$('#wtwb').innerHTML=$('#eps').innerHTML='<span class="hint">Couldn’t load details. Check your connection.</span>';return}
     $('#wtwb').innerHTML=wtwHTML(d);$('#eps').innerHTML=epsHTML(id,d);dlgRefocus();
     // episodes AniList has no title or still for: ask Kitsu, then redraw the list if it is still open
-    const{n,from,to}=epsWindow(id,d),have=new Set(aniEps(d).filter(s=>okUrl(s.thumbnail)).map(epNum)),kit=kitsuEps[id];
-    let need=false;for(let k=from;k<=to&&!need;k++)need=!have.has(k)&&!kit?.eps[k]&&!(kit&&kit.kid===null);
-    if(n&&need&&navigator.onLine)loadKitsu(id,from,to).then(()=>{if(curModal!==id||!$('#eps'))return;const t=$('#modal').scrollTop;$('#eps').innerHTML=epsHTML(id,d);$('#modal').scrollTop=t;dlgRefocus()});
+    // episodes AniList has no still for: ask Kitsu, then TVmaze, redrawing the list (if still open) after each
+    const{n,from,to}=epsWindow(id,d),have=new Set(aniEps(d).filter(s=>okUrl(s.thumbnail)).map(epNum));
+    const missing=()=>{const kit=kitsuEps[id]?.eps||{},tv=tvmEps[id]||{};for(let k=from;k<=to;k++)if(!have.has(k)&&!kit[k]?.th&&!tv[k]?.th)return true;return false};
+    const redraw=()=>{if(curModal!==id||!$('#eps'))return false;const t=$('#modal').scrollTop;$('#eps').innerHTML=epsHTML(id,d);$('#modal').scrollTop=t;dlgRefocus();return true};
+    if(n&&navigator.onLine&&missing())(async()=>{
+      if(kitsuEps[id]?.kid!==null){await loadKitsu(id,from,to);if(!redraw())return}
+      if(missing()&&!tvmEps[id]){await loadTvmaze(id,cache[id]||list[id],d);redraw()}
+    })();
     if((d.relations?.edges||[]).some(e=>e.node?.type==='ANIME'&&FR_REL.has(e.relationType)))drawFranchise(id);
     if(keepTop!=null)$('#modal').scrollTop=keepTop;
   });

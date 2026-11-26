@@ -500,3 +500,11 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html`: `epImgErr()` replaces `onerror="this.remove()"`: retry once after 1.5 s, then Kitsu's still if there is one, then the banner slice.
 - `sw.js`: cache bumped to `kuro-v40`.
 - Tested on localhost (375 px): Kuroko S2 shows "1 I Never Thought We’d Meet Here", "2 At The Winter Cup"… with its own stills (25 of 25) and no wrong Watch links; S1 unchanged (AniList titles, stills and 25 links); a broken image was retried once and then swapped to the Kitsu still.
+
+### 2026-11-26 — Episode lists: TVmaze as a third source for titles and stills
+- Reported: Reincarnated as a Sword showed "Episode 1, 2…" with banner slices only.
+- Cause: AniList has no streaming episodes for it (139587, 159042), and Kitsu lists its 12 episodes with no titles or stills, which the v40 code also counted as "found", so nothing else was tried.
+- `index.html`: `DETAIL_Q` reads `startDate`. New `loadTvmaze()`: searches api.tvmaze.com (public, CORS open, no key) by the English and romaji titles, also with "Season 2" / "2nd Season" / subtitles stripped, top 3 results each; skips shows that began after this entry; takes the episode that aired closest to the AniList start date (within 10 days, or a month when only the month is known) as episode 1, so each season lines up although TVmaze keeps all seasons in one show. Names like "Episode 11" are ignored. Only titles are sent. Kept in memory for the session.
+- `index.html`: `epsHTML()` takes the title from AniList, then Kitsu, then TVmaze, and the still likewise; a second still is kept as the fallback for `epImgErr()`. `fillDetails()` now checks for missing stills (not just missing entries), tries Kitsu, redraws, then TVmaze if stills are still missing, and redraws again.
+- `sw.js`: cache bumped to `kuro-v41`.
+- Tested on localhost: Reincarnated as a Sword S1 shows "1 Catgirl Meets Sword", "2 The Hellish Trial at the Adventurer's Guild"… with 12 of 12 stills; S2 starts at "1 The Floating Island" (9 stills, the unaired episodes have none yet); Kuroko S2 still comes from Kitsu (25 of 25).
