@@ -468,3 +468,10 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html` (`applySeason()`): the canvas is sized from its real on-screen size (`clientWidth`/`clientHeight` × pixel ratio), checked every frame and fixed at once if it differs; each frame clears the whole pixel buffer with an identity transform; particles outside a smaller screen are moved back in. The resize listener is no longer needed.
 - `sw.js`: cache bumped to `kuro-v36`.
 - Tested on localhost: forcing the canvas to a wrong 120×200 size was corrected within a frame (1014×768); switching to a 375 px phone viewport resized it to 750×1624 with every particle inside.
+
+### 2026-11-27 — Picked for you drops shows once they are on your list
+- Reported: shows added as Plan to watch or Completed stayed in Picked for you (with a ✓).
+- Cause: recommendations were filtered against the list only when they were loaded (cached 30 min); sequel/prequel picks also stayed when added.
+- `index.html`: `drawRecs()` filters out anything on the list every time it draws (both sequel picks and recommendations); `loadRecs()` keeps up to 40 candidates instead of 16 so the row stays full (still 20 shown).
+- `sw.js`: cache bumped to `kuro-v37`.
+- Tested on localhost: adding the first card with + and setting the second to Completed removed both at once; the row still showed 20 cards, none on the list.
