@@ -647,9 +647,8 @@ nav.bottom{display:none}
     <button class="spin-cta" id="spinBtn"><span class="dice"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/></svg></span>
       <span><b>Random pick</b><small>Spin for something you haven't seen</small></span><span class="go" aria-hidden="true">Spin ›</span></button>
     <div class="seasonlinks" id="seasonLinks"></div>
-    <div id="nextup" style="display:none"><h2 class="sec">Next up</h2><div class="nu" id="nuRow"></div></div>
+    <div id="nextup" style="display:none"><h2 class="sec">Currently watching</h2><div class="nu" id="nuRow"></div></div>
     <div id="nudges" style="display:none"><h2 class="sec" style="margin-top:18px">Pick up again</h2><div class="nu" id="ndRow"></div></div>
-    <div id="rels" style="display:none;margin-top:18px"><h2 class="sec">From your shows</h2><div class="hrow" id="relRow"></div></div>
     <div id="cotd" hidden style="margin-top:18px"></div>
     <div id="recs" style="margin-top:18px"></div>
     <div id="top10"><div class="t10head"><h2 class="sec">Top 10</h2><div class="t10tabs" role="group" aria-label="Top 10 list">
@@ -1465,14 +1464,15 @@ function openModal(id,keep){
     $('#rwp').onclick=()=>rw(1);$('#rwm').onclick=()=>rw(-1)}
   if($('#notes')){let nt;$('#notes').oninput=ev=>{clearTimeout(nt);nt=setTimeout(()=>{e.notes=ev.target.value;e.updated=Date.now();saveList()},700)}}
   $('#seg').onclick=ev=>{const s=ev.target.dataset.st;if(!s)return;addToList(id,s);
-    if(s==='completed'&&m.episodes){list[id].progress=m.episodes;list[id].updated=Date.now();saveList()}refreshCards();openModal(id)};
+    if(s==='completed'&&m.episodes){list[id].progress=m.episodes;list[id].updated=Date.now();saveList()}refreshCards();openModal(id,true)};
   if($('#epp'))$('#epp').onclick=()=>step(id,1),$('#epm').onclick=()=>step(id,-1);
   if($('#trl'))$('#trl').onclick=()=>{const t=$('#trailer');t.innerHTML=t.innerHTML?'':`<iframe src="https://www.youtube-nocookie.com/embed/${m.trailer.id}?autoplay=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;if(t.innerHTML)t.scrollIntoView({block:'center',behavior:'smooth'})};
   fillDetails(id);
+  if(keepTop!=null)$('#modal').scrollTop=keepTop; // right away, not only after the details load
   if($('#studioBtn'))$('#studioBtn').onclick=()=>openStudio(m.studio,id);
   if($('#rm'))$('#rm').onclick=()=>{const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId];saveProfiles()}saveList();closeModal();refreshCards();toast('Removed')};
 }
-function step(id,d){if(d>0)popAt($('#epp'));bump(id,d);openModal(id)}
+function step(id,d){if(d>0)popAt($('#epp'));bump(id,d);openModal(id,true)}
 // Change episode progress by d. Going up: the last episode completes the show; a planned/paused/dropped show becomes Watching.
 // Returns the previous {status,progress} so the change can be undone.
 function bump(id,d){
@@ -2169,10 +2169,14 @@ async function loadRecs(){
   }catch{}
   recBusy=false;drawRecs();
 }
+var relPicks=[];
 function drawRecs(){
-  const its=(recData?.items||[]).filter(o=>list[o.seed]);
-  $('#recs').innerHTML=its.length?`<div class="recsec"><h2 class="sec">Picked for you</h2>
-    <div class="hrow">${its.map(o=>`<div class="relc">${cardHTML(o.m)}<div class="relwhy">Because you liked ${esc(titleOf(list[o.seed]))}</div></div>`).join('')}</div></div>`:'';
+  // sequels/prequels of your shows first (new, airing and upcoming ones lead; at most 8), then recommendations
+  const rel=(relPicks||[]).slice(0,8),seen=new Set(rel.map(o=>o.m.id));
+  const its=(recData?.items||[]).filter(o=>list[o.seed]&&!seen.has(o.m.id)).slice(0,Math.max(8,20-rel.length));
+  const relH=rel.map(o=>`<div class="relc">${cardHTML(o.m)}<div class="relwhy"><b>${o.isNew?'<span class="newb">New</span>':''}${esc(o.l)}</b>${o.rel==='SEQUEL'?'Sequel to':'Prequel to'} ${esc(titleOf(list[o.src]))}</div></div>`).join('');
+  const recH=its.map(o=>`<div class="relc">${cardHTML(o.m)}<div class="relwhy">Because you liked ${esc(titleOf(list[o.seed]))}</div></div>`).join('');
+  $('#recs').innerHTML=relH||recH?`<div class="recsec"><h2 class="sec">Picked for you</h2><div class="hrow">${relH}${recH}</div></div>`:'';
 }
 
 /* ----- Top 10: AniList's trending / best-rated / most popular, with big rank numbers ----- */
@@ -2195,7 +2199,7 @@ function drawTop10(){
   row.setAttribute('aria-label','Top 10, '+document.querySelector(`[data-t10="${t10Tab}"]`).textContent);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-t10]');if(!b)return;
-  t10Tab=b.dataset.t10;try{localStorage.setItem('kuro.t10Tab',t10Tab)}catch{}$('#t10Row').scrollLeft=0;loadTop10()});
+  t10Tab=b.dataset.t10;try{localStorage.setItem('kuro.t10Tab',t10Tab)}catch{}rowPos.delete('t10Row');$('#t10Row').scrollLeft=0;loadTop10()});
 
 /* ----- Hero spotlight: the top trending shows that have banner art, rotating every 7 s ----- */
 let heroI=0,heroT=null,heroHold=false,heroIds='';
@@ -2258,6 +2262,16 @@ function heroTimer(){clearInterval(heroT);if(stillMotion())return; // no auto-ad
   },{passive:true});
   document.addEventListener('pointerout',e=>{if(tc&&!tc.contains(e.relatedTarget)){untilt(tc);tc=null}});
 })();
+
+/* ----- Horizontal rows (Currently watching, Pick up again, Picked for you, Top 10) keep their sideways scroll
+   when they are redrawn (data arriving, list changes). Positions are tracked per row and put back before paint. ----- */
+const rowPos=new Map(),ROW_SEL='.hrow,.t10row,.nu';
+const rowKey=el=>{if(el.id)return el.id;const h=el.parentElement?.closest('[id]');return (h?.id||'')+':'+[...(h||document).querySelectorAll(ROW_SEL)].indexOf(el)};
+document.addEventListener('scroll',e=>{const t=e.target;if(t.matches?.(ROW_SEL))rowPos.set(rowKey(t),t.scrollLeft)},true);
+new MutationObserver(ms=>{const rows=new Set();
+  for(const m of ms){const t=m.target;if(t.matches?.(ROW_SEL))rows.add(t);else t.querySelectorAll?.(ROW_SEL).forEach(r=>rows.add(r))}
+  for(const r of rows){const v=rowPos.get(rowKey(r));if(v&&Math.abs(r.scrollLeft-v)>1)r.scrollLeft=v}
+}).observe(document.querySelector('main'),{childList:true,subtree:true});
 
 /* ===== Phase 6: celebrations, seasonal effects ===== */
 const partyOn=()=>settings.party!==false;
@@ -2417,9 +2431,8 @@ function drawRels(){
   const c=store.get(relKey(),null),newMap=store.get('kuro.relNew.'+prefKey(),{});
   const its=(c?.items||[]).filter(o=>!list[o.m.id]||newMap[o.m.id]).map(o=>{cache[o.m.id]=cache[o.m.id]||o.m;const[r,l,t]=relLabel(o);return{...o,r,l,t:t||0}})
     .filter(o=>list[o.src]).sort((a,b)=>a.r-b.r||a.t-b.t||(b.m.pop||0)-(a.m.pop||0)).slice(0,16);
-  $('#rels').style.display=its.length?'':'none';
-  $('#relRow').innerHTML=its.map(o=>{const isNew=Date.now()-(newMap[o.m.id]||0)<14*DAY;
-    return `<div class="relc">${cardHTML(o.m)}<div class="relwhy"><b>${isNew?'<span class="newb">New</span>':''}${esc(o.l)}</b>${o.rel==='SEQUEL'?'Sequel to':'Prequel to'} ${esc(titleOf(list[o.src]))}</div></div>`}).join('');
+  relPicks=its.map(o=>({...o,isNew:Date.now()-(newMap[o.m.id]||0)<14*DAY}));
+  drawRecs(); // sequels/prequels lead the "Picked for you" row
 }
 
 /* ----- studio pages: tap Studio in a show's details ----- */
