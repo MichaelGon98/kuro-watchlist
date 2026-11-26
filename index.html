@@ -319,6 +319,13 @@ body:has(#v-list.selmode) #toast{bottom:calc(var(--nav-h) + 90px)}
 .iconbtn.me img{width:100%;height:100%;object-fit:cover}
 .iconbtn.expired{opacity:.55;border-color:var(--bad)}
 details.hint summary{cursor:pointer}
+.page{max-width:720px;margin:auto}
+.ptitle{font-size:26px;margin:4px 0 6px}
+.psec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 16px 16px;margin-top:14px}
+.psec>h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+.psec>h2+label{margin-top:8px}
+.page .pcard.phead{margin-top:10px}
+.page .hint .link{font-size:inherit;padding:0}
 
 /* toast */
 #toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 24px);transform:translate(-50%,30px);background:var(--card2);border:1px solid var(--line);padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:80;font-weight:600}
@@ -676,6 +683,7 @@ details.hint summary{cursor:pointer}
 nav.bottom{display:none}
 
 @media (max-width:760px){
+  #gearBtn{display:none} /* phones reach Settings from the bottom bar */
   .bar{flex-wrap:wrap;gap:10px}
   .search{order:3;flex-basis:100%;max-width:none}
   .tabs{display:none}
@@ -740,7 +748,8 @@ nav.bottom{display:none}
     <span class="npill" aria-hidden="true"></span>
   </div>
   <button class="iconbtn spinbtn" id="spinBtn" aria-label="Random pick: spin for something you haven't seen" title="Random pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="whl"><circle cx="12" cy="13" r="8.5"/><path d="M12 4.5v17M4.64 8.75l14.72 8.5M4.64 17.25l14.72-8.5"/><circle cx="12" cy="13" r="1.8" fill="currentColor"/></g><path d="M9.6 1.2h4.8L12 5z" fill="currentColor" stroke="none"/></svg></button>
-  <button class="iconbtn" id="settingsBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  <button class="iconbtn" id="gearBtn" data-view="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  <button class="iconbtn" id="settingsBtn" data-view="profile" aria-label="Profile" title="Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
 </div></header>
 
 <main>
@@ -833,6 +842,9 @@ nav.bottom{display:none}
 
   <!-- STATS -->
   <section id="v-stats" style="display:none"><div class="sub" id="stTabs" role="group" aria-label="Stats section"></div><div id="stats"></div></section>
+  <!-- SETTINGS and PROFILE (own pages, drawn by drawSettings / drawProfile) -->
+  <section id="v-settings" style="display:none"></section>
+  <section id="v-profile" style="display:none"></section>
 </main>
 
 <nav class="bottom">
@@ -841,14 +853,14 @@ nav.bottom{display:none}
   <button data-view="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>My List</button>
   <button data-view="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16M7 16v-5M12 16V6M17 16v-8"/></svg>Stats</button>
   <span class="npill" aria-hidden="true"></span>
-  <button id="navSet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Settings</button>
+  <button id="navSet" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Settings</button>
 </nav>
 
 <div class="scrim" id="scrim"><div class="modal" id="modal" role="dialog" aria-modal="true" tabindex="-1"></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const GENRES=['Action','Adventure','Comedy','Drama','Fantasy','Horror','Mahou Shoujo','Mecha','Music','Mystery','Psychological','Romance','Sci-Fi','Slice of Life','Sports','Supernatural','Thriller'];
 const STATUSES=[['planning','Plan to watch'],['watching','Watching'],['repeating','Rewatching'],['paused','Paused'],['completed','Completed'],['dropped','Dropped']];
@@ -996,7 +1008,7 @@ let page=1,hasNext=false,loading=false,cache={},view='discover',listStatus='watc
   let t;$('#q').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{
     if(view==='list'){$('#lq').value=e.target.value;renderList();return}
     if(view==='season')setView('discover');
-    if(view==='week'||view==='stats')setView('discover');
+    if(view!=='discover')setView('discover');
     F.q=e.target.value.trim();run()},350)};
   $('#more').onclick=()=>{page++;load(true)};
 })();
@@ -1517,7 +1529,7 @@ async function openShare(){
 /* ---------- views ---------- */
 function setView(v){
   if(v!=='list'&&selMode)setSel(false);
-  view=v;for(const k of ['discover','week','list','stats','season'])$('#v-'+k).style.display=v===k?'':'none';
+  view=v;for(const k of ['discover','week','list','stats','season','settings','profile'])$('#v-'+k).style.display=v===k?'':'none';
   const nv=v==='season'?'discover':v; // the season chart belongs to Discover
   $$('[data-view]').forEach(b=>{b.classList.toggle('on',b.dataset.view===nv);b.dataset.view===nv?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});navPill();
   if(v==='season')loadSeason();
@@ -1526,6 +1538,8 @@ function setView(v){
   if(v==='list')renderList();
   if(v==='stats')drawStats();
   if(v==='week')loadWeek();
+  if(v==='settings')drawSettings();
+  if(v==='profile')drawProfile();
   scrollTo({top:0});
 }
 $$('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
@@ -1735,100 +1749,86 @@ new MutationObserver(()=>{
 }).observe($('#scrim'),{attributes:true,attributeFilter:['class']});
 new MutationObserver(()=>{if($('#scrim').classList.contains('open'))dlgSync()}).observe($('#modal'),{childList:true});
 
-/* ---------- settings ---------- */
-function openSettings(){
-  $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
-    <h2 style="margin:0 0 12px">Settings</h2>
-    ${(()=>{const p=me(),l=look(p);return `<div class="pcard" style="--pc:${esc(l.col)}${p?.banner?`;background-image:linear-gradient(transparent 30%,var(--card) 100%),url('${esc(p.banner)}')`:''}">
-      ${l.av('pav')}<div class="grow"><div class="pname">${esc(l.name)}</div>
-      <div class="hint" style="margin:0">${p?`AniList · ${esc(p.name)}`:'Guest · this browser only'} · ${Object.keys(list).length} anime</div></div>
-      <button class="btn sm" id="editProf">Edit profile</button></div>`})()}
-    <label for="prov">Your Watch link (optional)</label>
-    <input type="text" id="prov" value="${esc(settings.provider||'')}" placeholder="https://your-site/search?keyword={query}">
-    <div class="hint">Adds a “Watch” button to each anime that opens this address, with <code>{query}</code> replaced by the title. Leave empty to hide the button; the official “Where to watch” links are always shown. Saved in this browser only. Only use an address you trust.</div>
-    <label>Accounts</label>
-    <div class="hint" style="margin:0 0 6px">Sign in with AniList and your list follows you to any browser or device you sign in on. Without an account the list stays in this browser only.</div>
-    ${Object.values(profiles).map(p=>{const on=me()?.id===p.id,l=look(p);return `<div class="prof${on?' on':''}">
-      ${l.av()}
-      <div class="grow"><b>${esc(l.name)}</b>${on?' <span class="tag">active</span>':''}
-        <div class="hint" style="margin:0">${!p.token?'Signed out of AniList, sign in again to sync':p.lastSync?'Last sync '+new Date(p.lastSync).toLocaleString():'Not synced yet'}</div></div>
-      ${on&&p.token?`<button class="btn sm" id="syncNow">Sync now</button>`:''}
-      ${!on?`<button class="btn sm" data-switch="${p.id}">Switch</button>`:''}
-      <button class="btn sm danger" data-signout="${p.id}">Sign out</button></div>`}).join('')}
-    ${me()?`<div class="prof">${look(null).av()}<div class="grow"><b>${look(null).custom?esc(look(null).name)+' (no account)':'No account'}</b><div class="hint" style="margin:0">Guest list, this browser only</div></div><button class="btn sm" data-switch="">Switch</button></div>`:''}
-    ${clientId()?'':`<input type="text" id="cid" inputmode="numeric" aria-label="AniList Client ID" placeholder="AniList Client ID" value="">`}
-    <div class="actions" style="margin-top:8px"><button class="btn primary" id="conn">${me()&&!me().token?'Sign in again':Object.keys(profiles).length?'Add AniList account':'Sign in with AniList'}</button></div>
-    <details class="hint" style="margin-top:8px"><summary>${IS_HOSTED?'Sign-in help':'AniList app setup'}${settings.clientId?' (Client ID '+esc(settings.clientId)+')':''}</summary>
-      To add a second account, log out on anilist.co first, otherwise AniList signs you straight back in as the current one.
-      ${IS_HOSTED?`<div style="margin-top:6px">Advanced: to use your own AniList client instead of the built-in one, enter its Client ID (leave empty for the built-in one).</div>`
-      :`<div style="margin-top:6px">One-time setup for this address: at anilist.co/settings/developer create a client, set its Redirect URL to <code>${esc(APP_URL)}</code>, and paste its Client ID here. Or just use the hosted app at <a href="${HOSTED_URL}">${HOSTED_URL}</a>, which needs no setup.</div>`}
-      ${clientId()?`<div style="margin-top:6px"><input type="text" id="cid" inputmode="numeric" aria-label="AniList Client ID" placeholder="${IS_HOSTED?'Built-in':'AniList Client ID'}" value="${esc(settings.clientId||'')}"></div>`:''}</details>
-    <label>Lists</label>
-    <label class="check"><input type="checkbox" id="rateOn" ${settings.rate!==false?'checked':''}> Show my rating and notes on each anime</label>
-    <div class="hint">Optional. Turning this off only hides them; nothing is deleted.</div>
-    <label>Effects</label>
-    <label class="check"><input type="checkbox" id="partyOn" ${settings.party!==false?'checked':''}> Celebrations: confetti when you finish a show, badge reveals, the +1 pop</label>
-    <label class="check"><input type="checkbox" id="reactOn" ${settings.react!==false?'checked':''}> Ask for a quick emoji reaction after +1 (saved in your diary and Wrapped)</label>
-    <select id="seasonSel" aria-label="Seasonal effect" style="margin-top:8px">${[['auto',`Seasonal effect: auto (now ${SFX_KINDS[autoFx()]})`],...Object.entries(SFX_KINDS).map(([k,l])=>[k,'Seasonal effect: '+l]),['off','Seasonal effect: off']]
-      .map(([k,l])=>`<option value="${k}" ${(settings.season||'auto')===k?'selected':''}>${l}</option>`).join('')}</select>
-    <div class="hint">Auto matches your theme (Sakura → petals, Forest → fireflies, Sunset → leaves, Ocean → snow); other themes follow Japan's seasons: snow Dec–Feb, sakura Mar–May, fireflies Jun–Aug, leaves Sep–Nov. Effects stay off if your device asks for reduced motion.</div>
-    <label>Alerts</label>
-    <label class="check"><input type="checkbox" id="notifyOn" ${settings.notify&&alertsOn()?'checked':''}> Notify me when a new episode of a show I'm watching comes out</label>
-    <div class="hint" id="notifyHint">${alertHint()}</div>
-    <div class="actions" style="margin-top:6px"><button class="btn sm" id="notifyTest">Send a test alert</button></div>
-    <label>Offline</label>
-    <div class="hint" id="offInfo">Your list, stats and diary always live on this device. Covers and AniList pages you have opened are saved as you go, so Kuro keeps working without a connection.</div>
-    <div class="actions" style="margin-top:6px"><button class="btn sm" id="offSave">Save all my covers for offline</button></div>
-    <label>Backup</label>
-    <div class="actions"><button class="btn" id="exp">Export list</button><label class="btn" style="margin:0">Import list<input type="file" id="imp" accept="application/json" hidden></label></div>
-    <div class="actions" style="margin-top:20px"><button class="btn primary" id="save">Save</button></div></div>`;
-  $('#scrim').classList.add('open');
-  $('#mclose').onclick=closeModal;
-  $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;settings.rate=$('#rateOn').checked;settings.party=$('#partyOn').checked;settings.react=$('#reactOn').checked;settings.season=$('#seasonSel').value;applySeason();refreshCards();const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
+/* ---------- Settings and Profile pages (own views, not dialogs) ---------- */
+function openSettings(){setView('settings')}
+function openProfile(){setView('profile')}
+// Redraw a page in place without losing your spot: keeps the scroll position and the focused control (by id or data-* key)
+function keepPlace(box,draw){
+  const a=document.activeElement;let key=null;
+  if(a&&box.contains(a)){
+    if(a.id)key='#'+CSS.escape(a.id);
+    else{const k=Object.keys(a.dataset||{})[0];if(k)key=`[data-${k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())}="${CSS.escape(a.dataset[k])}"]`}}
+  const y=scrollY;draw();scrollTo({top:y});
+  if(key){const el=box.querySelector(key);if(el)el.focus({preventScroll:true})}
+}
+// Settings: device options. Every change is saved straight away.
+function drawSettings(){
+  const box=$('#v-settings');
+  box.innerHTML=`<div class="page set"><h1 class="ptitle">Settings</h1>
+    <div class="hint" style="margin:0">Changes are saved as you make them. Your picture, theme and AniList accounts are on <button class="link" id="toProf">your Profile</button>.</div>
+    <section class="psec" aria-labelledby="sWatch"><h2 id="sWatch">Watch link</h2>
+      <label for="prov">Your Watch link (optional)</label>
+      <input type="text" id="prov" value="${esc(settings.provider||'')}" placeholder="https://your-site/search?keyword={query}">
+      <div class="hint">Adds a “Watch” button to each anime that opens this address, with <code>{query}</code> replaced by the title. Leave empty to hide the button; the official “Where to watch” links are always shown. Saved in this browser only. Only use an address you trust.</div></section>
+    <section class="psec" aria-labelledby="sLists"><h2 id="sLists">Lists</h2>
+      <label class="check"><input type="checkbox" id="rateOn" ${settings.rate!==false?'checked':''}> Show my rating and notes on each anime</label>
+      <div class="hint">Optional. Turning this off only hides them; nothing is deleted.</div></section>
+    <section class="psec" aria-labelledby="sFx"><h2 id="sFx">Effects</h2>
+      <label class="check"><input type="checkbox" id="partyOn" ${settings.party!==false?'checked':''}> Celebrations: confetti when you finish a show, badge reveals, the +1 pop</label>
+      <label class="check"><input type="checkbox" id="reactOn" ${settings.react!==false?'checked':''}> Ask for a quick emoji reaction after +1 (saved in your diary and Wrapped)</label>
+      <select id="seasonSel" aria-label="Seasonal effect" style="margin-top:8px">${[['auto',`Seasonal effect: auto (now ${SFX_KINDS[autoFx()]})`],...Object.entries(SFX_KINDS).map(([k,l])=>[k,'Seasonal effect: '+l]),['off','Seasonal effect: off']]
+        .map(([k,l])=>`<option value="${k}" ${(settings.season||'auto')===k?'selected':''}>${l}</option>`).join('')}</select>
+      <div class="hint">Auto matches your theme (Sakura → petals, Forest → fireflies, Sunset → leaves, Ocean → snow); other themes follow Japan's seasons: snow Dec–Feb, sakura Mar–May, fireflies Jun–Aug, leaves Sep–Nov. Effects stay off if your device asks for reduced motion.</div></section>
+    <section class="psec" aria-labelledby="sAl"><h2 id="sAl">Alerts</h2>
+      <label class="check"><input type="checkbox" id="notifyOn" ${settings.notify&&alertsOn()?'checked':''}> Notify me when a new episode of a show I'm watching comes out</label>
+      <div class="hint" id="notifyHint">${alertHint()}</div>
+      <div class="actions" style="margin-top:6px"><button class="btn sm" id="notifyTest">Send a test alert</button></div></section>
+    <section class="psec" aria-labelledby="sOff"><h2 id="sOff">Offline</h2>
+      <div class="hint" id="offInfo">Your list, stats and diary always live on this device. Covers and AniList pages you have opened are saved as you go, so Kuro keeps working without a connection.</div>
+      <div class="actions" style="margin-top:6px"><button class="btn sm" id="offSave">Save all my covers for offline</button></div></section>
+    <section class="psec" aria-labelledby="sBak"><h2 id="sBak">Backup</h2>
+      <div class="actions" style="margin-top:10px"><button class="btn" id="exp">Export list</button><label class="btn" style="margin:0">Import list<input type="file" id="imp" accept="application/json" hidden></label></div></section>
+  </div>`;
+  const saved=m=>{saveSettings();toast(m||'Saved')};
+  $('#toProf').onclick=openProfile;
+  $('#prov').onchange=e=>{const pv=e.target.value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');
+    settings.provider=pv;refreshCards();saved(pv?'Watch link saved':'Watch link removed')};
+  $('#rateOn').onchange=e=>{settings.rate=e.target.checked;refreshCards();saved()};
+  $('#partyOn').onchange=e=>{settings.party=e.target.checked;saved()};
+  $('#reactOn').onchange=e=>{settings.react=e.target.checked;saved()};
+  $('#seasonSel').onchange=e=>{settings.season=e.target.value;applySeason();saved()};
   wireAlertsUI();wireOffline();
-  $('#conn').onclick=()=>{const t=$('#cid')?.value.trim();if(t&&/^\d+$/.test(t))settings.clientId=t;else if(t==='')delete settings.clientId;saveSettings();
-    const c=clientId();if(!c)return toast('Enter the numeric AniList Client ID (see AniList app setup)');
-    location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+c+'&response_type=token'};
-  if($('#syncNow'))$('#syncNow').onclick=async()=>{await sync(true);openSettings()};
-  $('#editProf').onclick=openProfileEditor;
-  $$('[data-switch]').forEach(b=>b.onclick=()=>switchProfile(b.dataset.switch?+b.dataset.switch:null,b.dataset.switch?'Switched to '+profiles[b.dataset.switch].name:'Using the guest list'));
-  $$('[data-signout]').forEach(b=>b.onclick=async()=>{
-    const p=profiles[b.dataset.signout],on=me()?.id===p.id;
-    if(on&&p.token)await sync(false);
-    const left=on?unsynced():0;
-    if(!confirm(`Sign out ${p.name} in this browser? Their list is kept on AniList and comes back when you sign in again.`+(left?`\n\n${left} change${left>1?'s have':' has'} not reached AniList yet and will be lost.`:'')))return;
-    delete profiles[p.id];saveProfiles();store.del('kuro.list.'+p.id);delete prefsAll[p.id];store.set('kuro.prefs',prefsAll); // photo/nickname too: a shared browser keeps nothing
-    if(on)switchProfile(null,'Signed out '+p.name);else openSettings();
-  });
   $('#exp').onclick=()=>{const{token,user,...safe}=settings;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({list,settings:safe,history:hist},null,1)],{type:'application/json'}));a.download='kuro-watchlist.json';a.click()};
   $('#imp').onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());
     // imported entries may come from another account: forget their AniList ids so they get pushed, not treated as removed
     for(const it of Object.values(j.list||{})){delete it.synced;delete it.entryId;it.updated=it.updated||Date.now()}
     if(Array.isArray(j.history)){const have=new Set(hist.map(h=>h.join()));for(const h of j.history)if(Array.isArray(h)&&h.length===4&&h.every(Number.isFinite)&&!have.has(h.join()))hist.push(h);hist.sort((a,b)=>a[0]-b[0]);saveHist()}
-    Object.assign(list,j.list||{});if(j.settings){const{token,user,...s}=j.settings;settings={...settings,...s}}saveList();saveSettings();closeModal();refreshCards();toast('Imported')}catch{toast('Invalid file')}};
+    Object.assign(list,j.list||{});if(j.settings){const{token,user,...s}=j.settings;settings={...settings,...s}}saveList();saveSettings();refreshCards();drawSettings();toast('Imported')}catch{toast('Invalid file')}};
 }
-// Profile editor: picture (AniList / own photo / initial), nickname and colour. Stored in this browser only.
-function openProfileEditor(){
-  const p=me(),d={...myPrefs()};d.picMode=d.picMode||(p?.avatar?'anilist':'initial');
-  const draw=()=>{
-    const l=look(p,d);
-    $('#modal').innerHTML=`<div class="mbody set" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
-      <h2 style="margin:0 0 12px">Edit profile</h2>
-      <div class="pcard" style="--pc:${esc(l.col)};justify-content:center;flex-direction:column;text-align:center${p?.banner?`;background-image:linear-gradient(transparent 30%,var(--card) 100%),url('${esc(p.banner)}')`:''}">
-        ${l.av('pav big')}<div class="pname">${esc(l.name)}</div></div>
+// Profile: the active profile's look (picture, colour, name, theme, accent; this browser only) and the AniList accounts.
+// Every change is saved and applied straight away.
+function drawProfile(){
+  const box=$('#v-profile'),p=me(),d={...myPrefs()},pm=d.picMode||(p?.avatar?'anilist':'initial'),l=look(p,d);
+  box.innerHTML=`<div class="page set"><h1 class="ptitle">Profile</h1>
+    <div class="pcard phead" style="--pc:${esc(l.col)};justify-content:center;flex-direction:column;text-align:center${p?.banner?`;background-image:linear-gradient(transparent 30%,var(--card) 100%),url('${esc(p.banner)}')`:''}">
+      ${l.av('pav big')}<div class="pname">${esc(l.name)}</div>
+      <div class="hint" style="margin:0">${p?`AniList · ${esc(p.name)}`:'Guest · this browser only'} · ${Object.keys(list).length} anime</div></div>
+    <section class="psec" aria-labelledby="pLook"><h2 id="pLook">Look</h2>
       <label>Picture</label>
       <div class="sub" style="flex-wrap:wrap">
-        ${p?.avatar?`<button class="chip ${d.picMode==='anilist'?'on':''}" data-pm="anilist">AniList picture</button>`:''}
-        <button class="chip ${d.picMode==='photo'?'on':''}" data-pm="photo">${d.pic?'My photo':'Upload photo'}</button>
-        <button class="chip ${d.picMode==='initial'?'on':''}" data-pm="initial">Initial</button>
+        ${p?.avatar?`<button class="chip ${pm==='anilist'?'on':''}" data-pm="anilist" aria-pressed="${pm==='anilist'}">AniList picture</button>`:''}
+        <button class="chip ${pm==='photo'?'on':''}" data-pm="photo" aria-pressed="${pm==='photo'}">${d.pic?'My photo':'Upload photo'}</button>
+        <button class="chip ${pm==='initial'?'on':''}" data-pm="initial" aria-pressed="${pm==='initial'}">Initial</button>
         ${d.pic?`<label class="chip" style="margin:0;font-weight:500;cursor:pointer">Change photo<input type="file" id="pfile" accept="image/*" hidden></label>`:''}
       </div>
       <input type="file" id="pfile0" accept="image/*" hidden>
+      <label for="nick">Display name</label>
+      <input type="text" id="nick" maxlength="30" value="${esc(d.nick||'')}" placeholder="${esc(p?.name||'Guest')}">
       <label>Colour</label>
-      <div class="swatches">${PCOLORS.map(c=>`<button data-col="${c}" class="${l.col===c?'on':''}" style="background:${c}" aria-label="Colour ${c}"></button>`).join('')}</div>
+      <div class="swatches">${PCOLORS.map(c=>`<button data-col="${c}" class="${l.col===c?'on':''}" style="background:${c}" aria-label="Colour ${c}" aria-pressed="${l.col===c}"></button>`).join('')}</div>
       <div class="hint">Used for your initial and around your picture.</div>
       <label>App theme</label>
-      <div class="themes">${THEMES.map(([k,n,bg,a1,a2])=>`<button data-th="${k}" class="${(d.theme||'dark')===k?'on':''}" aria-label="${n} theme">
+      <div class="themes">${THEMES.map(([k,n,bg,a1,a2])=>`<button data-th="${k}" class="${(d.theme||'dark')===k?'on':''}" aria-label="${n} theme" aria-pressed="${(d.theme||'dark')===k}">
         <i style="background:${bg}"><b style="background:linear-gradient(135deg,${a1},${a2})"></b></i>${n}</button>`).join('')}</div>
       <div class="hint">Auto follows your device: Light in light mode, Midnight in dark mode.</div>
       <label>Accent colour</label>
@@ -1840,25 +1840,57 @@ function openProfileEditor(){
           return fav.length?`<small>From your shows' covers</small>${fav.map(c=>`<button data-acc="${c}" class="${d.accent===c?'on':''}" style="background:${c}" aria-label="Accent ${c}" aria-pressed="${d.accent===c}"></button>`).join('')}`:''})()}
       </div>
       <div class="hint">Buttons, highlights and charts use it. It is adjusted a little on each theme so text stays readable.</div>
-      <label for="nick">Display name</label>
-      <input type="text" id="nick" maxlength="30" value="${esc(d.nick||'')}" placeholder="${esc(p?.name||'Guest')}">
-      <div class="hint">Saved in this browser only. Your AniList name and picture are not changed. Each profile keeps its own theme.</div>
-      <div class="actions" style="margin-top:20px"><button class="btn primary" id="psave">Save</button><button class="btn" id="pback">Cancel</button>
-        ${myPrefs().nick||myPrefs().picMode||myPrefs().color||myPrefs().accent?'<button class="btn danger" id="preset">Reset</button>':''}</div></div>`;
-    $('#mclose').onclick=()=>{applyPrefs();closeModal()};
-    const accPrev=()=>applyPrefs(d.theme||'dark',d.accent||null);
-    $$('[data-acc]').forEach(b=>b.onclick=()=>{d.accent=b.dataset.acc||undefined;accPrev();const st=$('#modal').scrollTop;draw();$('#modal').scrollTop=st});
-    $('#accPick').oninput=e=>{d.accent=e.target.value.toLowerCase();accPrev();$$('[data-acc]').forEach(b=>{const on=b.dataset.acc===d.accent;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})};$('#pback').onclick=()=>{applyPrefs();openSettings()}; // undo an unsaved preview
-    $('#nick').oninput=e=>{d.nick=e.target.value.trim();$('.pcard .pname').textContent=d.nick||p?.name||'Guest'};
-    $$('[data-pm]').forEach(b=>b.onclick=()=>{const m=b.dataset.pm;if(m==='photo'&&!d.pic)return $('#pfile0').click();d.picMode=m;draw()});
-    $$('[data-col]').forEach(b=>b.onclick=()=>{d.color=b.dataset.col;draw()});
-    $$('[data-th]').forEach(b=>b.onclick=()=>{d.theme=b.dataset.th==='dark'?undefined:b.dataset.th;applyPrefs(d.theme||'dark',d.accent||null);const st=$('#modal').scrollTop;draw();$('#modal').scrollTop=st}); // live preview
-    const pick=async e=>{const f=e.target.files[0];if(!f)return;try{d.pic=await squareJpeg(f,192);d.picMode='photo';draw()}catch{toast('Could not read that image')}};
-    $('#pfile0').onchange=pick;if($('#pfile'))$('#pfile').onchange=pick;
-    $('#psave').onclick=()=>{d.nick=$('#nick').value.trim();savePrefs(d);renderProfileBtn();openSettings();toast('Profile saved')};
-    if($('#preset'))$('#preset').onclick=()=>{savePrefs({});location.reload()};
-  };
-  draw();$('#scrim').classList.add('open');
+      <div class="hint">Your look is saved in this browser only, for this profile. Your AniList name and picture are not changed.</div>
+      ${d.nick||d.picMode||d.color||d.accent||d.theme||d.pic?'<div class="actions" style="margin-top:12px"><button class="btn sm danger" id="preset">Reset look</button></div>':''}
+    </section>
+    <section class="psec" aria-labelledby="pAcc"><h2 id="pAcc">AniList accounts</h2>
+      <div class="hint" style="margin:8px 0 6px">Sign in with AniList and your list follows you to any browser or device you sign in on. Without an account the list stays in this browser only.</div>
+      ${Object.values(profiles).map(q=>{const on=p?.id===q.id,lq=look(q);return `<div class="prof${on?' on':''}">
+        ${lq.av()}
+        <div class="grow"><b>${esc(lq.name)}</b>${on?' <span class="tag">active</span>':''}
+          <div class="hint" style="margin:0">${!q.token?'Signed out of AniList, sign in again to sync':q.lastSync?'Last sync '+new Date(q.lastSync).toLocaleString():'Not synced yet'}</div></div>
+        ${on&&q.token?`<button class="btn sm" id="syncNow">Sync now</button>`:''}
+        ${!on?`<button class="btn sm" data-switch="${q.id}">Switch</button>`:''}
+        <button class="btn sm danger" data-signout="${q.id}">Sign out</button></div>`}).join('')}
+      ${p?`<div class="prof">${look(null).av()}<div class="grow"><b>${look(null).custom?esc(look(null).name)+' (no account)':'No account'}</b><div class="hint" style="margin:0">Guest list, this browser only</div></div><button class="btn sm" data-switch="">Switch</button></div>`:''}
+      ${clientId()?'':`<input type="text" id="cid" inputmode="numeric" aria-label="AniList Client ID" placeholder="AniList Client ID" value="" style="margin-top:8px">`}
+      <div class="actions" style="margin-top:10px"><button class="btn primary" id="conn">${p&&!p.token?'Sign in again':Object.keys(profiles).length?'Add AniList account':'Sign in with AniList'}</button></div>
+      <details class="hint" style="margin-top:8px"><summary>${IS_HOSTED?'Sign-in help':'AniList app setup'}${settings.clientId?' (Client ID '+esc(settings.clientId)+')':''}</summary>
+        To add a second account, log out on anilist.co first, otherwise AniList signs you straight back in as the current one.
+        ${IS_HOSTED?`<div style="margin-top:6px">Advanced: to use your own AniList client instead of the built-in one, enter its Client ID (leave empty for the built-in one).</div>`
+        :`<div style="margin-top:6px">One-time setup for this address: at anilist.co/settings/developer create a client, set its Redirect URL to <code>${esc(APP_URL)}</code>, and paste its Client ID here. Or just use the hosted app at <a href="${HOSTED_URL}">${HOSTED_URL}</a>, which needs no setup.</div>`}
+        ${clientId()?`<div style="margin-top:6px"><input type="text" id="cid" inputmode="numeric" aria-label="AniList Client ID" placeholder="${IS_HOSTED?'Built-in':'AniList Client ID'}" value="${esc(settings.clientId||'')}"></div>`:''}</details>
+    </section>
+  </div>`;
+  // save the look, apply it everywhere and redraw this page in place
+  const commit=()=>{savePrefs(d);applyPrefs();renderProfileBtn();keepPlace(box,drawProfile)};
+  $$('[data-pm]',box).forEach(b=>b.onclick=()=>{const m=b.dataset.pm;if(m==='photo'&&!d.pic)return $('#pfile0').click();d.picMode=m;commit()});
+  const pick=async e=>{const f=e.target.files[0];if(!f)return;try{d.pic=await squareJpeg(f,192);d.picMode='photo';commit()}catch{toast('Could not read that image')}};
+  $('#pfile0').onchange=pick;if($('#pfile'))$('#pfile').onchange=pick;
+  $('#nick').oninput=e=>{$('.phead .pname').textContent=e.target.value.trim()||p?.name||'Guest'};
+  $('#nick').onchange=e=>{d.nick=e.target.value.trim()||undefined;commit();toast('Name saved')};
+  $$('[data-col]',box).forEach(b=>b.onclick=()=>{d.color=b.dataset.col;commit()});
+  $$('[data-th]',box).forEach(b=>b.onclick=()=>{d.theme=b.dataset.th==='dark'?undefined:b.dataset.th;commit()});
+  $$('[data-acc]',box).forEach(b=>b.onclick=()=>{d.accent=b.dataset.acc||undefined;commit()});
+  $('#accPick').oninput=e=>applyPrefs(d.theme||'dark',e.target.value.toLowerCase()); // live preview while dragging
+  $('#accPick').onchange=e=>{d.accent=e.target.value.toLowerCase();commit()};
+  if($('#preset'))$('#preset').onclick=()=>{if(!confirm('Reset your picture, name, colour, theme and accent for this profile?'))return;savePrefs({});location.reload()};
+  // accounts
+  const setCid=()=>{const t=$('#cid')?.value.trim();if(t&&/^\d+$/.test(t))settings.clientId=t;else if(t==='')delete settings.clientId;saveSettings()};
+  if($('#cid'))$('#cid').onchange=()=>{setCid();toast('Saved')};
+  $('#conn').onclick=()=>{setCid();
+    const c=clientId();if(!c)return toast('Enter the numeric AniList Client ID (see AniList app setup)');
+    location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+c+'&response_type=token'};
+  if($('#syncNow'))$('#syncNow').onclick=async()=>{await sync(true);if(view==='profile')keepPlace(box,drawProfile)};
+  $$('[data-switch]',box).forEach(b=>b.onclick=()=>switchProfile(b.dataset.switch?+b.dataset.switch:null,b.dataset.switch?'Switched to '+profiles[b.dataset.switch].name:'Using the guest list'));
+  $$('[data-signout]',box).forEach(b=>b.onclick=async()=>{
+    const q=profiles[b.dataset.signout],on=me()?.id===q.id;
+    if(on&&q.token)await sync(false);
+    const left=on?unsynced():0;
+    if(!confirm(`Sign out ${q.name} in this browser? Their list is kept on AniList and comes back when you sign in again.`+(left?`\n\n${left} change${left>1?'s have':' has'} not reached AniList yet and will be lost.`:'')))return;
+    delete profiles[q.id];saveProfiles();store.del('kuro.list.'+q.id);delete prefsAll[q.id];store.set('kuro.prefs',prefsAll); // photo/nickname too: a shared browser keeps nothing
+    if(on)switchProfile(null,'Signed out '+q.name);else drawProfile();
+  });
 }
 // Crop an image file to a centred square and shrink it to a small JPEG data URL (stays in localStorage, never uploaded)
 function squareJpeg(file,size){
@@ -1867,7 +1899,6 @@ function squareJpeg(file,size){
       c.getContext('2d').drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,size,size);URL.revokeObjectURL(url);ok(c.toDataURL('image/jpeg',.85))};
     img.onerror=()=>{URL.revokeObjectURL(url);fail()};img.src=url});
 }
-$('#settingsBtn').onclick=openSettings;$('#navSet').onclick=openSettings;
 
 function toast(t,undo){
   const el=$('#toast');el.innerHTML=`<span class="tt">${esc(t)}</span>`+(undo?'<button class="link" id="undo">Undo</button>':'');
@@ -1907,7 +1938,7 @@ function renderSyncBar(){
     :syncing?`<span class="sdot spin"></span><span>Syncing with AniList…</span>`
     :`<span class="sdot ${n?'warn':'ok'}"></span><span title="${p.lastSync?esc(new Date(p.lastSync).toLocaleString()):''}">${p.lastSync?'Synced with AniList '+ago(p.lastSync):'Not synced yet'}${n?` · ${n} change${n>1?'s':''} waiting`:''}</span><button class="link" id="sbSync">Sync now</button>`;
 }
-$('#syncbar').onclick=e=>{if(e.target.id==='sbSync')sync(true);else if(e.target.id==='sbSign')openSettings()};
+$('#syncbar').onclick=e=>{if(e.target.id==='sbSync')sync(true);else if(e.target.id==='sbSign')openProfile()};
 setInterval(()=>{if(view==='list'&&!document.hidden)renderSyncBar()},30000);
 function scheduleSync(){if(!me()?.token)return;clearTimeout(syncT);syncT=setTimeout(()=>sync(false),2500)}
 // Watch history for signed-in accounts: AniList's list activity is the single source, so every device shows the same
@@ -2030,7 +2061,7 @@ async function sync(manual){
     if(manual)toast('Synced ✓');
     histSync(p).catch(()=>{}); // diary + badges: bring in episodes watched on other devices
   }catch(e){
-    if(e.message==='AUTH'){delete p.token;saveProfiles();renderProfileBtn();toast(`AniList sign-in expired for ${p.name}, sign in again in Settings`)}
+    if(e.message==='AUTH'){delete p.token;saveProfiles();renderProfileBtn();toast(`AniList sign-in expired for ${p.name}, sign in again on your Profile`)}
     else toast('Sync failed: '+(e instanceof TypeError?'offline?':e.message));
   }
   syncing=false;renderSyncBar();
@@ -2059,8 +2090,8 @@ const authing=(async function handleAuth(){
 
 function renderProfileBtn(){
   const p=me(),b=$('#settingsBtn'),l=look(p);applyPrefs();
-  if(!p&&!l.custom)return; // plain guest: keep the gear icon
-  b.classList.add('me');b.title=l.name+(p&&!p.token?' (signed out, sign in again in Settings)':'');b.setAttribute('aria-label','Profile and settings');
+  if(!p&&!l.custom)return; // plain guest: keep the person icon
+  b.classList.add('me');b.title=l.name+(p&&!p.token?' (signed out, sign in again on your Profile)':'');b.setAttribute('aria-label','Profile: '+l.name);
   b.innerHTML=l.av();b.classList.toggle('expired',!!p&&!p.token);
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return;refreshAiring();renderNext();if(me()?.token&&Date.now()-(me().lastSync||0)>60000)sync(false)});
@@ -2510,6 +2541,8 @@ async function pullRefresh(){
   else if(view==='week')await loadWeek(true);
   else if(view==='list'){if(me()?.token&&navigator.onLine)await sync(true);renderList()}
   else if(view==='season')await loadSeason();
+  else if(view==='profile'){if(me()?.token&&navigator.onLine)await sync(true);drawProfile()}
+  else if(view==='settings')drawSettings();
   else drawStats();
   const left=700-(Date.now()-t0);if(left>0)await new Promise(r=>setTimeout(r,left));
 }
