@@ -652,7 +652,7 @@ nav.bottom{display:none}
     <div id="cotd" hidden style="margin-top:18px"></div>
     <div id="recs" style="margin-top:18px"></div>
     <div id="top10"><div class="t10head"><h2 class="sec">Top 10</h2><div class="t10tabs" role="group" aria-label="Top 10 list">
-      <button class="chip" data-t10="TRENDING_DESC">Trending now</button><button class="chip" data-t10="SCORE_DESC">All-time best</button><button class="chip" data-t10="POPULARITY_DESC">Most popular</button></div></div>
+      <button class="chip" data-t10="SEASON">This season</button><button class="chip" data-t10="SCORE_DESC">All-time best</button><button class="chip" data-t10="POPULARITY_DESC">Most popular</button></div></div>
       <div class="t10row" id="t10Row"></div></div>
     <div class="filters" id="filters">
       <button class="btn ftoggle" id="ftoggle">⚙ Filters <span id="fcount"></span></button>
@@ -2181,12 +2181,15 @@ function drawRecs(){
 
 /* ----- Top 10: AniList's trending / best-rated / most popular, with big rank numbers ----- */
 const T10_Q=`query($sort:[MediaSort]){Page(perPage:10){media(type:ANIME,isAdult:false,sort:$sort){${MEDIA_FIELDS}}}}`;
-const t10Data={};let t10Tab=(()=>{try{return localStorage.getItem('kuro.t10Tab')||'TRENDING_DESC'}catch{return'TRENDING_DESC'}})();
+// "This season": best-rated shows of the current anime season (the hero already shows trending), with a popularity floor so a handful of votes can't top it
+const T10_SEASON_Q=`query($season:MediaSeason,$year:Int){Page(perPage:10){media(type:ANIME,isAdult:false,season:$season,seasonYear:$year,popularity_greater:3000,sort:[SCORE_DESC,POPULARITY_DESC]){${MEDIA_FIELDS}}}}`;
+const T10_TABS=['SEASON','SCORE_DESC','POPULARITY_DESC'];
+const t10Data={};let t10Tab=(()=>{let t;try{t=localStorage.getItem('kuro.t10Tab')}catch{}return T10_TABS.includes(t)?t:'SEASON'})();
 function fetchTop(sort){ // one AniList call per list per hour, shared by Top 10 and the hero
   const d=t10Data[sort];
   if(d?.items&&Date.now()-d.at<36e5)return Promise.resolve(d.items);
   if(d?.p)return d.p;
-  const p=pubQ(T10_Q,{sort:[sort]}).then(r=>{const ms=r.Page.media.map(x=>{const m=slim(x);cache[m.id]=cache[m.id]||m;return m});t10Data[sort]={at:Date.now(),items:ms};return ms})
+  const sn0=seasonNow(),p=(sort==='SEASON'?pubQ(T10_SEASON_Q,{season:sn0.season,year:sn0.year}):pubQ(T10_Q,{sort:[sort]})).then(r=>{const ms=r.Page.media.map(x=>{const m=slim(x);cache[m.id]=cache[m.id]||m;return m});t10Data[sort]={at:Date.now(),items:ms};return ms})
     .catch(e=>{t10Data[sort]={at:0,items:d?.items||null,err:e.message};return t10Data[sort].items});
   t10Data[sort]={...(d||{}),p};return p;
 }
