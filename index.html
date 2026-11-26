@@ -15,7 +15,7 @@
   --bg:#0b0b12;--bg2:#12121c;--card:#171724;--card2:#1e1e2e;--line:#2a2a3d;
   --text:#ecebf5;--muted:#9a99b3;--accent:#8b7bff;--accent2:#ff6bd6;--good:#4ade80;--warn:#fbbf24;--bad:#f87171;
   --r:16px;--nav-h:64px;
-  --glass:rgba(11,11,18,.72);--glass2:rgba(11,11,18,.88);--glow1:#2b2160;--glow2:#4a1f55;--thumb:#3a3a55;--hover:#4a4a6e;--desc:#cfcee2;--on-accent:#fff;
+  --glass:rgba(11,11,18,.72);--glass2:rgba(11,11,18,.88);--glow1:#2b2160;--glow2:#4a1f55;--thumb:#3a3a55;--hover:#4a4a6e;--desc:#cfcee2;--on-accent:#0b0b12;
 }
 /* ---------- themes (picked per profile in Edit profile; [data-theme] set on <html>) ---------- */
 [data-theme=sakura]{--on-accent:#2a0818;--bg:#140b11;--bg2:#1c1018;--card:#24141f;--card2:#2e1a28;--line:#3f2537;--text:#f7eaf2;--muted:#b89aab;--accent:#ff7eb6;--accent2:#ffb86b;
@@ -28,7 +28,7 @@
   --glass:rgba(20,12,8,.72);--glass2:rgba(20,12,8,.9);--glow1:#5c2a10;--glow2:#5a1428;--thumb:#5a3a24;--hover:#6e4730;--desc:#ead6c8}
 [data-theme=amoled]{--on-accent:#14082e;--bg:#000;--bg2:#000;--card:#0c0c0f;--card2:#141418;--line:#232329;--text:#f2f2f5;--muted:#9a9aa6;--accent:#a78bfa;--accent2:#f472b6;
   --glass:rgba(0,0,0,.8);--glass2:rgba(0,0,0,.92);--glow1:transparent;--glow2:transparent;--thumb:#2c2c33;--hover:#3a3a44;--desc:#d4d4dc}
-[data-theme=light]{--bg:#f4f4f9;--bg2:#fff;--card:#fff;--card2:#ececf4;--line:#dcdce8;--text:#17171f;--muted:#5f5f75;--accent:#6d5dfc;--accent2:#e0479e;
+[data-theme=light]{--bg:#f4f4f9;--bg2:#fff;--card:#fff;--card2:#ececf4;--line:#dcdce8;--text:#17171f;--muted:#5f5f75;--accent:#6d5dfc;--accent2:#c7337f;--on-accent:#fff;
   --good:#16a34a;--warn:#b45309;--bad:#dc2626;--glass:rgba(255,255,255,.78);--glass2:rgba(255,255,255,.92);--glow1:#ddd6ff;--glow2:#ffd6ee;--thumb:#c4c4d4;--hover:#b8b8cc;--desc:#33334a}
 html[data-theme=light]{color-scheme:light}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -296,7 +296,7 @@ body:has(#v-list.selmode) #toast{bottom:calc(var(--nav-h) + 90px)}
 #toast .link{flex:none}
 /* this week */
 .wkday{margin:18px 0 8px;font-weight:700;color:var(--muted);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
-.wkday.today{color:var(--accent)}
+.wkday.now{color:var(--accent)}
 .wkrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin-bottom:8px;cursor:pointer}
 .wkrow .t{width:48px;font-weight:700;font-size:13px;flex:none;text-align:center}
 .wkrow .nuimg{width:40px}
@@ -716,7 +716,7 @@ nav.bottom{display:none}
   nav.bottom{position:fixed}
   nav.bottom button{position:relative;z-index:1}
   nav.bottom button.bump svg{animation:nbounce .45s ease}
-  nav.bottom .npill{top:7px;height:30px;border-radius:999px;background:color-mix(in srgb,var(--accent) 20%,transparent)}
+  nav.bottom .npill{top:6px;height:calc(var(--nav-h) - 12px);border-radius:16px;background:color-mix(in srgb,var(--accent) 20%,transparent)}
   .t10 .skel{width:118px}
   .scrim{align-items:flex-end;padding:0}
   .modal{border-radius:22px 22px 0 0;max-height:92vh}
@@ -938,11 +938,13 @@ const lum=hex=>{const n=parseInt(hex.slice(1),16),c=v=>(v/=255)<=.03928?v/12.92:
 const okHex=c=>/^#[0-9a-f]{6}$/i.test(c||'');
 function accentSet(hex,light){
   // keep the picked shade when it already reads well, otherwise step it darker (Light) or lighter (dark themes):
-  // about 3:1 against white on Light, about 4.5:1 against the near-black backgrounds
+  // at least 4.5:1 against white on Light (so white button text reads too), about 4.5:1 against the near-black backgrounds
   const[h,s,l0]=hexHsl(hex);let l=l0;
-  if(light)while(lum(hslHex(h,s,l))>.26&&l>.15)l-=.02;else while(lum(hslHex(h,s,l))<.2&&l<.9)l+=.02;
+  if(light)while(lum(hslHex(h,s,l))>.18&&l>.15)l-=.02;else while(lum(hslHex(h,s,l))<.2&&l<.9)l+=.02;
   const a=hslHex(h,s,l),a2=hslHex((h+40)%360,s,l);
-  return{a,a2,on:lum(a)>.35?'#0b0b12':'#ffffff'};
+  // button text: white or near-black, whichever stays most readable across the whole accent gradient
+  const cr=(x,y)=>(Math.max(x,y)+.05)/(Math.min(x,y)+.05),la=lum(a),lb=lum(a2),dk=lum('#0b0b12');
+  return{a,a2,on:Math.min(cr(1,la),cr(1,lb))>=Math.min(cr(dk,la),cr(dk,lb))?'#ffffff':'#0b0b12'};
 }
 function setAccent(hex,light){
   const st=document.documentElement.style;
@@ -1165,7 +1167,7 @@ function drawWeek(){
   for(const s of wkData){
     const k=dayKey(s.at);
     if(k!==cur){cur=k;const d=new Date(s.at*1000);
-      html+=`<div class="wkday${k===today?' today':''}">${k===today?'Today':k===tmr?'Tomorrow':k===yst?'Yesterday':d.toLocaleDateString([],{weekday:'long'})} · ${d.toLocaleDateString([],{day:'numeric',month:'short'})}</div>`}
+      html+=`<div class="wkday${k===today?' now':''}">${k===today?'Today':k===tmr?'Tomorrow':k===yst?'Yesterday':d.toLocaleDateString([],{weekday:'long'})} · ${d.toLocaleDateString([],{day:'numeric',month:'short'})}</div>`}
     const e=list[s.m.id],aired=s.at<=now,prog=e?.progress||0;
     let note,act='';
     if(!aired)note=s.at-now<86400?'Airs '+whenText(s.at):'Upcoming';
@@ -2489,7 +2491,7 @@ function navPill(){
     const pill=box.querySelector('.npill'),b=box.querySelector('[data-view].on');if(!pill)continue;
     if(!b||!b.offsetWidth){pill.classList.remove('on');continue}
     box.classList.add('pilled');
-    if(box.tagName==='NAV'){const w=Math.min(64,b.offsetWidth-8);pill.style.width=w+'px';pill.style.left=b.offsetLeft+(b.offsetWidth-w)/2+'px'}
+    if(box.tagName==='NAV'){const w=Math.min(84,b.offsetWidth-6);pill.style.width=w+'px';pill.style.left=b.offsetLeft+(b.offsetWidth-w)/2+'px'}
     else{pill.style.width=b.offsetWidth+'px';pill.style.left=b.offsetLeft+'px';pill.style.top=b.offsetTop+'px';pill.style.height=b.offsetHeight+'px'}
     pill.classList.add('on')}
 }

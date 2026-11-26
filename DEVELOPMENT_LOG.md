@@ -475,3 +475,11 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html`: `drawRecs()` filters out anything on the list every time it draws (both sequel picks and recommendations); `loadRecs()` keeps up to 40 candidates instead of 16 so the row stays full (still 20 shown).
 - `sw.js`: cache bumped to `kuro-v37`.
 - Tested on localhost: adding the first card with + and setting the second to Completed removed both at once; the row still showed 20 cards, none on the list.
+
+### 2026-11-26 — Readable button text and Today header; nav pill covers the label
+- Reported: text hard to read (the "Today" header on This week, the +1 button); on phones the active-page pill should sit behind the label too, not just the icon.
+- Cause (Today header): its class `today` clashed with the Today tile's `.today` styles, so it got a purple gradient under purple text. Renamed to `.wkday.now` in `index.html`.
+- `index.html` (contrast, WCAG AA 4.5:1): default theme `--on-accent` is now near-black (#0b0b12): white on the purple/pink gradient was 3.3:1 / 2.5:1, dark is 6.0:1 / 7.8:1. Light theme `--accent2` darkened to #c7337f (white text 5.0:1) and `--on-accent:#fff` set there. Custom accent colours: `accentSet()` now picks white or dark button text by whichever reads best across both gradient ends, and on Light steps the accent down to at least 4.5:1 against white.
+- `index.html` (phone nav): `nav.bottom .npill` is now nearly as tall as the bar (top 6px, `--nav-h` − 12px, radius 16px) and up to 84px wide, so the bouncing pill sits behind both icon and label.
+- `sw.js`: cache bumped to `kuro-v38`.
+- Tested on localhost at 375 px: the Today header has no background and uses the accent colour; the +1 text is #0b0b12; the pill spans the whole This week button (icon and label).
