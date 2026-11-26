@@ -241,8 +241,14 @@ body:has(#v-list.selmode) #toast{bottom:calc(var(--nav-h) + 90px)}
 .sh{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
 #trailer iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;margin:10px 0}
 .ep{display:flex;align-items:center;gap:10px;padding:6px;border-radius:12px;background:var(--card);border:1px solid var(--line);margin-bottom:6px;cursor:pointer}
-.ep.done{opacity:.55}
-.epth{width:84px;aspect-ratio:16/9;border-radius:8px;background:var(--card2) center/cover;flex:none}
+.ep.done{border-color:color-mix(in srgb,var(--good) 40%,var(--line))}
+.ep:hover{border-color:var(--hover)}
+/* every episode gets a thumbnail: the streaming still when AniList has one, otherwise a slice of the show's banner with the number */
+.epth{width:84px;aspect-ratio:16/9;border-radius:8px;background:var(--card2);flex:none;position:relative;overflow:hidden}
+.epth::before{content:"";position:absolute;inset:0;background:var(--eb,none) var(--ebp,50%) 50%/cover;filter:saturate(.85) brightness(.5)}
+.epth .epn{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:19px;color:#fff;text-shadow:0 2px 8px #000}
+.epth img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.ep.done .epth::after{content:"✓";position:absolute;z-index:2;right:3px;bottom:3px;width:17px;height:17px;border-radius:50%;background:var(--good);color:#fff;font-size:11px;font-weight:900;display:grid;place-items:center}
 .epm{flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .epw{width:30px;height:30px;border-radius:50%;background:var(--accent);display:grid;place-items:center;font-size:12px;color:var(--on-accent);flex:none}
 .tick{width:22px;color:var(--good);font-weight:800;text-align:center}
@@ -361,6 +367,34 @@ details.hint summary{cursor:pointer}
 .t10 .card:hover{transform:none}
 .t10:first-child .rk{--rkc:#f5c542}
 .t10ld{color:var(--muted);font-size:13px;padding:30px 0}
+/* Today tile (Stats) */
+.today{border-radius:20px;padding:16px 18px;margin:0 0 16px;color:#fff;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 75%,#000),color-mix(in srgb,var(--accent2) 70%,#000));box-shadow:0 12px 34px color-mix(in srgb,var(--accent) 30%,transparent)}
+.today::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
+.today .td{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.today .td b{font-size:20px}.today .td span{font-size:13px;opacity:.85}
+.today ul{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;position:relative;z-index:1}
+.today li{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.22);border-radius:12px;padding:6px 10px 6px 6px;cursor:pointer}
+.today li img,.today li .nuimg{width:30px;height:42px;border-radius:6px;object-fit:cover;flex:none}
+.today li .grow{flex:1;min-width:0}.today li .t{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.today li small{opacity:.85;font-size:12px}
+.today li .w{font-variant-numeric:tabular-nums;font-weight:800;font-size:12.5px;white-space:nowrap}
+.today .tdn{font-size:13px;opacity:.9;margin-top:8px;position:relative;z-index:1}
+/* Taste radar */
+.taste{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+.taste svg{width:100%;max-width:340px;height:auto;display:block;margin:auto;overflow:visible}
+.taste .tl{font-size:15px;line-height:1.5}
+.taste .tl b{color:var(--accent)}
+@media (max-width:760px){.taste{grid-template-columns:1fr}}
+/* Watch party */
+.party{text-align:center}
+.party .pcov{width:150px;aspect-ratio:2/3;border-radius:14px;background:var(--card2) center/cover;margin:6px auto 12px;box-shadow:0 14px 40px #000a}
+.party .pcd{font-size:34px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.01em;margin:6px 0;color:var(--accent)}
+.party .pcd.live{color:var(--good)}
+.party .actions{justify-content:center}
+.pform{display:grid;gap:10px;margin-top:12px}
+.pform label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:grid;gap:4px}
+.pform input{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:var(--text)}
 /* Episode reactions */
 .rxbar{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 76px);z-index:79;transform:translateX(-50%);display:flex;align-items:center;gap:2px;
   background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 12px;box-shadow:0 12px 34px #0009;animation:rxin .35s cubic-bezier(.2,1.3,.4,1) both;max-width:calc(100vw - 24px)}
@@ -1343,7 +1377,7 @@ function drawOverview(){
     hist=`<h2 class="sec" style="margin-top:22px">Your ratings</h2><div class="spanel"><div class="hist">${b.map((n,i)=>`<div title="Rated ${i+1}: ${n} show${n===1?'':'s'}"><em>${n||''}</em><i style="height:${n/max*100}%"></i></div>`).join('')}</div>
       <div class="hax">${b.map((_,i)=>`<span>${i+1}</span>`).join('')}</div><div class="hint" style="margin:8px 4px 2px">Out of 10 · ${rated.length} rated</div></div>`;
   }
-  $('#stats').innerHTML=`
+  $('#stats').innerHTML=`${todayTile()}
     <button class="spin-cta wr-cta" id="wrBtn"><span class="dice"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></span>
       <span><b>Your ${new Date().getFullYear()} Wrapped</b><small>Your year in anime, ready to share</small></span><span class="go" aria-hidden="true">Open ›</span></button>
     <div class="shead"><button class="btn" id="stShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>Share as image</button></div>
@@ -1361,6 +1395,7 @@ function drawOverview(){
       ${top.length?`<div><h2 class="sec" style="margin-top:22px">Most time spent</h2><div class="spanel">${top.map(({x,m})=>`<div class="toprow" data-id="${x.id}" role="button" tabindex="0">${pic(x.cover,'nuimg')}<span class="t">${esc(titleOf(x))}</span><span class="v">${fmtTime(m)}</span></div>`).join('')}</div></div>`:''}
       ${formats.length?`<div><h2 class="sec" style="margin-top:22px">Formats</h2><div class="spanel">${bars(formats)}</div></div>`:''}
     </div>
+    ${tasteHTML(d)}
     ${hist}
     <div class="hint" style="margin-top:14px">Genres, formats and time count shows you have started (everything except Plan to watch). Rewatches count your current progress once.</div>`;
 }
@@ -1368,7 +1403,8 @@ $('#stats').onclick=e=>{if(e.target.closest('#stShare'))return openShare();
   if(e.target.closest('#wrBtn'))return openWrapped();
   if(e.target.id==='diaryMore'){diaryDays+=30;drawDiary();return}
   const r=e.target.closest('[data-ls]');if(r){listStatus=r.dataset.ls;setView('list');return}
-  const t=e.target.closest('.toprow');if(t)openModal(+t.dataset.id)};
+  const t=e.target.closest('.toprow,[data-tdo]');if(t)return openModal(+(t.dataset.id||t.dataset.tdo));
+  const sb=e.target.closest('[data-studio]');if(sb)openStudio(sb.dataset.studio)};
 
 /* ---------- shareable stats image: drawn on a canvas on the device in the current theme; nothing is uploaded ---------- */
 const loadImg=(src,cors)=>new Promise(res=>{if(!src)return res(null);const i=new Image();if(cors)i.crossOrigin='anonymous';
@@ -1524,6 +1560,7 @@ function openModal(id,keep){
         ${m.trailer?.site==='youtube'&&/^[\w-]{6,20}$/.test(m.trailer.id||'')?`<button class="btn" id="trl">▶ Trailer</button>`:''}
         <a class="btn" href="${esc(m.url)}" target="_blank" rel="noopener">AniList</a>
         ${m.idMal?`<a class="btn" href="https://myanimelist.net/anime/${m.idMal}" target="_blank" rel="noopener">MAL</a>`:''}
+        <button class="btn" id="partyBtn">🎉 Watch party</button>
         ${e?`<button class="btn danger" id="rm">Remove</button>`:''}
       </div>
     </div>`;
@@ -1544,6 +1581,7 @@ function openModal(id,keep){
   fillDetails(id);
   if(keepTop!=null)$('#modal').scrollTop=keepTop; // right away, not only after the details load
   if($('#studioBtn'))$('#studioBtn').onclick=()=>openStudio(m.studio,id);
+  $('#partyBtn').onclick=()=>openPartyMaker(id);
   if($('#rm'))$('#rm').onclick=()=>{const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId];saveProfiles()}saveList();closeModal();refreshCards();toast('Removed')};
 }
 function step(id,d){if(d>0)popAt($('#epp'));const pv=list[id]?.progress||0;bump(id,d);openModal(id,true);if(d>0&&(list[id]?.progress||0)>pv)askReaction(id,list[id].progress)}
@@ -1594,13 +1632,11 @@ function epsHTML(id,d){
   if(!n)return '<span class="hint">Episode count not known yet.</span>';
   const win=n>60&&!epAll,from=win?Math.max(1,prog-2):1,to=win?Math.min(n,from+59):n;
   let h=win?`<div class="hint" style="margin-bottom:6px">Showing episodes ${from}–${to} of ${n}</div>`:'';
-  if(keys.length){
-    for(let k=from;k<=to;k++){
-      const s=meta[k],t=(s?.title||'').replace(/^\s*Episode\s*\d+\s*[-–:]?\s*/i,'')||'Episode '+k;
-      h+=`<div class="ep ${k<=prog?'done':''}" data-ep="${k}">${pic(s&&okUrl(s.thumbnail)?s.thumbnail:'','epth')}<div class="epm" role="button" tabindex="0" aria-pressed="${k<=prog}"><b>${k}</b> ${esc(t)}</div>${s&&okUrl(s.url)?`<a class="epw" href="${esc(s.url)}" target="_blank" rel="noopener" title="Watch on ${esc(s.site)}">▶</a>`:''}<span class="tick">${k<=prog?'✓':''}</span></div>`;
-    }
-  }else{
-    h+='<div class="epg">';for(let k=from;k<=to;k++)h+=`<button class="epc ${k<=prog?'done':''}" data-ep="${k}" aria-pressed="${k<=prog}" aria-label="Episode ${k}">${k}</button>`;h+='</div>';
+  const art=m.banner||m.cover,eb=okUrl(art)?`--eb:url('${esc(art)}');`:'';
+  for(let k=from;k<=to;k++){
+    const s=meta[k],t=(s?.title||'').replace(/^\s*Episode\s*\d+\s*[-–:]?\s*/i,''),th=s&&okUrl(s.thumbnail)?s.thumbnail:'';
+    h+=`<div class="ep ${k<=prog?'done':''}" data-ep="${k}"><div class="epth" style="${eb}--ebp:${(k*37)%100}%"><span class="epn">${k}</span>${th?`<img src="${esc(th)}" loading="lazy" decoding="async" alt="" onerror="this.remove()">`:''}</div>
+      <div class="epm" role="button" tabindex="0" aria-pressed="${k<=prog}">${t?`<b>${k}</b> ${esc(t)}`:`<b>Episode ${k}</b>`}</div>${s&&okUrl(s.url)?`<a class="epw" href="${esc(s.url)}" target="_blank" rel="noopener" title="Watch on ${esc(s.site)}">▶</a>`:''}<span class="tick">${k<=prog?'✓':''}</span></div>`;
   }
   if(win)h+=`<button class="btn" id="epall" style="margin-top:8px">Show all ${n} episodes</button>`;
   return h;
@@ -2478,6 +2514,88 @@ function openTonight(){
   $('#tnShuf').onclick=()=>{tnShuf=true;openTonight()};
   $('.tnl').onclick=e=>{const r=e.target.closest('[data-tno]');if(r)openModal(+r.dataset.tno)};
 }
+
+/* ===== Phase 10: Today tile, taste radar, watch party links ===== */
+function todayTile(){
+  const t0=dayStart(Date.now()),t1=t0+DAY,now=Date.now();
+  const its=Object.values(list).filter(x=>x.next&&x.status!=='dropped'&&x.next.airingAt*1000>=t0&&x.next.airingAt*1000<t1).sort((a,b)=>a.next.airingAt-b.next.airingAt);
+  const eps=hist.filter(h=>h[0]>=t0).reduce((a,h)=>a+hEps(h),0);
+  const when=x=>{const at=x.next.airingAt;return at*1000<=now?'out now ✓':`<span data-cd="${at}">${cdLeft(at)}</span>`};
+  return `<div class="today" role="region" aria-label="Today">
+    <div class="td"><b>Today</b><span>${new Date().toLocaleDateString([],{weekday:'long',day:'numeric',month:'long'})}</span></div>
+    ${its.length?`<ul>${its.slice(0,5).map(x=>`<li data-tdo="${x.id}" role="button" tabindex="0">${pic(x.cover,'nuimg')}<div class="grow"><div class="t">${esc(titleOf(x))}</div>
+      <small>Ep ${x.next.episode} · ${new Date(x.next.airingAt*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small></div><span class="w">${when(x)}</span></li>`).join('')}</ul>`
+      :'<div class="tdn">No new episodes of your shows today.</div>'}
+    <div class="tdn">${eps?`You watched <b>${eps}</b> episode${eps>1?'s':''} today ${eps>=5?'🔥':'👏'}`:'Nothing watched yet today.'}</div></div>`;
+}
+function tasteHTML(d){
+  const g=d.genres.slice(0,8);if(g.length<3)return '';
+  const max=g[0][1],N=g.length,R=100,cx=150,cy=150,pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[cx+Math.cos(a)*r,cy+Math.sin(a)*r]};
+  const ring=f=>g.map((_,i)=>pt(i,R*f).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const poly=g.map(([,n],i)=>pt(i,R*(.15+.85*n/max)).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const labels=g.map(([l,n],i)=>{const[x,y]=pt(i,R+22),anc=Math.abs(x-cx)<8?'middle':x>cx?'start':'end';
+    return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="${anc}" font-size="12" font-weight="700" fill="var(--text)">${esc(l)}</text>`}).join('');
+  const st={};for(const x of d.started)if(x.studio)st[x.studio]=(st[x.studio]||0)+1;
+  const studios=Object.entries(st).sort((a,b)=>b[1]-a[1]).slice(0,5),smax=studios[0]?.[1]||1;
+  const line=`Mostly <b>${esc(g[0][0])}</b> and <b>${esc(g[1][0])}</b>, with a soft spot for <b>${esc(g[2][0])}</b>.`;
+  return `<h2 class="sec" style="margin-top:22px">Your taste</h2><div class="spanel"><div class="taste">
+    <svg viewBox="-40 -10 380 320" role="img" aria-label="Radar chart of your top genres: ${esc(g.map(([l,n])=>l+' '+n).join(', '))}">
+      ${[.25,.5,.75,1].map(f=>`<polygon points="${ring(f)}" fill="none" stroke="var(--line)" stroke-width="1"/>`).join('')}
+      ${g.map((_,i)=>{const[x,y]=pt(i,R);return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)"/>`}).join('')}
+      <polygon points="${poly}" fill="color-mix(in srgb,var(--accent) 35%,transparent)" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+      ${g.map(([,n],i)=>{const[x,y]=pt(i,R*(.15+.85*n/max));return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--accent)"/>`}).join('')}
+      ${labels}</svg>
+    <div><p class="tl">${line}</p>
+      ${studios.length?`<div class="hint" style="margin:10px 0 6px">Your studios</div>${studios.map(([n,c])=>`<div class="brow" data-studio="${esc(n)}" role="button" tabindex="0" title="${esc(n)}: ${c} show${c>1?'s':''}"><span class="bl">${esc(n)}</span><span class="bt"><i style="width:${c/smax*100}%"></i></span><span class="bv">${c}</span></div>`).join('')}`:''}
+    </div></div></div>`;
+}
+
+// Watch party: a link (#party=<id>.<ep>.<unix seconds>) that opens a shared countdown. Nothing personal is in it.
+function openPartyMaker(id){
+  const m=cache[id]||list[id];if(!m)return;const e=list[id];
+  const ep=m.next?.episode||(e?.progress||0)+1;
+  const def=m.next&&m.next.episode===ep&&m.next.airingAt*1000>Date.now()?new Date(m.next.airingAt*1000):(()=>{const d=new Date();d.setHours(20,0,0,0);if(d<new Date())d.setDate(d.getDate()+1);return d})();
+  const loc=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,16);
+  curModal=null;
+  $('#modal').innerHTML=`<div class="mbody" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
+    <h2 style="margin:6px 0 2px">🎉 Watch party</h2><div class="hint" style="margin:0">Make a countdown link for <b>${esc(titleOf(m))}</b> and send it to a friend.</div>
+    <div class="pform"><label>Episode<input type="number" id="pEp" min="1" value="${ep}"></label>
+      <label>Watch together at<input type="datetime-local" id="pAt" value="${loc(def)}"></label></div>
+    <div class="actions" style="margin-top:14px"><button class="btn primary" id="pMake">Share link</button><button class="btn" id="pPrev">Preview</button></div>
+    <div class="hint">${m.next&&m.next.episode===ep?'Set to when the episode airs. ':''}The link only holds the show, the episode and the time.</div></div>`;
+  $('#modal').scrollTop=0;$('#scrim').classList.add('open');document.body.style.overflow='hidden';$('#mclose').onclick=closeModal;
+  const link=()=>{const at=Math.floor(new Date($('#pAt').value).getTime()/1000),n=Math.max(1,+$('#pEp').value||1);return isFinite(at)?{url:`${HOSTED_URL}#party=${id}.${n}.${at}`,n,at}:null};
+  $('#pPrev').onclick=()=>{const l=link();if(l)openParty(id,l.n,l.at)};
+  $('#pMake').onclick=async()=>{const l=link();if(!l)return toast('Pick a time first');
+    const text=`Watch party: ${titleOf(m)} episode ${l.n}`;
+    try{if(navigator.share){await navigator.share({title:text,text,url:l.url});return}}catch(er){if(er?.name==='AbortError')return}
+    try{await navigator.clipboard.writeText(l.url);toast('Link copied')}catch{prompt('Copy this link',l.url)}};
+}
+async function openParty(id,ep,at){
+  let m=cache[id]||list[id];
+  if(!m){try{const r=await pubQ(`query($id:Int){Media(id:$id,type:ANIME){${MEDIA_FIELDS}}}`,{id});m=slim(r.Media);cache[id]=m}catch{return toast('Could not load that watch party')}}
+  curModal=null;const inL=!!list[id];
+  $('#modal').innerHTML=`<div class="mbody party" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
+    <small class="tnk">🎉 Watch party</small><div class="pcov" style="background-image:url('${esc(m.cover||'')}')"></div>
+    <h2 style="margin:0 0 2px">${esc(titleOf(m))}</h2><div class="hint" style="margin:0">Episode ${ep} · ${new Date(at*1000).toLocaleString([],{weekday:'long',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+    <div class="pcd" id="pcd" aria-live="polite">${cdLeft(at)}</div>
+    <div class="actions"><button class="btn primary" data-pa="open">Details</button>${inL?'':'<button class="btn" data-pa="add">+ My List</button>'}<button class="btn" data-pa="cal">Add to calendar</button></div></div>`;
+  $('#modal').scrollTop=0;$('#scrim').classList.add('open');document.body.style.overflow='hidden';
+  $('#mclose').onclick=()=>{closeModal();if(location.hash.startsWith('#party='))history.replaceState(null,'',location.pathname+location.search)};
+  let partied=false;const tick=()=>{const el=$('#pcd');if(!el)return clearInterval(iv);const left=at-Date.now()/1000;
+    if(left<=0){el.textContent="It's time! 🎉";el.classList.add('live');if(!partied&&left>-600){partied=true;fxShow(`<span class="fxk">Watch party</span><b class="fxt">${esc(titleOf(m))} · episode ${ep}</b><small class="fxs">Press play together!</small>`,null,3200)}}
+    else el.textContent=cdLeft(at)};
+  const iv=setInterval(tick,1000);tick();
+  $('#modal .actions').onclick=ev=>{const a=ev.target.closest('[data-pa]')?.dataset.pa;
+    if(a==='open')openModal(id);
+    else if(a==='add'){addToList(id,'planning');refreshCards();toast('Added to Plan to watch');ev.target.remove()}
+    else if(a==='cal'){const t=d=>new Date(d).toISOString().replace(/[-:]/g,'').replace(/\.\d+/,''),st=at*1000;
+      const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Kuro//Watch party//EN','BEGIN:VEVENT',`UID:kuro-party-${id}-${ep}-${at}@kuro-watchlist`,`DTSTAMP:${t(Date.now())}`,`DTSTART:${t(st)}`,`DTEND:${t(st+(m.duration||24)*60000)}`,
+        `SUMMARY:Watch party: ${titleOf(m).replace(/[,;\\]/g,' ')} ep ${ep}`,`URL:${HOSTED_URL}#party=${id}.${ep}.${at}`,'END:VEVENT','END:VCALENDAR'].join('\r\n');
+      const a2=document.createElement('a');a2.href=URL.createObjectURL(new Blob([ics+'\r\n'],{type:'text/calendar'}));a2.download='kuro-watch-party.ics';a2.click();setTimeout(()=>URL.revokeObjectURL(a2.href),5000)}};
+}
+function checkPartyHash(){const mt=/^#party=(\d+)\.(\d+)\.(\d+)$/.exec(location.hash);if(mt)openParty(+mt[1],+mt[2],+mt[3])}
+addEventListener('hashchange',checkPartyHash);setTimeout(checkPartyHash,800);
 
 /* ===== Phase 6: celebrations, seasonal effects ===== */
 const partyOn=()=>settings.party!==false;
