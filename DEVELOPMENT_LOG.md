@@ -371,3 +371,8 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html`: the hero and Top 10 both showed AniList trending (owner found it redundant). Top 10's first tab is now **This season**: the best-rated shows of the current anime season (`seasonNow()`), at least 3,000 AniList users, `T10_SEASON_Q`, fetched through `fetchTop('SEASON')`. The hero still uses `fetchTop('TRENDING_DESC')`. A saved `kuro.t10Tab` of `TRENDING_DESC` falls back to This season (`T10_TABS`).
 - `sw.js`: cache bumped to `kuro-v25`.
 - Tested on localhost: with the old saved tab, This season is selected and lists Fall 2026's top 10 (Black Clover Season 2 ★ 8.8 first); hero still has 6 trending slides. No console errors.
+
+### 2026-11-27 — Bigger header logo
+- `index.html` (CSS): the header logo was hard to make out at 32 px. Now 46 px on desktop (40 px on phones) with a thin accent ring and soft shadow; the "Kuro" wordmark is 21 px (20 px on phones). Header grows from about 67 to 71 px.
+- `sw.js`: cache bumped to `kuro-v26`.
+- Tested on localhost at desktop and 375 px: logo 46 / 40 px, no sideways scroll.
