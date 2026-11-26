@@ -825,6 +825,7 @@ nav.bottom{display:none}
       <b id="selN">0 selected</b>
       <button class="btn sm" id="selAll">Select all</button>
       <select id="selSt" aria-label="Move selected to"><option value="">Move to…</option></select>
+      <select id="selYr" aria-label="Set the year you watched the selected shows"><option value="">Year watched…</option></select>
       <button class="btn sm danger" id="selRm">Remove</button>
       <button class="btn sm" id="selDone">Done</button>
     </div>
@@ -1210,6 +1211,13 @@ function redrawList(){if(view==='list')renderList();else if(view==='stats')drawS
    undefined = not known (never sent, so AniList's value is kept), null = cleared. */
 const pad2=n=>String(n).padStart(2,'0');
 function isoDay(t){const d=new Date(t);return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
+// "Watched in <year>": for shows watched before you tracked them. Saved as a year-only date (AniList keeps partial dates).
+function yearOpts(sel){let o='';for(let y=new Date().getFullYear();y>=1960;y--)o+=`<option value="${y}"${y===sel?' selected':''}>${y}</option>`;return o}
+function setYear(x,y){
+  if(x.status==='completed'){if(!(x.completedAt||'').startsWith(y))x.completedAt=y;if(!x.startedAt||+x.startedAt.slice(0,4)>+y)x.startedAt=y}
+  else if(!(x.startedAt||'').startsWith(y))x.startedAt=y;
+  x.updated=Date.now();
+}
 function fdStr(f){return f?.year?[f.year,f.month&&pad2(f.month),f.month&&f.day&&pad2(f.day)].filter(Boolean).join('-'):null}
 function strFd(v){return v?{year:+v.slice(0,4),month:v.length>=7?+v.slice(5,7):null,day:v.length>=10?+v.slice(8,10):null}:{year:null,month:null,day:null}}
 // filled in automatically like AniList does: started on the first watched episode, finished on completing;
@@ -1300,6 +1308,13 @@ function markSel(){
 }
 function setSel(on){selMode=on;sel.clear();markSel();if(on)toast('Tap shows to select them')}
 $('#selSt').insertAdjacentHTML('beforeend',STATUSES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(''));
+$('#selYr').insertAdjacentHTML('beforeend',yearOpts());
+$('#selYr').onchange=e=>{const y=e.target.value;e.target.value='';if(!y||!sel.size)return;
+  const ids=[...sel].filter(id=>list[id]&&list[id].status!=='planning'),skip=sel.size-ids.length;
+  if(!ids.length)return toast('Plan to watch shows have no watched year');
+  const prev=ids.map(id=>({id,startedAt:list[id].startedAt,completedAt:list[id].completedAt}));
+  for(const id of ids)setYear(list[id],y);saveList();sel.clear();refreshCards();
+  toast(`${ids.length} show${ids.length>1?'s':''} set to ${y}${skip?` · ${skip} on Plan to watch skipped`:''}`,()=>{for(const q of prev){const x=list[q.id];if(x)Object.assign(x,{startedAt:q.startedAt,completedAt:q.completedAt,updated:Date.now()})}saveList();refreshCards()})};
 $('#lsel').onclick=()=>setSel(!selMode);
 $('#selDone').onclick=()=>setSel(false);
 $('#selAll').onclick=()=>{const ids=selItems().map(selId);if(sel.size===ids.length)sel.clear();else ids.forEach(i=>sel.add(i));markSel()};
@@ -1398,6 +1413,7 @@ function drawOverview(){
       ${formats.length?`<div><h2 class="sec" style="margin-top:22px">Formats</h2><div class="spanel">${bars(formats)}</div></div>`:''}
     </div>
     ${tasteHTML(d)}
+    ${yearsHTML(d)}
     ${hist}
     <div class="hint" style="margin-top:14px">Genres, formats and time count shows you have started (everything except Plan to watch). Rewatches count your current progress once.</div>`;
 }
@@ -1406,7 +1422,9 @@ $('#stats').onclick=e=>{if(e.target.closest('#stShare'))return openShare();
   if(e.target.id==='diaryMore'){diaryDays+=30;drawDiary();return}
   const r=e.target.closest('[data-ls]');if(r){listStatus=r.dataset.ls;setView('list');return}
   const t=e.target.closest('.toprow,[data-tdo]');if(t)return openModal(+(t.dataset.id||t.dataset.tdo));
-  const sb=e.target.closest('[data-studio]');if(sb)openStudio(sb.dataset.studio)};
+  const sb=e.target.closest('[data-studio]');if(sb)return openStudio(sb.dataset.studio);
+  const wy=e.target.closest('[data-wyr]');if(wy)return openWrapped(+wy.dataset.wyr);
+  if(e.target.closest('#setYears')){listStatus='completed';setView('list');setSel(true);toast('Select shows, then pick "Year watched…"')}};
 
 /* ---------- shareable stats image: drawn on a canvas on the device in the current theme; nothing is uploaded ---------- */
 const loadImg=(src,cors)=>new Promise(res=>{if(!src)return res(null);const i=new Image();if(cors)i.crossOrigin='anonymous';
@@ -1547,9 +1565,10 @@ function openModal(id,keep){
         <div class="dates">
           <label>Started<input type="date" id="dStart" value="${e.startedAt?.length===10?e.startedAt:''}" max="${isoDay(Date.now())}"></label>
           <label>Finished<input type="date" id="dDone" value="${e.completedAt?.length===10?e.completedAt:''}" max="${isoDay(Date.now())}"></label>
+          <label>Watched in<select id="dYear" aria-label="Year you watched it (if you don't know the exact date)"><option value="">Year…</option>${yearOpts(+(e.completedAt||e.startedAt||'').slice(0,4))}${e.startedAt||e.completedAt?'<option value="x">Clear dates</option>':''}</select></label>
           <div class="rew"><span>Rewatched</span><button id="rwm" aria-label="One rewatch fewer">−</button><b id="rwn" aria-live="polite">${e.repeat||0}×</b><button id="rwp" aria-label="One more rewatch">+</button></div>
         </div>
-        ${[e.startedAt,e.completedAt].some(v=>v&&v.length<10)?`<div class="hint">AniList only has part of a date (${esc([e.startedAt,e.completedAt].filter(v=>v&&v.length<10).join(', '))}); pick a full date to replace it.</div>`:''}
+        ${[e.startedAt,e.completedAt].some(v=>v&&v.length<10)?`<div class="hint">Year only (${esc([...new Set([e.startedAt,e.completedAt].filter(v=>v&&v.length<10))].join(', '))}). Pick a full date if you know it.</div>`:''}
         <div class="hint">Filled in automatically when you start and finish${me()?', and saved to your AniList entry':''}.</div>`:''}
       <h3 class="sh">Where to watch</h3>
       <div class="actions" id="wtwb"><div class="skel lsk"></div></div>
@@ -1573,6 +1592,7 @@ function openModal(id,keep){
     $$('#rate button').forEach(b=>b.classList.toggle('on',+b.dataset.sc<=e.myScore/10));toast(e.myScore?`Rated ${n}/10`:'Rating cleared')};
   if($('#dStart')){const setD=(k,v)=>{e[k]=v||null;e.updated=Date.now();saveList()};
     $('#dStart').onchange=ev=>setD('startedAt',ev.target.value);$('#dDone').onchange=ev=>setD('completedAt',ev.target.value);
+    $('#dYear').onchange=ev=>{const y=ev.target.value;if(!y)return;if(y==='x'){e.startedAt=e.completedAt=null;e.updated=Date.now()}else setYear(e,y);saveList();openModal(id,true);toast(y==='x'?'Dates cleared':`Watched in ${y}`)};
     const rw=d=>{e.repeat=Math.max(0,(e.repeat||0)+d);e.updated=Date.now();saveList();$('#rwn').textContent=e.repeat+'×'};
     $('#rwp').onclick=()=>rw(1);$('#rwm').onclick=()=>rw(-1)}
   if($('#notes')){let nt;$('#notes').oninput=ev=>{clearTimeout(nt);nt=setTimeout(()=>{e.notes=ev.target.value;e.updated=Date.now();saveList()},700)}}
@@ -2569,6 +2589,15 @@ function todayTile(){
       :'<div class="tdn">No new episodes of your shows today.</div>'}
     <div class="tdn">${eps?`You watched <b>${eps}</b> episode${eps>1?'s':''} today ${eps>=5?'🔥':'👏'}`:'Nothing watched yet today.'}</div></div>`;
 }
+function yearsHTML(d){
+  const c={};let none=0;for(const x of d.all)if(x.status==='completed'){const y=+(x.completedAt||x.startedAt||'').slice(0,4);if(y)c[y]=(c[y]||0)+1;else none++}
+  const rows=Object.entries(c).sort((a,b)=>b[0]-a[0]),max=Math.max(1,...rows.map(r=>r[1]));
+  if(!rows.length&&!none)return '';
+  return `<h2 class="sec" style="margin-top:22px">Your years</h2><div class="spanel">
+    ${rows.map(([y,n])=>`<div class="brow" data-wyr="${y}" role="button" tabindex="0" title="${y}: ${n} completed · open ${y} Wrapped"><span class="bl">${y}</span><span class="bt"><i style="width:${n/max*100}%"></i></span><span class="bv">${n}</span></div>`).join('')}
+    ${none?`<div class="hint" style="margin:10px 4px 4px">${none} completed show${none>1?'s have':' has'} no year yet. Watched them before you tracked? <button class="link" id="setYears">Set years</button></div>`:''}
+    ${rows.length?'<div class="hint" style="margin:6px 4px 2px">Completed shows per year. Tap a year for its Wrapped.</div>':''}</div>`;
+}
 function tasteHTML(d){
   const g=d.genres.slice(0,8);if(g.length<3)return '';
   const max=g[0][1],N=g.length,R=100,cx=150,cy=150,pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[cx+Math.cos(a)*r,cy+Math.sin(a)*r]};
@@ -2960,12 +2989,15 @@ const PERSONA={Action:['Adrenaline junkie','Big fights and bigger moments, you a
   Horror:['Fearless','Lights off, volume up.'],Psychological:['Mind bender','The twistier, the better.'],Supernatural:['Spirit seeker','Ghosts, curses and things that go bump.'],
   Mecha:['Ace pilot','Giant robots. Need we say more?'],Music:['Idol fan','Every opening on repeat.'],Thriller:['Edge-of-seat','Cliffhangers are your cardio.'],
   'Mahou Shoujo':['Magical guardian','Transformation sequences, never skipped.']};
-function wrapYears(){const ys=new Set();for(const x of Object.values(list))if(x.status!=='planning')ys.add(new Date(x.updated||x.added||Date.now()).getFullYear());
+function wrapYears(){const ys=new Set();for(const x of Object.values(list))if(x.status!=='planning'){const y=+(x.completedAt||x.startedAt||'').slice(0,4);ys.add(y||new Date(x.updated||x.added||Date.now()).getFullYear())}
   for(const h of hist)ys.add(new Date(h[0]).getFullYear());ys.add(new Date().getFullYear());return[...ys].sort((a,b)=>b-a)}
 function wrapData(Y){
   const all=Y==='all',start=all?0:new Date(Y,0,1).getTime(),end=all?Infinity:new Date(Y+1,0,1).getTime();
   const H=hist.filter(h=>h[0]>=start&&h[0]<end),hIds=new Set(H.map(h=>h[1]));
-  const shows=Object.values(list).filter(x=>x.status!=='planning'&&(all||hIds.has(x.id)||((x.updated||0)>=start&&(x.updated||0)<end)||[x.startedAt,x.completedAt].some(v=>v&&+v.slice(0,4)===Y)));
+  const yr=v=>v?+v.slice(0,4):0,thisY=new Date().getFullYear();
+  const inY=x=>{const a=yr(x.startedAt)||yr(x.completedAt),b=yr(x.completedAt)||(x.status==='completed'?a:thisY);
+    return a?Y>=a&&Y<=b:(x.updated||0)>=start&&(x.updated||0)<end};
+  const shows=Object.values(list).filter(x=>x.status!=='planning'&&(all||hIds.has(x.id)||inY(x)));
   // the day-by-day history only counts when it covers the whole year; otherwise use the shows you touched that year
   const full=!all&&hist.length&&hist[0][0]<=start;
   let eps=0,mins=0;const per=new Map();
