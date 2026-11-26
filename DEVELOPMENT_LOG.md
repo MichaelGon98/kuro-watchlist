@@ -381,3 +381,8 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html` (CSS): removed the accent ring and shadow around the logo (owner didn't like the outline). The icon has its own thin blue rim at the edge; `clip-path:circle(45.5%)` trims it. Desktop: 66 px image (about 60 px visible), "Kuro" 24 px, header about 83 px tall (was 71). Phones: 44 px image (about 40 px visible), same header height as before.
 - `sw.js`: cache bumped to `kuro-v27`.
 - Tested on localhost at 1024 px and 375 px: no ring, no sideways scroll.
+
+### 2026-11-27 — Header logo keeps its own rim
+- `index.html` (CSS): the owner wants the icon's own thin blue rim kept; only the ring Kuro added should go. Removed the `clip-path` from the previous change. Logo is now a plain round 60 px image on desktop (header about 85 px) and 40 px on phones, with no added outline or shadow.
+- `sw.js`: cache bumped to `kuro-v28`.
+- Tested on localhost: no `clip-path`, no `box-shadow`, rim visible.
