@@ -222,10 +222,10 @@ body:has(#v-list.selmode) #toast{bottom:calc(var(--nav-h) + 90px)}
 .mcover{width:130px;aspect-ratio:2/3;border-radius:12px;background:var(--card2) center/cover;flex:none;box-shadow:0 10px 30px #000a}
 .mtitle{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:78px 0 4px}
 .msub{color:var(--muted);font-size:13px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:18px 0}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.stat small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
-.stat b{font-size:15px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin:18px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.stat small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat b{display:block;font-size:15px;line-height:1.3;overflow-wrap:anywhere;hyphens:auto}
 .desc{color:var(--desc);max-height:150px;overflow:auto;margin:10px 0}
 .seg{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
 .seg button{padding:8px 13px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:13px}
@@ -361,6 +361,32 @@ details.hint summary{cursor:pointer}
 .t10 .card:hover{transform:none}
 .t10:first-child .rk{--rkc:#f5c542}
 .t10ld{color:var(--muted);font-size:13px;padding:30px 0}
+/* Episode reactions */
+.rxbar{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 76px);z-index:79;transform:translateX(-50%);display:flex;align-items:center;gap:2px;
+  background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 12px;box-shadow:0 12px 34px #0009;animation:rxin .35s cubic-bezier(.2,1.3,.4,1) both;max-width:calc(100vw - 24px)}
+.rxbar.out{opacity:0;transform:translate(-50%,10px);transition:.25s}
+@keyframes rxin{from{opacity:0;transform:translate(-50%,16px) scale(.9)}}
+.rxbar span{font-size:13px;font-weight:700;color:var(--muted);margin-right:4px;white-space:nowrap}
+.rxbar button{width:38px;height:38px;border-radius:50%;font-size:21px;line-height:1;display:grid;place-items:center;transition:transform .15s,background .15s;flex:none}
+.rxbar button:hover{transform:scale(1.2);background:var(--card)}
+.rxbar .rxx{font-size:14px;color:var(--muted)}
+.drx{margin-left:4px;letter-spacing:1px}
+/* Franchise timeline */
+.frl{display:flex;flex-direction:column;gap:6px}
+.frrow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 10px 6px 6px;cursor:pointer}
+.frrow:hover{border-color:var(--hover)}
+.frrow.cur{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--card));cursor:default}
+.frrow .nuimg{width:34px;height:48px;border-radius:6px;flex:none}
+.frrow .grow{flex:1;min-width:0}.frrow .ctitle{font-size:13.5px;-webkit-line-clamp:1}
+.frn{width:24px;height:24px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;background:var(--card2);color:var(--muted)}
+.frrow.done .frn{background:#16a34a;color:#fff}
+.frhere{font-size:11px;font-weight:800;color:var(--accent);white-space:nowrap}
+/* What to watch tonight */
+.tnl{margin-top:14px}
+.tnl .drow{cursor:pointer}
+.tnk{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.tnl .drow .ctitle{-webkit-line-clamp:2}
+.tnl .dn{white-space:nowrap;font-size:13px}
 /* Live airing countdown */
 .cd{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;line-height:1.5;color:#fff;background:rgba(11,11,18,.72);backdrop-filter:blur(6px);
   border:1px solid color-mix(in srgb,var(--accent) 60%,transparent);padding:1px 8px;border-radius:999px;margin-bottom:6px;font-variant-numeric:tabular-nums;white-space:nowrap;max-width:100%;overflow:hidden}
@@ -1491,6 +1517,7 @@ function openModal(id,keep){
       <div class="actions" id="wtwb"><div class="skel lsk"></div></div>
       <h3 class="sh">Episodes <span class="hint" style="text-transform:none;letter-spacing:0">· tap an episode to mark it watched</span></h3>
       <div id="eps"><div class="skel lsk"></div><div class="skel lsk"></div><div class="skel lsk"></div></div>
+      <div id="frz"></div>
       <h3 class="sh">More</h3>
       <div class="actions">
         ${hasProvider()?`<a class="btn primary" href="${esc(watchUrl(m))}" target="_blank" rel="noopener">▶ Watch</a>`:''}
@@ -1519,7 +1546,7 @@ function openModal(id,keep){
   if($('#studioBtn'))$('#studioBtn').onclick=()=>openStudio(m.studio,id);
   if($('#rm'))$('#rm').onclick=()=>{const old=list[id];delete list[id];if(me()&&old.entryId){me().pendingDel=[...(me().pendingDel||[]),old.entryId];saveProfiles()}saveList();closeModal();refreshCards();toast('Removed')};
 }
-function step(id,d){if(d>0)popAt($('#epp'));bump(id,d);openModal(id,true)}
+function step(id,d){if(d>0)popAt($('#epp'));const pv=list[id]?.progress||0;bump(id,d);openModal(id,true);if(d>0&&(list[id]?.progress||0)>pv)askReaction(id,list[id].progress)}
 // Change episode progress by d. Going up: the last episode completes the show; a planned/paused/dropped show becomes Watching.
 // Returns the previous {status,progress} so the change can be undone.
 function bump(id,d){
@@ -1539,11 +1566,12 @@ function plusOne(id){
   const prev=bump(id,1),e=list[id];if(!prev)return;
   const done=e.status==='completed'&&prev.status!=='completed';
   toast(done?`Finished · ${titleOf(e)}`:`Ep ${e.progress} watched · ${titleOf(e)}`,()=>{unlogWatch(id,prev.progress);Object.assign(e,prev,{updated:Date.now()});saveList();refreshCards()});
+  if(e.progress>prev.progress)askReaction(id,e.progress);
 }
 function closeModal(){applyPrefs()/* drops an unsaved theme preview */;$('#modal').classList.remove('wrm');$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
 
 /* where to watch + episodes (fetched on open, not stored) */
-const DETAIL_Q=`query($id:Int){Media(id:$id,type:ANIME){episodes nextAiringEpisode{episode} externalLinks{site url type color isDisabled} streamingEpisodes{title thumbnail url site}}}`;
+const DETAIL_Q=`query($id:Int){Media(id:$id,type:ANIME){episodes nextAiringEpisode{episode} externalLinks{site url type color isDisabled} streamingEpisodes{title thumbnail url site} relations{edges{relationType node{id type}}}}}`;
 async function loadDetails(id){
   if(details[id])return details[id];
   try{
@@ -1582,6 +1610,7 @@ function fillDetails(id){
     if(curModal!==id||!$('#eps'))return;
     if(!d){$('#wtwb').innerHTML=$('#eps').innerHTML='<span class="hint">Couldn’t load details. Check your connection.</span>';return}
     $('#wtwb').innerHTML=wtwHTML(d);$('#eps').innerHTML=epsHTML(id,d);dlgRefocus();
+    if((d.relations?.edges||[]).some(e=>e.node?.type==='ANIME'&&FR_REL.has(e.relationType)))drawFranchise(id);
     if(keepTop!=null)$('#modal').scrollTop=keepTop;
   });
 }
@@ -1679,6 +1708,7 @@ function openSettings(){
     <div class="hint">Optional. Turning this off only hides them; nothing is deleted.</div>
     <label>Effects</label>
     <label class="check"><input type="checkbox" id="partyOn" ${settings.party!==false?'checked':''}> Celebrations: confetti when you finish a show, badge reveals, the +1 pop</label>
+    <label class="check"><input type="checkbox" id="reactOn" ${settings.react!==false?'checked':''}> Ask for a quick emoji reaction after +1 (saved in your diary and Wrapped)</label>
     <select id="seasonSel" aria-label="Seasonal effect" style="margin-top:8px">${[['auto',`Seasonal effect: auto (now ${SFX_KINDS[autoFx()]})`],...Object.entries(SFX_KINDS).map(([k,l])=>[k,'Seasonal effect: '+l]),['off','Seasonal effect: off']]
       .map(([k,l])=>`<option value="${k}" ${(settings.season||'auto')===k?'selected':''}>${l}</option>`).join('')}</select>
     <div class="hint">Auto matches your theme (Sakura → petals, Forest → fireflies, Sunset → leaves, Ocean → snow); other themes follow Japan's seasons: snow Dec–Feb, sakura Mar–May, fireflies Jun–Aug, leaves Sep–Nov. Effects stay off if your device asks for reduced motion.</div>
@@ -1694,7 +1724,7 @@ function openSettings(){
     <div class="actions" style="margin-top:20px"><button class="btn primary" id="save">Save</button></div></div>`;
   $('#scrim').classList.add('open');
   $('#mclose').onclick=closeModal;
-  $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;settings.rate=$('#rateOn').checked;settings.party=$('#partyOn').checked;settings.season=$('#seasonSel').value;applySeason();refreshCards();const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
+  $('#save').onclick=()=>{const pv=$('#prov').value.trim();if(pv&&!/^https?:\/\/.+/i.test(pv))return toast('The Watch link must start with https://');settings.provider=pv;settings.rate=$('#rateOn').checked;settings.party=$('#partyOn').checked;settings.react=$('#reactOn').checked;settings.season=$('#seasonSel').value;applySeason();refreshCards();const c=$('#cid')?.value.trim();if(c&&/^\d+$/.test(c))settings.clientId=c;else if(c==='')delete settings.clientId;saveSettings();closeModal();toast('Saved')};
   wireAlertsUI();wireOffline();
   $('#conn').onclick=()=>{const t=$('#cid')?.value.trim();if(t&&/^\d+$/.test(t))settings.clientId=t;else if(t==='')delete settings.clientId;saveSettings();
     const c=clientId();if(!c)return toast('Enter the numeric AniList Client ID (see AniList app setup)');
@@ -2135,8 +2165,8 @@ const seasonName=(s,y)=>s[0]+s.slice(1).toLowerCase()+' '+y;
 const seasonNow=(off=0)=>{const d=new Date();let i=Math.floor(d.getMonth()/3)+off,y=d.getFullYear();y+=Math.floor(i/4);i=((i%4)+4)%4;return{season:SEASONS[i],year:y}};
 let sn=seasonNow(),snCache={};
 function drawSeasonLinks(){const a=seasonNow(),b=seasonNow(1);
-  $('#seasonLinks').innerHTML=`<button class="chip" data-sn="0">📅 ${seasonName(a.season,a.year)} chart</button><button class="chip" data-sn="1">🔮 ${seasonName(b.season,b.year)} preview</button>`}
-$('#seasonLinks').onclick=e=>{const b=e.target.closest('[data-sn]');if(b){sn=seasonNow(+b.dataset.sn);setView('season')}};
+  $('#seasonLinks').innerHTML=`<button class="chip" data-sn="0">📅 ${seasonName(a.season,a.year)} chart</button><button class="chip" data-sn="1">🔮 ${seasonName(b.season,b.year)} preview</button>${Object.keys(list).length?'<button class="chip" data-tonight>🌙 What to watch tonight</button>':''}`}
+$('#seasonLinks').onclick=e=>{if(e.target.closest('[data-tonight]'))return openTonight();const b=e.target.closest('[data-sn]');if(b){sn=seasonNow(+b.dataset.sn);setView('season')}};
 $('#snBack').onclick=()=>setView('discover');
 const snMove=d=>{let i=SEASONS.indexOf(sn.season)+d,y=sn.year;if(i<0){i=3;y--}if(i>3){i=0;y++}sn={season:SEASONS[i],year:y};loadSeason()};
 $('#snPrev').onclick=()=>snMove(-1);$('#snNext').onclick=()=>snMove(1);
@@ -2367,6 +2397,87 @@ async function pullRefresh(){
     try{await pullRefresh();toast('Updated')}catch(er){toast(er.message||'Could not refresh')}
     ind.classList.remove('spin','show');busy=false});
 })();
+
+/* ===== Phase 9: episode reactions, franchise timeline, what to watch tonight ===== */
+const REACTS=['🔥','😭','😂','🤯','😍','😴'];
+function askReaction(id,ep){
+  if(settings.react===false||!list[id])return;
+  document.querySelector('.rxbar')?.remove();
+  const b=document.createElement('div');b.className='rxbar';b.setAttribute('role','group');b.setAttribute('aria-label',`React to episode ${ep} of ${titleOf(list[id])}`);
+  b.innerHTML=`<span>Ep ${ep}?</span>${REACTS.map(r=>`<button type="button" data-rx="${r}" aria-label="React ${r}">${r}</button>`).join('')}<button type="button" class="rxx" aria-label="No reaction">✕</button>`;
+  document.body.appendChild(b);let t;
+  const close=()=>{clearTimeout(t);b.classList.add('out');setTimeout(()=>b.remove(),260)};t=setTimeout(close,8000);
+  b.addEventListener('pointerenter',()=>clearTimeout(t));b.addEventListener('pointerleave',()=>{t=setTimeout(close,3000)});
+  b.onclick=e=>{const r=e.target.closest('[data-rx]');if(r){setReaction(id,ep,r.dataset.rx);popAt(r,r.dataset.rx)}if(r||e.target.closest('.rxx'))close()};
+}
+function setReaction(id,ep,r){
+  for(let i=hist.length-1;i>=0;i--){const h=hist[i];if(h[1]==id&&h[2]<=ep&&ep<=h[3]){h[4]=r;saveHist();if(view==='stats')drawStats();return}}
+}
+
+const FR_REL=new Set(['PREQUEL','SEQUEL','PARENT','SIDE_STORY']);
+const FR_Q=`query($ids:[Int]){Page(perPage:50){media(id_in:$ids,type:ANIME){startDate{year month day} relations{edges{relationType node{id type}}} ${MEDIA_FIELDS}}}}`;
+const frCache={};
+async function loadFranchise(id){ // walk prequels/sequels/side stories (max 40 entries), then sort by release date
+  if(frCache[id])return frCache[id];
+  const nodes=new Map(),seen=new Set([id]);let front=[id];
+  for(let lv=0;lv<8&&front.length;lv++){
+    const pg=(await pubQ(FR_Q,{ids:front})).Page;front=[];
+    for(const x of pg.media){const m=slim(x);cache[m.id]=cache[m.id]||m;nodes.set(m.id,{m,sd:x.startDate||{}});
+      for(const e of x.relations?.edges||[])if(e.node?.type==='ANIME'&&FR_REL.has(e.relationType)&&!seen.has(e.node.id)&&seen.size<40){seen.add(e.node.id);front.push(e.node.id)}}
+  }
+  const k=o=>(o.sd.year||9999)*1e4+(o.sd.month||12)*100+(o.sd.day||31);
+  const out=[...nodes.values()].sort((a,b)=>k(a)-k(b));for(const o of out)frCache[o.m.id]=out;return out;
+}
+async function drawFranchise(id){
+  if(!$('#frz'))return;
+  if(!frCache[id])$('#frz').innerHTML=`<h3 class="sh">Franchise · watch order</h3><div class="skel lsk"></div><div class="skel lsk"></div>`;
+  let out=null;try{out=await loadFranchise(id)}catch{}
+  if(curModal!==id||!$('#frz'))return;
+  if(!out||out.length<2){$('#frz').innerHTML='';return}
+  const seenN=out.filter(o=>list[o.m.id]?.status==='completed').length;
+  $('#frz').innerHTML=`<h3 class="sh">Franchise · watch order <span class="hint" style="text-transform:none;letter-spacing:0">· ${seenN} of ${out.length} seen</span></h3>
+    <div class="frl">${out.map((o,i)=>{const m=o.m,e=list[m.id],cur=m.id===id,done=e?.status==='completed';
+      const st=e?(done?'Completed':ACTIVE.includes(e.status)?`Watching · ep ${e.progress||0}`:(STATUSES.find(s=>s[0]===e.status)||[0,''])[1]):'Not on your list';
+      const meta=[m.format?.replace('_',' '),o.sd.year||'TBA',m.episodes?m.episodes+' ep':null].filter(Boolean).join(' · ');
+      return `<div class="frrow${cur?' cur':''}${done?' done':''}"${cur?'':` data-fr="${m.id}" role="button" tabindex="0"`}><span class="frn">${done?'✓':i+1}</span>${pic(m.cover,'nuimg')}
+        <div class="grow"><div class="ctitle">${esc(titleOf(m))}</div><div class="cmeta">${esc(meta)} · ${esc(st)}</div></div>${cur?'<span class="frhere">You are here</span>':''}</div>`}).join('')}</div>`;
+}
+document.addEventListener('click',e=>{const r=e.target.closest('[data-fr]');if(r)openModal(+r.dataset.fr)});
+
+let tnT=60,tnShuf=false;
+function tonightPicks(T){
+  const now=Date.now(),cont=[],start=[];
+  for(const x of Object.values(list)){
+    if(x.mstatus==='NOT_YET_RELEASED')continue;
+    const dur=x.duration||24,tot=x.episodes||0,aired=x.next&&x.next.airingAt*1000>now?x.next.episode-1:(tot||(x.next?x.next.episode-1:0));
+    const fit=n=>Math.max(1,Math.min(n,Math.floor(T*1.1/dur)));
+    if(ACTIVE.includes(x.status)||x.status==='paused'){const left=aired-(x.progress||0);if(left<=0)continue;const n=fit(left);if(n*dur>T*1.25)continue;
+      cont.push({x,kind:'Continue',from:(x.progress||0)+1,n,mins:n*dur,fin:tot&&(x.progress||0)+n>=tot,sc:(n*dur)/T+(now-(x.updated||0)<7*DAY?.6:0)+(x.status==='paused'?-.3:0)})}
+    else if(x.status==='planning'&&aired){
+      if(x.format==='MOVIE'){if(dur>T*1.15)continue;start.push({x,kind:'Movie night',from:1,n:1,mins:dur,fin:true,sc:dur/T+.2})}
+      else{const n=fit(aired);if(n*dur>T*1.25)continue;start.push({x,kind:'Start something new',from:1,n,mins:n*dur,fin:tot&&n>=tot,sc:(n*dur)/T+(tot&&n>=tot?.4:0)+(x.score||0)/400})}}
+  }
+  const jit=o=>({...o,sc:o.sc+(tnShuf?Math.random()*1.2:0)});
+  const a=cont.map(jit).sort((p,q)=>q.sc-p.sc).slice(0,3),b=start.map(jit).sort((p,q)=>q.sc-p.sc).slice(0,3);
+  return[...a,...b];
+}
+function openTonight(){
+  curModal=null;
+  const its=tonightPicks(tnT),opts=[[30,'30 min'],[60,'1 hour'],[120,'2 hours'],[180,'3 hours+']];
+  $('#modal').innerHTML=`<div class="mbody" style="margin-top:0;padding-top:22px"><button class="close" id="mclose" aria-label="Close" style="top:10px">✕</button>
+    <h2 style="margin:6px 0 2px">🌙 What to watch tonight</h2><div class="hint" style="margin:0">How much time do you have?</div>
+    <div class="seg" id="tnSeg" role="group" aria-label="Time you have" style="margin-top:12px">${opts.map(([v,l])=>`<button data-tn="${v}" class="${v===tnT?'on':''}" aria-pressed="${v===tnT}">${l}</button>`).join('')}</div>
+    <div class="tnl">${its.length?its.map(o=>{const to=o.from+o.n-1,eps=o.kind==='Movie night'?(o.x.format==='MOVIE'?'Movie':'1 episode'):o.n===1?`Episode ${o.from}`:`Episodes ${o.from}–${to}`;
+      return `<div class="drow" data-tno="${o.x.id}" role="button" tabindex="0">${pic(o.x.cover,'nuimg')}<div class="grow"><div class="tnk">${o.kind}</div><div class="ctitle">${esc(titleOf(o.x))}</div>
+        <div class="cmeta">${eps}${o.fin&&o.kind!=='Movie night'?' · finishes it 🏁':''}</div></div><span class="dn">${fmtTime(o.mins)}</span></div>`}).join('')
+      :`<div class="empty">Nothing fits that time.<br><span class="hint">Try more time, or add shows to Plan to watch.</span></div>`}</div>
+    <div class="actions" style="margin-top:12px"><button class="btn" id="tnShuf">↻ Shuffle</button></div></div>`;
+  $('#modal').scrollTop=0;$('#scrim').classList.add('open');document.body.style.overflow='hidden';
+  $('#mclose').onclick=closeModal;
+  $('#tnSeg').onclick=e=>{const b=e.target.closest('[data-tn]');if(b){tnT=+b.dataset.tn;tnShuf=false;openTonight()}};
+  $('#tnShuf').onclick=()=>{tnShuf=true;openTonight()};
+  $('.tnl').onclick=e=>{const r=e.target.closest('[data-tno]');if(r)openModal(+r.dataset.tno)};
+}
 
 /* ===== Phase 6: celebrations, seasonal effects ===== */
 const partyOn=()=>settings.party!==false;
@@ -2610,13 +2721,13 @@ function drawDiary(){
     cells+=`<i class="l${lv}"${fut?'':` title="${esc(dateTxt(d,{weekday:'short'}))}: ${n?n+' episode'+(n>1?'s':''):'nothing'}"`}></i>`}
   // timeline, newest day first; one row per show per day
   const byDay=new Map();for(let i=hist.length-1;i>=0;i--){const h=hist[i],k=dayStart(h[0]);if(!byDay.has(k))byDay.set(k,new Map());
-    const g=byDay.get(k);if(!g.has(h[1]))g.set(h[1],{eps:[],t:h[0]});const o=g.get(h[1]);for(let e=h[2];e<=h[3];e++)o.eps.push(e)}
+    const g=byDay.get(k);if(!g.has(h[1]))g.set(h[1],{eps:[],t:h[0],rx:[]});const o=g.get(h[1]);for(let e=h[2];e<=h[3];e++)o.eps.push(e);if(h[4])o.rx.unshift(h[4])}
   const keys=[...byDay.keys()],shown=keys.slice(0,diaryDays);
   const label=k=>k===t0?'Today':k===shiftDay(t0,-1)?'Yesterday':dateTxt(k,{weekday:'long'});
   const tl=shown.map(k=>{const g=byDay.get(k),tot=days.get(k)||0;
     return `<div class="dday"><span>${label(k)}</span><span>${tot} ep${tot>1?'s':''}</span></div>`+[...g].map(([id,o])=>{const m=list[id]||cache[id];
       return `<div class="drow"${m?` data-open="${id}"`:''}>${pic(m?.cover,'nuimg')}<div class="grow"${m?' role="button" tabindex="0"':''}><div class="ctitle">${esc(m?titleOf(m):'A show no longer on your list')}</div>
-        <div class="cmeta">${epsText(o.eps)} · ${new Date(o.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div><span class="dn">${new Set(o.eps).size}</span></div>`}).join('')}).join('');
+        <div class="cmeta">${epsText(o.eps)} · ${new Date(o.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${o.rx.length?`<span class="drx" aria-label="Reactions">${o.rx.join('')}</span>`:''}</div></div><span class="dn">${new Set(o.eps).size}</span></div>`}).join('')}).join('');
   $('#stats').innerHTML=`
     <div class="tiles">
       ${tile('This week',sumFrom(mon),'episodes')}${tile('This month',sumFrom(month1),'episodes')}
@@ -2708,7 +2819,9 @@ function wrapData(Y){
   const days=dayMap(H),bingeE=[...days].sort((a,b)=>b[1]-a[1])[0],st=streaks(days);
   const wd=[0,0,0,0,0,0,0];for(const[k,n]of days)wd[new Date(k).getDay()]+=n;const wdMax=wd.indexOf(Math.max(...wd));
   const completed=shows.filter(x=>x.status==='completed');
-  return{Y,all,full,shows,eps,mins,genres,top,rated,completed,persona:PERSONA[genres[0]?.[0]]||['Anime fan','A little bit of everything, and that is the best way.'],
+  const rc={};let wow=null;for(const h of H)if(h[4]){rc[h[4]]=(rc[h[4]]||0)+1;if(h[4]==='🤯')wow=h}
+  const reacts=Object.entries(rc).sort((a,b)=>b[1]-a[1]);
+  return{Y,all,full,shows,eps,mins,genres,top,rated,completed,reacts,wow,persona:PERSONA[genres[0]?.[0]]||['Anime fan','A little bit of everything, and that is the best way.'],
     binge:bingeE?{n:bingeE[1],at:bingeE[0]}:null,best:st.best,activeDays:days.size,wday:days.size?new Date(2024,0,7+wdMax).toLocaleDateString([],{weekday:'long'}):'',
     name:look(me()).name,since:hist[0]?.[0]};
 }
@@ -2739,6 +2852,10 @@ function wrapSlides(d){
     ${d.binge?`<li>Biggest binge: <b>${d.binge.n} episodes</b> on ${dateTxt(d.binge.at)}</li>`:''}
     <li>Longest streak: <b>${d.best} day${d.best>1?'s':''}</b></li><li>You watched on <b>${d.activeDays} day${d.activeDays>1?'s':''}</b></li>
     ${d.wday?`<li>Favourite day: <b>${d.wday}</b></li>`:''}</ul>`);
+  if(d.reacts.length){const[e0,n0]=d.reacts[0],w=d.wow&&(list[d.wow[1]]||cache[d.wow[1]]);
+    S.push(`<small>Your reactions</small><b class="big" style="font-size:96px">${e0}</b><p>was your go-to reaction, <b>${n0}</b> time${n0>1?'s':''}</p>
+      ${d.reacts.length>1?`<p style="font-size:26px;letter-spacing:4px;margin-top:10px">${d.reacts.slice(1,6).map(([e,n])=>`${e}<small style="font-size:13px;letter-spacing:0">×${n}</small>`).join(' ')}</p>`:''}
+      ${w?`<p style="margin-top:12px">Most mind-blowing: <b>${esc(titleOf(w))}</b>, episode ${d.wow[3]} 🤯</p>`:''}`)}
   S.push(`<small>Your anime personality</small><p style="font-size:18px">You are a…</p><h1 style="font-size:42px">${esc(d.persona[0])}</h1><p>${esc(d.persona[1])}</p>`);
   S.push(`<small>That was ${yr}</small><h1 style="font-size:28px">Share your Wrapped</h1><div id="wrShareBox" style="display:flex;flex-direction:column;align-items:center;gap:10px">
     <button class="btn primary" id="wrMake">Make my image</button><span class="hint">Made on your device. Nothing is uploaded.</span></div>
