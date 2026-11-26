@@ -383,21 +383,21 @@ details.hint summary{cursor:pointer}
 .himg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.07);transition:transform 8s linear}
 .hs.on .himg{transform:scale(1)}
 .hs::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,8,14,.92),rgba(8,8,14,.55) 48%,rgba(8,8,14,.05) 85%),linear-gradient(0deg,rgba(8,8,14,.75),transparent 55%)}
-.hcon{position:absolute;z-index:1;left:28px;bottom:26px;max-width:min(560px,78%);color:#fff}
+.hcon{position:absolute;z-index:1;left:28px;top:24px;bottom:24px;max-width:min(560px,78%);color:#fff;display:flex;flex-direction:column;align-items:flex-start} /* badge pinned at the top, buttons at the bottom: no jumping between slides */
 .hk{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;background:var(--accent);color:var(--on-accent);padding:3px 10px;border-radius:999px}
-.ht{font-size:32px;font-weight:900;line-height:1.1;letter-spacing:-.02em;margin:10px 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 18px rgba(0,0,0,.55)}
+.ht{font-size:32px;font-weight:900;line-height:1.22;letter-spacing:-.02em;margin:10px 0 4px;padding-block:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 18px rgba(0,0,0,.55);flex:none}
 .hs.on .ht,.hs.on .hk,.hs.on .hm,.hs.on .hd,.hs.on .hb{animation:hup .7s cubic-bezier(.2,.8,.2,1) both}
 .hs.on .ht{animation-delay:.08s}.hs.on .hm{animation-delay:.14s}.hs.on .hd{animation-delay:.2s}.hs.on .hb{animation-delay:.26s}
 @keyframes hup{from{opacity:0;transform:translateY(14px)}}
 .hm{font-size:13px;color:#d4d3e2}
 .hd{font-size:13.5px;line-height:1.45;color:#c9c8d8;margin:8px 0 14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.hb{display:flex;gap:8px;flex-wrap:wrap}
+.hb{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:10px}
 .hb .btn{padding:9px 16px}
 .hadd{background:rgba(255,255,255,.14)!important;border-color:rgba(255,255,255,.2)!important;color:#fff;backdrop-filter:blur(8px)}
 .hdots{position:absolute;z-index:2;right:14px;bottom:14px;display:flex}
 .hdots button{box-sizing:content-box;width:8px;height:8px;border:6px solid transparent;background:rgba(255,255,255,.45);background-clip:padding-box;border-radius:999px;padding:0;transition:width .3s,background-color .3s}
 .hdots button[aria-current="true"]{width:22px;background-color:#fff}
-@media (max-width:760px){.hero{height:240px;border-radius:16px;margin-bottom:14px}.hcon{left:16px;right:16px;bottom:16px;max-width:none}.ht{font-size:22px;margin:8px 0 4px}.hd{display:none}.hb{margin-top:10px}.hdots{top:8px;bottom:auto;right:8px}}
+@media (max-width:760px){.hero{height:240px;border-radius:16px;margin-bottom:14px}.hcon{left:16px;right:16px;top:16px;bottom:16px;max-width:none}.ht{font-size:22px;margin:8px 0 2px}.hd{display:none}.hdots{top:8px;bottom:auto;right:8px}}
 /* Detail sheet takes its glow from the show's cover colour */
 .modal:has(>.banner){--mbg:color-mix(in srgb,var(--mtint,var(--bg2)) 22%,var(--bg2));background:linear-gradient(var(--mbg) 140px,var(--bg2) 620px) local,var(--bg2);
   border-color:color-mix(in srgb,var(--mtint,var(--line)) 45%,var(--line));box-shadow:0 0 100px -10px color-mix(in srgb,var(--mtint,transparent) 50%,transparent),0 20px 60px #0008}

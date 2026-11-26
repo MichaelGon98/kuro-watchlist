@@ -361,3 +361,8 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html` (bug, reported on mobile): horizontal rows snapped back to the start whenever they were redrawn (recommendations / sequels / Top 10 arriving, list changes, sync). `rowPos` remembers each row's sideways scroll (scroll listener) and a MutationObserver puts it back before paint; switching the Top 10 tab still starts at #1.
 - `sw.js`: cache bumped to `kuro-v23`.
 - Tested on localhost at 375 px: headings are Currently watching / Pick up again / Picked for you / Top 10; Picked for you has 20 cards, sequels first; row scrolled to 400 px and Top 10 to 300 px stay put after `refreshCards()` / `drawRels()` / `drawTop10()`; sheet scrolled to the status buttons stays at the same scroll after Plan to watch, Completed and episode +. No console errors.
+
+### 2026-11-27 — Hero: titles no longer clipped, badge pinned to the top
+- `index.html` (CSS only): the hero text block (`.hcon`) was anchored to the bottom, so a long title pushed it above the banner's top edge and the letters were cut off, and the badge moved up and down between slides. It now spans top to bottom as a flex column: the "#N trending" badge is always at the top, title/meta/synopsis follow, and the buttons sit at the bottom (`.hb{margin-top:auto}`). Title line height 1.1 → 1.22 with a little padding so heavy glyphs aren't clipped by the 2-line clamp.
+- `sw.js`: cache bumped to `kuro-v24`.
+- Tested on localhost: all 6 slides have the badge 25 px from the top and the buttons 25 px from the bottom on desktop (17 px on a 375 px phone); the long "The Laid-Off Cheat-Granting Mage…" title shows two full lines with "…", nothing cut; no sideways scroll.
