@@ -1,4 +1,4 @@
-const C='kuro-v32',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
+const C='kuro-v33',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 const IMG='kuro-img',API='kuro-api'; // offline copies of covers and public AniList answers (not 'kuro-v…', so updates keep them)
 // cache:'reload' so a new version never stores a stale copy from the browser's HTTP cache
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL.map(u=>new Request(u,{cache:'reload'})))));self.skipWaiting()});

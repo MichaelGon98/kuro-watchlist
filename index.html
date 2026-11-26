@@ -1888,32 +1888,43 @@ function renderSyncBar(){
 $('#syncbar').onclick=e=>{if(e.target.id==='sbSync')sync(true);else if(e.target.id==='sbSign')openSettings()};
 setInterval(()=>{if(view==='list'&&!document.hidden)renderSyncBar()},30000);
 function scheduleSync(){if(!me()?.token)return;clearTimeout(syncT);syncT=setTimeout(()=>sync(false),2500)}
-// Watch history from AniList: your "watched episode 5 - 7" list activities, so the diary, streaks and badges match
-// on every device signed in to the account. Episodes already in this browser's history are skipped.
-const ACT_Q=`query($uid:Int,$p:Int,$since:Int){Page(page:$p,perPage:50){pageInfo{hasNextPage}activities(userId:$uid,type:ANIME_LIST,sort:ID_DESC,createdAt_greater:$since){... on ListActivity{createdAt status progress media{id}}}}}`;
+// Watch history for signed-in accounts: AniList's list activity ("watched episode 5 - 7") is the single source,
+// so every device shows the same diary, streaks and badges. Episodes tapped here that AniList does not have yet
+// (offline, not synced, activity turned off) are kept until it does. Emoji reactions carry over by episode.
+// AniList grows a recent activity in place ("1 - 3" becomes "1 - 10"), so the last few days are read again on every sync.
+const ACT_Q=`query($uid:Int,$p:Int){Page(page:$p,perPage:50){pageInfo{hasNextPage}activities(userId:$uid,type:ANIME_LIST,sort:ID_DESC){... on ListActivity{id createdAt status progress media{id}}}}}`;
 let histSyncing=false;
 async function histSync(p){
   if(histSyncing||!p?.token||!p.id)return;histSyncing=true;
   try{
-    const k='kuro.histSync.'+p.id,since=store.get(k,0);let newest=since;const add=[],have=new Set();
-    for(const h of hist)for(let e=h[2];e<=h[3];e++)have.add(h[1]+':'+e);
-    for(let pg=1;pg<=(since?5:12);pg++){ // first time: up to 600 activities back; afterwards only what is new
-      const r=(await gql(ACT_Q,{uid:p.id,p:pg,since:since||undefined})).Page;
+    const ak='kuro.acts.'+p.id,old=store.get(ak,null),first=!old,acts=old||{};
+    const newest=Math.max(0,...Object.values(acts).map(a=>a[0]/1000));
+    for(let pg=1;pg<=(first?12:6);pg++){ // first time: up to 600 activities back
+      const r=(await gql(ACT_Q,{uid:p.id,p:pg})).Page;let past=false;
       for(const a of r.activities||[]){
-        if(!a?.media?.id||!a.createdAt)continue;newest=Math.max(newest,a.createdAt);
-        if(!/^(watched|rewatched) episode/i.test(a.status||''))continue;
-        const mt=/(\d+)(?:\s*-\s*(\d+))?/.exec(a.progress||'');if(!mt)continue;
-        const from=+mt[1],to=Math.min(+(mt[2]||mt[1]),from+2000);let lo=null;
-        for(let e=from;e<=to;e++){const key=a.media.id+':'+e;
-          if(have.has(key)){if(lo!==null){add.push([a.createdAt*1000,a.media.id,lo,e-1]);lo=null}continue}
-          have.add(key);if(lo===null)lo=e}
-        if(lo!==null)add.push([a.createdAt*1000,a.media.id,lo,to]);
+        if(!a?.id||!a.media?.id||!a.createdAt)continue;
+        if(!first&&a.createdAt<newest-4*86400)past=true;
+        const w=/^(watched|rewatched) episode/i.test(a.status||'')&&/(\d+)(?:\s*-\s*(\d+))?/.exec(a.progress||'');
+        if(w){const f=+w[1];acts[a.id]=[a.createdAt*1000,a.media.id,f,Math.min(+(w[2]||f),f+2000)]}else delete acts[a.id];
       }
-      if(!r.pageInfo?.hasNextPage)break;await sleep(800);
+      if(past||!r.pageInfo?.hasNextPage)break;await sleep(800);
     }
-    if(add.length){hist.push(...add);hist.sort((a,b)=>a[0]-b[0]);saveHist();badgeSoon();if(view==='stats')drawStats()}
-    store.set(k,newest);
+    store.set(ak,acts);localStorage.removeItem('kuro.histSync.'+p.id); // the older merge-only bookkeeping
+    rebuildHist(Object.values(acts));
   }finally{histSyncing=false}
+}
+function rebuildHist(A){
+  if(!A.length)return; // no list activity on AniList (or turned off): keep this browser's history as it is
+  const cov=new Set(),rx={};
+  for(const a of A)for(let e=a[2];e<=a[3];e++)cov.add(a[1]+':'+e);
+  for(const h of hist)if(h[4])for(let e=h[2];e<=h[3];e++)rx[h[1]+':'+e]=h[4];
+  const out=A.map(a=>{let r=null;for(let e=a[3];e>=a[2]&&!r;e--)r=rx[a[1]+':'+e]||null;return r?[a[0],a[1],a[2],a[3],r]:[a[0],a[1],a[2],a[3]]});
+  for(const h of hist){let lo=null; // local episodes AniList does not know about
+    for(let e=h[2];e<=h[3]+1;e++){const c=e>h[3]||cov.has(h[1]+':'+e);
+      if(!c&&lo===null)lo=e;else if(c&&lo!==null){out.push(h[4]?[h[0],h[1],lo,e-1,h[4]]:[h[0],h[1],lo,e-1]);lo=null}}}
+  out.sort((a,b)=>a[0]-b[0]);
+  const same=out.length===hist.length&&out.every((h,i)=>h.join()===hist[i].join());if(same)return;
+  hist.length=0;hist.push(...out);saveHist();badgeSoon();if(view==='stats')drawStats();
 }
 async function sync(manual){
   const p=me();if(!p?.token)return;
