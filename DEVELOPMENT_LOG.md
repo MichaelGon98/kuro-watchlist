@@ -461,3 +461,10 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html`: `histV()` is what the diary, calendar, streaks, badges, Today tile and Wrapped read: episodes logged after a show's Finished date move to that day (noon); with a year- or month-only Finished date they leave the diary (no day to put them on); episodes before a full Started date move to it; rewatches (rewatch count > 0 or Rewatching) are untouched. Dates sync through AniList, so every device shows the same. Diary footnote mentions it.
 - `sw.js`: cache bumped to `kuro-v35`.
 - Tested on localhost with synthetic data: a finished-on-Nov-20 show tapped today shows on Fri Nov 20; a "2014" show tapped today leaves the diary; watched 1–11 + "completed" adds episode 12; "completed" with no watching is ignored; a phone with extra local taps and a desktop with none end with identical histories after `rebuildHist`; a just-tapped episode is kept; reactions carry over; the diary renders.
+
+### 2026-11-27 — Seasonal effect no longer smears on phones
+- Reported: on the phone the leaves sometimes drew as a stretched streak and only in the top-left area.
+- Cause: the effects canvas was sized from `innerWidth`/`innerHeight` once and on `resize`. A phone app resumed from the background (or address bar / keyboard changes) can change the viewport without a resize event, so the canvas's pixel size no longer matched its on-screen size: the drawing was stretched, and `clearRect` (in old units) left trails.
+- `index.html` (`applySeason()`): the canvas is sized from its real on-screen size (`clientWidth`/`clientHeight` × pixel ratio), checked every frame and fixed at once if it differs; each frame clears the whole pixel buffer with an identity transform; particles outside a smaller screen are moved back in. The resize listener is no longer needed.
+- `sw.js`: cache bumped to `kuro-v36`.
+- Tested on localhost: forcing the canvas to a wrong 120×200 size was corrected within a frame (1014×768); switching to a 375 px phone viewport resized it to 750×1624 with every particle inside.

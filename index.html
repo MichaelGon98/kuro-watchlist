@@ -2742,7 +2742,7 @@ let sfx=null;
 function applySeason(){
   const kind=stillMotion()?null:seasonKind();
   if(sfx?.kind===kind)return;
-  if(sfx){cancelAnimationFrame(sfx.raf);removeEventListener('resize',sfx.size);sfx.cv.remove();sfx=null}
+  if(sfx){cancelAnimationFrame(sfx.raf);sfx.cv.remove();sfx=null}
   if(!kind)return;
   const cv=document.createElement('canvas'),ctx=cv.getContext('2d'),R=Math.random;cv.className='sfx';cv.setAttribute('aria-hidden','true');document.body.appendChild(cv);
   const spawn=first=>{const W=innerWidth,H=innerHeight;
@@ -2750,14 +2750,19 @@ function applySeason(){
     return{x:R()*W,y:first?R()*H:-20,s:kind==='snow'?1.2+R()*2.6:kind==='sakura'?4.5+R()*3.5:7+R()*6,
       vy:kind==='snow'?.35+R()*.8:.45+R()*.7,vx:kind==='snow'?(R()-.5)*.3:.2+R()*.5,ph:R()*6.3,rot:R()*6.3,vr:(R()-.5)*.05,c:R()}};
   const S=sfx={kind,cv,raf:0,ps:[],last:0};
-  S.size=()=>{const d=Math.min(devicePixelRatio||1,2);cv.width=innerWidth*d;cv.height=innerHeight*d;ctx.setTransform(d,0,0,d,0,0);
-    const n=Math.round(Math.min(44,Math.max(12,innerWidth/(kind==='fireflies'?48:34))));while(S.ps.length<n)S.ps.push(spawn(true));S.ps.length=n};
-  S.size();addEventListener('resize',S.size);
+  // sized from the canvas's real on-screen size, checked every frame: a phone app resumed from the background, the
+  // address bar or the keyboard can change the viewport without a resize event, which stretched the drawing into a corner
+  S.size=()=>{const d=Math.min(devicePixelRatio||1,2),w=cv.clientWidth||innerWidth,h=cv.clientHeight||innerHeight;
+    cv.width=Math.round(w*d);cv.height=Math.round(h*d);S.w=w;S.h=h;S.d=d;
+    for(const p of S.ps)if(p.x>w+30||p.y>h+20){p.x=R()*w;p.y=R()*h}
+    const n=Math.round(Math.min(44,Math.max(12,w/(kind==='fireflies'?48:34))));while(S.ps.length<n)S.ps.push(spawn(true));S.ps.length=n};
+  S.size();
   const leaf=(p,t)=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.scale(1,.35+.65*Math.abs(Math.cos(t/700+p.ph)));const z=p.s;
     ctx.beginPath();ctx.moveTo(0,-z);ctx.quadraticCurveTo(z*.95,-z*.15,0,z);ctx.quadraticCurveTo(-z*.95,-z*.15,0,-z);ctx.fill();ctx.restore()};
   const frame=t=>{S.raf=requestAnimationFrame(frame);
-    const f=Math.min(3,S.last?(t-S.last)/16.7:1);S.last=t;const W=innerWidth,H=innerHeight,light=document.documentElement.dataset.theme==='light';
-    ctx.clearRect(0,0,W,H);
+    const d0=Math.min(devicePixelRatio||1,2);if(Math.round(cv.clientWidth*d0)!==cv.width||Math.round(cv.clientHeight*d0)!==cv.height)S.size();
+    const f=Math.min(3,S.last?(t-S.last)/16.7:1);S.last=t;const W=S.w,H=S.h,light=document.documentElement.dataset.theme==='light';
+    ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);ctx.setTransform(S.d,0,0,S.d,0,0);
     for(let i=0;i<S.ps.length;i++){let p=S.ps[i];
       if(kind==='fireflies'){p.vx=Math.max(-.5,Math.min(.5,p.vx+(R()-.5)*.03));p.vy=Math.max(-.5,Math.min(.5,p.vy+(R()-.5)*.03));p.x+=p.vx*f;p.y+=p.vy*f;
         if(p.x<-10||p.x>W+10||p.y<-10||p.y>H+10){p=S.ps[i]=spawn(true)}
