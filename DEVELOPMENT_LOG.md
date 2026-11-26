@@ -491,3 +491,12 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html`: `$$()` takes an optional root element.
 - `sw.js`: cache bumped to `kuro-v39`.
 - Tested on localhost (desktop and 375 px): gear and phone tab open Settings with no dialog, the phone pill sits on Settings, the gear hides on phones; a checkbox saved straight to `kuro.settings`; the avatar opens Profile with no tab highlighted; picking Ocean applied the theme and kept focus on the tile; a display name saved on change and updated the header button label; no console errors.
+
+### 2026-11-26 — Episode lists: each season gets its own episodes; thumbnails fall back
+- Reported: episode thumbnails were shared between seasons, and some did not load.
+- Cause: AniList's `streamingEpisodes` for Kuroko no Basket 2nd and 3rd SEASON (16894, 20725) are season 1's Crunchyroll episodes (same titles, stills and links), so every season showed "1 I Am Kuroko". Seasons with no streaming data only had the banner-slice placeholders.
+- `index.html`: `DETAIL_Q` also reads each relation's `streamingEpisodes{url}`; `aniEps()` drops any episode whose link also belongs to a PREQUEL/PARENT (so the "Watch on" button no longer opens the wrong season either).
+- `index.html`: `loadKitsu()` fills in titles and stills that AniList lacks from Kitsu's public API (kitsu.io, CORS open, no key): one lookup by AniList id, then 20 episodes a page for the episodes on screen only; kept in memory for the session. The list redraws when it arrives (scroll kept). Backticks in Kitsu titles become apostrophes. Only the AniList media id is sent.
+- `index.html`: `epImgErr()` replaces `onerror="this.remove()"`: retry once after 1.5 s, then Kitsu's still if there is one, then the banner slice.
+- `sw.js`: cache bumped to `kuro-v40`.
+- Tested on localhost (375 px): Kuroko S2 shows "1 I Never Thought We’d Meet Here", "2 At The Winter Cup"… with its own stills (25 of 25) and no wrong Watch links; S1 unchanged (AniList titles, stills and 25 links); a broken image was retried once and then swapped to the Kitsu still.

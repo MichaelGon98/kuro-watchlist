@@ -1647,7 +1647,7 @@ function plusOne(id){
 function closeModal(){applyPrefs()/* drops an unsaved theme preview */;$('#modal').classList.remove('wrm');$('#scrim').classList.remove('open');document.body.style.overflow='';$('#modal').innerHTML='';curModal=null}
 
 /* where to watch + episodes (fetched on open, not stored) */
-const DETAIL_Q=`query($id:Int){Media(id:$id,type:ANIME){episodes nextAiringEpisode{episode} externalLinks{site url type color isDisabled} streamingEpisodes{title thumbnail url site} relations{edges{relationType node{id type}}}}}`;
+const DETAIL_Q=`query($id:Int){Media(id:$id,type:ANIME){episodes nextAiringEpisode{episode} externalLinks{site url type color isDisabled} streamingEpisodes{title thumbnail url site} relations{edges{relationType node{id type streamingEpisodes{url}}}}}}`;
 async function loadDetails(id){
   if(details[id])return details[id];
   try{
@@ -1662,18 +1662,52 @@ function wtwHTML(d){
   const links=(d.externalLinks||[]).filter(l=>l.type==='STREAMING'&&!l.isDisabled&&okUrl(l.url)&&!seen.has(l.site)&&seen.add(l.site));
   return links.length?links.map(l=>`<a class="btn" href="${esc(l.url)}" target="_blank" rel="noopener" style="border-left:4px solid ${/^#[0-9a-f]{3,8}$/i.test(l.color||'')?l.color:'var(--accent)'}">${esc(l.site)}</a>`).join(''):'<span class="hint">No official streaming links are listed for this title yet.</span>';
 }
-function epsHTML(id,d){
-  const m=cache[id]||list[id],prog=list[id]?.progress||0,meta={};
-  (d.streamingEpisodes||[]).forEach((s,i)=>{const n=epNum(s,i);if(!meta[n])meta[n]=s});
-  const keys=Object.keys(meta).map(Number);
+// AniList's streaming episodes, minus any copied from an earlier season: AniList sometimes gives every season the
+// streaming site's whole series (Kuroko no Basket 2nd and 3rd SEASON list season 1's episodes, links and stills)
+function aniEps(d){
+  const prev=new Set();
+  for(const e of d.relations?.edges||[])if(e.relationType==='PREQUEL'||e.relationType==='PARENT')for(const s of e.node?.streamingEpisodes||[])prev.add(s.url);
+  return (d.streamingEpisodes||[]).filter(s=>!prev.has(s.url));
+}
+// Second source for episode titles and stills: Kitsu's public API (episodes are per season there). Looked up by the AniList id
+// only, 20 episodes a page, only for the episodes on screen; kept for this session.
+const kitsuEps={};
+async function loadKitsu(id,from,to){
+  const k=kitsuEps[id]||(kitsuEps[id]={kid:undefined,eps:{},pages:{}});
+  if(k.kid===undefined){
+    try{const j=await (await fetch(`https://kitsu.io/api/edge/mappings?filter[externalSite]=anilist/anime&filter[externalId]=${+id}&include=item&fields[anime]=episodeCount`)).json();
+      k.kid=j.included?.find(x=>x.type==='anime')?.id||null}catch{return k}}
+  if(!k.kid)return k;
+  for(let off=Math.floor((from-1)/20)*20;off<to;off+=20){
+    if(k.pages[off])continue;k.pages[off]=1;
+    try{const j=await (await fetch(`https://kitsu.io/api/edge/anime/${encodeURIComponent(k.kid)}/episodes?page[limit]=20&page[offset]=${off}&sort=number&fields[episodes]=number,canonicalTitle,thumbnail`)).json();
+      for(const e of j.data||[]){const a=e.attributes||{};if(a.number>0)k.eps[a.number]={t:(a.canonicalTitle||'').replace(/`/g,'’'),th:okUrl(a.thumbnail?.original)?a.thumbnail.original:''}}}
+    catch{delete k.pages[off]}
+  }
+  return k;
+}
+// A still that fails: try once more (the streaming site's image host has the odd hiccup), then Kitsu's still, then the banner slice
+function epImgErr(img){
+  if(!img.dataset.retry){img.dataset.retry=1;const u=img.getAttribute('src');img.removeAttribute('src');setTimeout(()=>{if(img.isConnected)img.src=u},1500);return}
+  const alt=img.dataset.alt;if(alt&&img.getAttribute('src')!==alt){img.dataset.alt='';img.src=alt;return}
+  img.remove();
+}
+function epsWindow(id,d){
+  const m=cache[id]||list[id],prog=list[id]?.progress||0,keys=aniEps(d).map(epNum);
   const n=m.episodes||d.episodes||(d.nextAiringEpisode?d.nextAiringEpisode.episode-1:0)||Math.max(prog,...keys,0);
-  if(!n)return '<span class="hint">Episode count not known yet.</span>';
   const win=n>60&&!epAll,from=win?Math.max(1,prog-2):1,to=win?Math.min(n,from+59):n;
+  return{n,win,from,to};
+}
+function epsHTML(id,d){
+  const m=cache[id]||list[id],prog=list[id]?.progress||0,meta={},kit=kitsuEps[id]?.eps||{};
+  aniEps(d).forEach((s,i)=>{const n=epNum(s,i);if(!meta[n])meta[n]=s});
+  const{n,win,from,to}=epsWindow(id,d);
+  if(!n)return '<span class="hint">Episode count not known yet.</span>';
   let h=win?`<div class="hint" style="margin-bottom:6px">Showing episodes ${from}–${to} of ${n}</div>`:'';
   const art=m.banner||m.cover,eb=okUrl(art)?`--eb:url('${esc(art)}');`:'';
   for(let k=from;k<=to;k++){
-    const s=meta[k],t=(s?.title||'').replace(/^\s*Episode\s*\d+\s*[-–:]?\s*/i,''),th=s&&okUrl(s.thumbnail)?s.thumbnail:'';
-    h+=`<div class="ep ${k<=prog?'done':''}" data-ep="${k}"><div class="epth" style="${eb}--ebp:${(k*37)%100}%"><span class="epn">${k}</span>${th?`<img src="${esc(th)}" loading="lazy" decoding="async" alt="" onerror="this.remove()">`:''}</div>
+    const s=meta[k],kt=kit[k],t=(s?.title||'').replace(/^\s*Episode\s*\d+\s*[-–:]?\s*/i,'')||kt?.t||'',th=s&&okUrl(s.thumbnail)?s.thumbnail:kt?.th||'',alt=kt?.th&&kt.th!==th?kt.th:'';
+    h+=`<div class="ep ${k<=prog?'done':''}" data-ep="${k}"><div class="epth" style="${eb}--ebp:${(k*37)%100}%"><span class="epn">${k}</span>${th?`<img src="${esc(th)}"${alt?` data-alt="${esc(alt)}"`:''} loading="lazy" decoding="async" alt="" onerror="epImgErr(this)">`:''}</div>
       <div class="epm" role="button" tabindex="0" aria-pressed="${k<=prog}">${t?`<b>${k}</b> ${esc(t)}`:`<b>Episode ${k}</b>`}</div>${s&&okUrl(s.url)?`<a class="epw" href="${esc(s.url)}" target="_blank" rel="noopener" title="Watch on ${esc(s.site)}">▶</a>`:''}<span class="tick">${k<=prog?'✓':''}</span></div>`;
   }
   if(win)h+=`<button class="btn" id="epall" style="margin-top:8px">Show all ${n} episodes</button>`;
@@ -1684,6 +1718,10 @@ function fillDetails(id){
     if(curModal!==id||!$('#eps'))return;
     if(!d){$('#wtwb').innerHTML=$('#eps').innerHTML='<span class="hint">Couldn’t load details. Check your connection.</span>';return}
     $('#wtwb').innerHTML=wtwHTML(d);$('#eps').innerHTML=epsHTML(id,d);dlgRefocus();
+    // episodes AniList has no title or still for: ask Kitsu, then redraw the list if it is still open
+    const{n,from,to}=epsWindow(id,d),have=new Set(aniEps(d).filter(s=>okUrl(s.thumbnail)).map(epNum)),kit=kitsuEps[id];
+    let need=false;for(let k=from;k<=to&&!need;k++)need=!have.has(k)&&!kit?.eps[k]&&!(kit&&kit.kid===null);
+    if(n&&need&&navigator.onLine)loadKitsu(id,from,to).then(()=>{if(curModal!==id||!$('#eps'))return;const t=$('#modal').scrollTop;$('#eps').innerHTML=epsHTML(id,d);$('#modal').scrollTop=t;dlgRefocus()});
     if((d.relations?.edges||[]).some(e=>e.node?.type==='ANIME'&&FR_REL.has(e.relationType)))drawFranchise(id);
     if(keepTop!=null)$('#modal').scrollTop=keepTop;
   });
