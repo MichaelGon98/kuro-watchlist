@@ -1,4 +1,4 @@
-const C='kuro-v28',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
+const C='kuro-v29',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 const IMG='kuro-img',API='kuro-api'; // offline copies of covers and public AniList answers (not 'kuro-v…', so updates keep them)
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 // delete old app-shell caches only; 'kuro-data' (alert schedule, +1 queue), 'kuro-img' and 'kuro-api' must survive updates
