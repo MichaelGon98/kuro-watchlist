@@ -367,6 +367,8 @@ details.hint summary{cursor:pointer}
 .t10 .card:hover{transform:none}
 .t10:first-child .rk{--rkc:#f5c542}
 .t10ld{color:var(--muted);font-size:13px;padding:30px 0}
+.updbar{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:10px;white-space:nowrap;
+  background:var(--card2);border:1px solid var(--accent);border-radius:999px;padding:6px 6px 6px 16px;box-shadow:0 12px 34px #0009;font-weight:700;font-size:14px;animation:rxin .4s ease both}
 /* Today tile (Stats) */
 .today{border-radius:20px;padding:16px 18px;margin:0 0 16px;color:#fff;position:relative;overflow:hidden;
   background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 75%,#000),color-mix(in srgb,var(--accent2) 70%,#000));box-shadow:0 12px 34px color-mix(in srgb,var(--accent) 30%,transparent)}
@@ -1886,6 +1888,33 @@ function renderSyncBar(){
 $('#syncbar').onclick=e=>{if(e.target.id==='sbSync')sync(true);else if(e.target.id==='sbSign')openSettings()};
 setInterval(()=>{if(view==='list'&&!document.hidden)renderSyncBar()},30000);
 function scheduleSync(){if(!me()?.token)return;clearTimeout(syncT);syncT=setTimeout(()=>sync(false),2500)}
+// Watch history from AniList: your "watched episode 5 - 7" list activities, so the diary, streaks and badges match
+// on every device signed in to the account. Episodes already in this browser's history are skipped.
+const ACT_Q=`query($uid:Int,$p:Int,$since:Int){Page(page:$p,perPage:50){pageInfo{hasNextPage}activities(userId:$uid,type:ANIME_LIST,sort:ID_DESC,createdAt_greater:$since){... on ListActivity{createdAt status progress media{id}}}}}`;
+let histSyncing=false;
+async function histSync(p){
+  if(histSyncing||!p?.token||!p.id)return;histSyncing=true;
+  try{
+    const k='kuro.histSync.'+p.id,since=store.get(k,0);let newest=since;const add=[],have=new Set();
+    for(const h of hist)for(let e=h[2];e<=h[3];e++)have.add(h[1]+':'+e);
+    for(let pg=1;pg<=(since?5:12);pg++){ // first time: up to 600 activities back; afterwards only what is new
+      const r=(await gql(ACT_Q,{uid:p.id,p:pg,since:since||undefined})).Page;
+      for(const a of r.activities||[]){
+        if(!a?.media?.id||!a.createdAt)continue;newest=Math.max(newest,a.createdAt);
+        if(!/^(watched|rewatched) episode/i.test(a.status||''))continue;
+        const mt=/(\d+)(?:\s*-\s*(\d+))?/.exec(a.progress||'');if(!mt)continue;
+        const from=+mt[1],to=Math.min(+(mt[2]||mt[1]),from+2000);let lo=null;
+        for(let e=from;e<=to;e++){const key=a.media.id+':'+e;
+          if(have.has(key)){if(lo!==null){add.push([a.createdAt*1000,a.media.id,lo,e-1]);lo=null}continue}
+          have.add(key);if(lo===null)lo=e}
+        if(lo!==null)add.push([a.createdAt*1000,a.media.id,lo,to]);
+      }
+      if(!r.pageInfo?.hasNextPage)break;await sleep(800);
+    }
+    if(add.length){hist.push(...add);hist.sort((a,b)=>a[0]-b[0]);saveHist();badgeSoon();if(view==='stats')drawStats()}
+    store.set(k,newest);
+  }finally{histSyncing=false}
+}
 async function sync(manual){
   const p=me();if(!p?.token)return;
   if(!navigator.onLine){if(manual)toast("You're offline. Changes are kept and sync when you're back.");renderSyncBar();return}
@@ -1936,6 +1965,7 @@ async function sync(manual){
     }
     p.lastSync=Date.now();saveProfiles();
     if(manual)toast('Synced ✓');
+    histSync(p).catch(()=>{}); // diary + badges: bring in episodes watched on other devices
   }catch(e){
     if(e.message==='AUTH'){delete p.token;saveProfiles();renderProfileBtn();toast(`AniList sign-in expired for ${p.name}, sign in again in Settings`)}
     else toast('Sync failed: '+(e instanceof TypeError?'offline?':e.message));
@@ -2857,7 +2887,7 @@ function drawDiary(){
       <div class="heatleg">Less <i style="background:var(--card2)"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> More</div></div>
     <h2 class="sec" style="margin-top:22px">Diary</h2>${tl}
     ${keys.length>shown.length?`<button class="more" id="diaryMore">Show older days</button>`:''}
-    <div class="hint" style="margin-top:14px">Kept in this browser since ${dateTxt(hist[0][0],{year:'numeric'})}. Changing a show's status (e.g. to Completed) is not counted as watching.</div>`;
+    <div class="hint" style="margin-top:14px">Since ${dateTxt(hist[0][0],{year:'numeric'})}${me()?.token?': episodes you mark in Kuro plus your AniList activity, so every device signed in to this account shows the same diary':', kept in this browser'}. Changing a show's status (e.g. to Completed) is not counted as watching.</div>`;
 }
 
 /* ----- Badges ----- */
@@ -3086,7 +3116,26 @@ openFromHash();
 authing.then(a=>{if(!a&&me()?.token)sync(false)});
 refreshAiring();
 try{const m=sessionStorage.getItem('kuro.toast');if(m){sessionStorage.removeItem('kuro.toast');toast(m)}}catch{}
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
+  // An installed app on a phone can stay open for days, so look for a new version whenever it comes back to the
+  // foreground (and every 30 min). When a new version takes over: reload right away if Kuro is in the background,
+  // otherwise offer a Reload button so nothing you are doing is lost.
+  const hadCtl=!!navigator.serviceWorker.controller;let reloading=false;
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+    const chk=()=>{if(navigator.onLine)reg.update().catch(()=>{})};
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk()});setInterval(chk,18e5);
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!hadCtl||reloading)return;
+    const go=()=>{reloading=true;location.reload()};
+    if(document.hidden)return go();
+    if(document.querySelector('.updbar'))return;
+    const b=document.createElement('div');b.className='updbar';b.setAttribute('role','status');
+    b.innerHTML='<span>✨ Kuro has been updated</span><button class="btn sm primary" type="button">Reload</button>';
+    document.body.appendChild(b);b.querySelector('button').onclick=go;
+    document.addEventListener('visibilitychange',()=>{if(document.hidden)go()},{once:true});
+  });
+}
 </script>
 </body>
 </html>

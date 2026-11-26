@@ -1,15 +1,18 @@
-const C='kuro-v31',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
+const C='kuro-v32',SHELL=['./','index.html','manifest.json','favicon-32.png','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 const IMG='kuro-img',API='kuro-api'; // offline copies of covers and public AniList answers (not 'kuro-v…', so updates keep them)
-self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)));self.skipWaiting()});
+// cache:'reload' so a new version never stores a stale copy from the browser's HTTP cache
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL.map(u=>new Request(u,{cache:'reload'})))));self.skipWaiting()});
 // delete old app-shell caches only; 'kuro-data' (alert schedule, +1 queue), 'kuro-img' and 'kuro-api' must survive updates
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('kuro-v')&&x!==C).map(x=>caches.delete(x))))));
+// claim open pages so they learn about the new version (the page then reloads or offers Reload)
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('kuro-v')&&x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{
   const r=e.request,u=new URL(r.url);
   if(r.method==='GET'&&u.hostname==='s4.anilist.co')return e.respondWith(img(r));
   // public AniList queries only: requests carrying a sign-in token (sync) are never stored
   if(r.method==='POST'&&u.origin==='https://graphql.anilist.co'&&!r.headers.has('Authorization'))return e.respondWith(api(r));
   if(r.method!=='GET'||u.origin!==location.origin)return;
-  e.respondWith(fetch(r).then(res=>{const cp=res.clone();caches.open(C).then(c=>c.put(r,cp));return res}).catch(()=>caches.match(r)));
+  // network first, revalidated with the server (GitHub Pages lets browsers keep pages for 10 minutes otherwise)
+  e.respondWith(fetch(r,{cache:'no-cache'}).then(res=>{if(res.ok){const cp=res.clone();caches.open(C).then(c=>c.put(r,cp))}return res}).catch(()=>caches.match(r,{ignoreSearch:true})));
 });
 async function trim(name,max){const c=await caches.open(name),k=await c.keys();for(let i=0;i<k.length-max;i++)await c.delete(k[i])}
 // covers never change at the same address: cache first. Fetched with CORS so the stored copy is a normal (not opaque) response;
