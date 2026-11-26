@@ -1908,43 +1908,73 @@ function renderSyncBar(){
 $('#syncbar').onclick=e=>{if(e.target.id==='sbSync')sync(true);else if(e.target.id==='sbSign')openSettings()};
 setInterval(()=>{if(view==='list'&&!document.hidden)renderSyncBar()},30000);
 function scheduleSync(){if(!me()?.token)return;clearTimeout(syncT);syncT=setTimeout(()=>sync(false),2500)}
-// Watch history for signed-in accounts: AniList's list activity ("watched episode 5 - 7") is the single source,
-// so every device shows the same diary, streaks and badges. Episodes tapped here that AniList does not have yet
-// (offline, not synced, activity turned off) are kept until it does. Emoji reactions carry over by episode.
+// Watch history for signed-in accounts: AniList's list activity is the single source, so every device shows the same
+// diary, streaks and badges. "watched episode 5 - 7" gives those episodes; "completed" (what AniList logs when the last
+// episode is marked) gives the rest of the show, but only if you were watching it in the 30 days before (otherwise it was a
+// status change, which is not watching). Episodes tapped here that AniList has no activity for are kept only if they
+// were tapped after the sync that just ran (still on their way); anything older that AniList did not log as watching is
+// dropped, so all devices agree after a sync. Emoji reactions carry over by episode.
 // AniList grows a recent activity in place ("1 - 3" becomes "1 - 10"), so the last few days are read again on every sync.
 const ACT_Q=`query($uid:Int,$p:Int){Page(page:$p,perPage:50){pageInfo{hasNextPage}activities(userId:$uid,type:ANIME_LIST,sort:ID_DESC){... on ListActivity{id createdAt status progress media{id}}}}}`;
 let histSyncing=false;
 async function histSync(p){
   if(histSyncing||!p?.token||!p.id)return;histSyncing=true;
   try{
-    const ak='kuro.acts.'+p.id,old=store.get(ak,null),first=!old,acts=old||{};
+    const ak='kuro.acts2.'+p.id,old=store.get(ak,null),first=!old,acts=old||{};
     const newest=Math.max(0,...Object.values(acts).map(a=>a[0]/1000));
     for(let pg=1;pg<=(first?12:6);pg++){ // first time: up to 600 activities back
       const r=(await gql(ACT_Q,{uid:p.id,p:pg})).Page;let past=false;
       for(const a of r.activities||[]){
         if(!a?.id||!a.media?.id||!a.createdAt)continue;
         if(!first&&a.createdAt<newest-4*86400)past=true;
-        const w=/^(watched|rewatched) episode/i.test(a.status||'')&&/(\d+)(?:\s*-\s*(\d+))?/.exec(a.progress||'');
-        if(w){const f=+w[1];acts[a.id]=[a.createdAt*1000,a.media.id,f,Math.min(+(w[2]||f),f+2000)]}else delete acts[a.id];
+        const st=a.status||'',w=/^(watched|rewatched) episode/i.test(st)&&/(\d+)(?:\s*-\s*(\d+))?/.exec(a.progress||'');
+        if(w){const f=+w[1];acts[a.id]=[a.createdAt*1000,a.media.id,f,Math.min(+(w[2]||f),f+2000)]}
+        else if(/^completed/i.test(st))acts[a.id]=[a.createdAt*1000,a.media.id,0,0,'c'];
+        else delete acts[a.id];
       }
       if(past||!r.pageInfo?.hasNextPage)break;await sleep(800);
     }
-    store.set(ak,acts);localStorage.removeItem('kuro.histSync.'+p.id); // the older merge-only bookkeeping
+    store.set(ak,acts);localStorage.removeItem('kuro.acts.'+p.id);localStorage.removeItem('kuro.histSync.'+p.id);
     rebuildHist(Object.values(acts));
   }finally{histSyncing=false}
 }
-function rebuildHist(A){
-  if(!A.length)return; // no list activity on AniList (or turned off): keep this browser's history as it is
+function rebuildHist(all){
+  const W=all.filter(a=>!a[4]),C=all.filter(a=>a[4]==='c');
+  if(!all.length)return; // no list activity on AniList (or turned off): keep this browser's history as it is
+  const A=W.slice();
+  for(const c of C){ // "completed": the episodes after the last watched one, if you were watching it lately
+    const before=W.filter(a=>a[1]===c[1]&&a[0]<=c[0]);if(!before.length)continue;
+    const lastT=Math.max(...before.map(a=>a[0])),maxTo=Math.max(...before.map(a=>a[3])),tot=list[c[1]]?.episodes||0;
+    if(c[0]-lastT<=30*DAY&&tot>maxTo)A.push([c[0],c[1],maxTo+1,tot]);
+  }
   const cov=new Set(),rx={};
   for(const a of A)for(let e=a[2];e<=a[3];e++)cov.add(a[1]+':'+e);
   for(const h of hist)if(h[4])for(let e=h[2];e<=h[3];e++)rx[h[1]+':'+e]=h[4];
   const out=A.map(a=>{let r=null;for(let e=a[3];e>=a[2]&&!r;e--)r=rx[a[1]+':'+e]||null;return r?[a[0],a[1],a[2],a[3],r]:[a[0],a[1],a[2],a[3]]});
-  for(const h of hist){let lo=null; // local episodes AniList does not know about
+  const fresh=(me()?.lastSync||Date.now())-6e4;
+  for(const h of hist){if(h[0]<fresh)continue;let lo=null; // recent local episodes AniList has no activity for (yet)
     for(let e=h[2];e<=h[3]+1;e++){const c=e>h[3]||cov.has(h[1]+':'+e);
       if(!c&&lo===null)lo=e;else if(c&&lo!==null){out.push(h[4]?[h[0],h[1],lo,e-1,h[4]]:[h[0],h[1],lo,e-1]);lo=null}}}
   out.sort((a,b)=>a[0]-b[0]);
   const same=out.length===hist.length&&out.every((h,i)=>h.join()===hist[i].join());if(same)return;
   hist.length=0;hist.push(...out);saveHist();badgeSoon();if(view==='stats')drawStats();
+}
+// The history as the diary, streaks, badges and Wrapped see it: your Started / Finished dates win over tap times.
+// Episodes logged after a show's finish date move to that day (a year- or month-only date has no day, so they leave the
+// diary); episodes before a full start date move to it. Rewatches (rewatch count above 0 or Rewatching) are left alone.
+function dayNoon(v){return new Date(+v.slice(0,4),+v.slice(5,7)-1,+v.slice(8,10),12).getTime()}
+function periodEnd(v){const y=+v.slice(0,4),m=v.length>=7?+v.slice(5,7):0,d=v.length>=10?+v.slice(8,10):0;
+  return(d?new Date(y,m-1,d+1):m?new Date(y,m,1):new Date(y+1,0,1)).getTime()-1}
+function histV(){
+  const out=[];
+  for(const h of hist){const x=list[h[1]];let t=h[0];
+    if(x&&!(x.repeat>0)&&x.status!=='repeating'){
+      if(x.completedAt&&t>periodEnd(x.completedAt)){if(x.completedAt.length<10)continue;t=dayNoon(x.completedAt)}
+      if(x.startedAt?.length===10&&t<dayNoon(x.startedAt)-12*36e5)t=dayNoon(x.startedAt);
+    }
+    out.push(t===h[0]?h:[t,...h.slice(1)]);
+  }
+  return out.sort((a,b)=>a[0]-b[0]);
 }
 async function sync(manual){
   const p=me();if(!p?.token)return;
@@ -2577,7 +2607,7 @@ function openTonight(){
 }
 
 /* ===== Phase 10: Today tile, taste radar, watch party links ===== */
-function todayTile(){
+function todayTile(){const hist=histV();
   const t0=dayStart(Date.now()),t1=t0+DAY,now=Date.now();
   const its=Object.values(list).filter(x=>x.next&&x.status!=='dropped'&&x.next.airingAt*1000>=t0&&x.next.airingAt*1000<t1).sort((a,b)=>a.next.airingAt-b.next.airingAt);
   const eps=hist.filter(h=>h[0]>=t0).reduce((a,h)=>a+hEps(h),0);
@@ -2875,7 +2905,7 @@ const shiftDay=(t,n)=>{const d=new Date(t);d.setDate(d.getDate()+n);return d.get
 const hEps=h=>h[3]-h[2]+1;
 const fmtN=n=>Math.floor(n).toLocaleString();
 const dateTxt=(t,o={})=>new Date(t).toLocaleDateString([],{day:'numeric',month:'short',...(new Date(t).getFullYear()!==new Date().getFullYear()?{year:'numeric'}:{}),...o});
-function dayMap(H=hist){const m=new Map();for(const h of H){const k=dayStart(h[0]);m.set(k,(m.get(k)||0)+hEps(h))}return m}
+function dayMap(H=histV()){const m=new Map();for(const h of H){const k=dayStart(h[0]);m.set(k,(m.get(k)||0)+hEps(h))}return m}
 // current streak counts back from today (or from yesterday, so a streak is not "lost" before you watch today)
 function streaks(days){
   const ks=[...days.keys()].sort((a,b)=>a-b);let best=0,run=0,prev=null;
@@ -2898,7 +2928,7 @@ $('#stTabs').onclick=e=>{const b=e.target.closest('[data-stt]');if(b){statsTab=b
 function epsText(eps){const a=[...new Set(eps)].sort((x,y)=>x-y),r=[];
   for(const e of a){const l=r[r.length-1];if(l&&e===l[1]+1)l[1]=e;else r.push([e,e])}
   return (a.length>1?'Eps ':'Ep ')+r.map(([x,y])=>x===y?x:`${x}–${y}`).join(', ')}
-function drawDiary(){
+function drawDiary(){const hist=histV();
   if(!hist.length){$('#stats').innerHTML=`<div class="empty">Your diary is empty for now.<br><span class="hint">Every episode you mark watched (+1, the episode stepper or the episode list) is written here, with your streaks and a calendar.</span></div>`;return}
   const days=dayMap(),st=streaks(days),t0=dayStart(Date.now()),now=new Date(t0);
   const mon=shiftDay(t0,-((now.getDay()+6)%7)),month1=new Date(now.getFullYear(),now.getMonth(),1).getTime();
@@ -2927,7 +2957,7 @@ function drawDiary(){
       <div class="heatleg">Less <i style="background:var(--card2)"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> More</div></div>
     <h2 class="sec" style="margin-top:22px">Diary</h2>${tl}
     ${keys.length>shown.length?`<button class="more" id="diaryMore">Show older days</button>`:''}
-    <div class="hint" style="margin-top:14px">Since ${dateTxt(hist[0][0],{year:'numeric'})}${me()?.token?': episodes you mark in Kuro plus your AniList activity, so every device signed in to this account shows the same diary':', kept in this browser'}. Changing a show's status (e.g. to Completed) is not counted as watching.</div>`;
+    <div class="hint" style="margin-top:14px">Since ${dateTxt(hist[0][0],{year:'numeric'})}${me()?.token?': episodes you mark in Kuro plus your AniList activity, so every device signed in to this account shows the same diary':', kept in this browser'}. Changing a show's status (e.g. to Completed) is not counted as watching. Your Started / Finished dates decide the day.</div>`;
 }
 
 /* ----- Badges ----- */
@@ -2953,7 +2983,7 @@ const BADGES=[
   ['simul','📡','Simulcast squad','Watch 5 airing shows at once',d=>[d.airing,5]],
 ];
 const badgeKey=()=>'kuro.badges.'+prefKey(); // {badgeId: when it was first seen unlocked}
-function badgeList(){
+function badgeList(){const hist=histV();
   const s=statsData(),days=dayMap(),got=store.get(badgeKey(),null)||{};
   const d={eps:s.eps,hours:s.mins/60,completed:s.completed,histEps:hist.reduce((a,h)=>a+hEps(h),0),
     longest:Math.max(0,...s.all.filter(x=>x.status==='completed').map(x=>x.episodes||0)),best:streaks(days).best,binge:Math.max(0,...days.values()),
@@ -2962,7 +2992,7 @@ function badgeList(){
   return BADGES.map(([id,ic,name,desc,f])=>{const[v,goal]=f(d);return{id,ic,name,desc,v:Math.min(v,goal),goal,done:v>=goal,at:got[id]}});
 }
 let bNew=null; // badges unlocked since you last opened Badges (shown with a flip and a "New" chip)
-function drawBadges(b=badgeList()){
+function drawBadges(b=badgeList()){const hist=histV();
   const n=b.filter(x=>x.done).length;
   if(!bNew){const k='kuro.badgeSeen.'+prefKey(),s0=store.get(k,null);bNew=new Set(s0==null?[]:b.filter(x=>x.done&&x.at>s0).map(x=>x.id));store.set(k,Date.now())}
   let fi=0;
@@ -2989,9 +3019,9 @@ const PERSONA={Action:['Adrenaline junkie','Big fights and bigger moments, you a
   Horror:['Fearless','Lights off, volume up.'],Psychological:['Mind bender','The twistier, the better.'],Supernatural:['Spirit seeker','Ghosts, curses and things that go bump.'],
   Mecha:['Ace pilot','Giant robots. Need we say more?'],Music:['Idol fan','Every opening on repeat.'],Thriller:['Edge-of-seat','Cliffhangers are your cardio.'],
   'Mahou Shoujo':['Magical guardian','Transformation sequences, never skipped.']};
-function wrapYears(){const ys=new Set();for(const x of Object.values(list))if(x.status!=='planning'){const y=+(x.completedAt||x.startedAt||'').slice(0,4);ys.add(y||new Date(x.updated||x.added||Date.now()).getFullYear())}
+function wrapYears(){const ys=new Set(),hist=histV();for(const x of Object.values(list))if(x.status!=='planning'){const y=+(x.completedAt||x.startedAt||'').slice(0,4);ys.add(y||new Date(x.updated||x.added||Date.now()).getFullYear())}
   for(const h of hist)ys.add(new Date(h[0]).getFullYear());ys.add(new Date().getFullYear());return[...ys].sort((a,b)=>b-a)}
-function wrapData(Y){
+function wrapData(Y){const hist=histV();
   const all=Y==='all',start=all?0:new Date(Y,0,1).getTime(),end=all?Infinity:new Date(Y+1,0,1).getTime();
   const H=hist.filter(h=>h[0]>=start&&h[0]<end),hIds=new Set(H.map(h=>h[1]));
   const yr=v=>v?+v.slice(0,4):0,thisY=new Date().getFullYear();
