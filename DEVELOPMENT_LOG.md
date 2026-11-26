@@ -508,3 +508,10 @@ Newest entries go at the bottom. Format: `### YYYY-MM-DD — short title` then b
 - `index.html`: `epsHTML()` takes the title from AniList, then Kitsu, then TVmaze, and the still likewise; a second still is kept as the fallback for `epImgErr()`. `fillDetails()` now checks for missing stills (not just missing entries), tries Kitsu, redraws, then TVmaze if stills are still missing, and redraws again.
 - `sw.js`: cache bumped to `kuro-v41`.
 - Tested on localhost: Reincarnated as a Sword S1 shows "1 Catgirl Meets Sword", "2 The Hellish Trial at the Adventurer's Guild"… with 12 of 12 stills; S2 starts at "1 The Floating Island" (9 stills, the unaired episodes have none yet); Kuroko S2 still comes from Kitsu (25 of 25).
+
+### 2026-11-26 — Discover: no duplicates after Load more
+- Reported: after Load more, shows already on the page appeared again.
+- Cause: AniList's Trending (and other) rankings shift between page requests and ties had no fixed order, so a show could move from page 1 to page 2; each page was appended without checking.
+- `index.html` (`vars()`, `load()`): the sort is now `[chosen sort, ID]` so ties keep a fixed order; `shownIds` remembers what the grid holds (cleared on a new search or filter) and appended pages skip shows already shown.
+- `sw.js`: cache bumped to `kuro-v42`.
+- Tested on localhost: Trending plus four Load mores gave 120 cards with no duplicates; a search still returns results.

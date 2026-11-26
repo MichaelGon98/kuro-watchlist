@@ -1014,7 +1014,7 @@ let page=1,hasNext=false,loading=false,cache={},view='discover',listStatus='watc
 })();
 
 function vars(){
-  const v={page,perPage:24,sort:[F.sort]};
+  const v={page,perPage:24,sort:[F.sort,'ID']}; // ID breaks ties, so pages keep a fixed order
   if(F.q){v.search=F.q.replace(/[’‘`´]/g,"'");v.sort=['SEARCH_MATCH']}
   if(F.format)v.format=F.format; if(F.status)v.status=F.status; if(F.season)v.season=F.season;
   if(F.year)v.seasonYear=+F.year; if(F.score)v.score=F.score; if(F.genres.size)v.genre_in=[...F.genres];
@@ -1030,6 +1030,7 @@ function searchVariants(q){
 }
 function run(){page=1;$('#grid').innerHTML='';updateFcount();load(false)}
 function updateFcount(){const n=F.genres.size+['format','status','season','year'].filter(k=>F[k]).length+(F.score?1:0);$('#fcount').textContent=n?`(${n})`:''}
+const shownIds=new Set(); // ids already in the Discover grid
 async function load(append){
   if(loading)return;loading=true;
   const g=$('#grid');
@@ -1042,7 +1043,9 @@ async function load(append){
         const v=vars();v.search=s;p=await anilist(v);if(p.media.length)break;
       }
     }
-    const items=p.media.map(slim);items.forEach(m=>cache[m.id]=m);
+    if(!append)shownIds.clear();
+    // rankings like Trending shift between page requests, so a show can come back on the next page: show each one once
+    const items=p.media.map(slim).filter(m=>!shownIds.has(m.id)&&shownIds.add(m.id));items.forEach(m=>cache[m.id]=m);
     if(!append)g.innerHTML='';
     g.insertAdjacentHTML('beforeend',items.map(m=>cardHTML(m)).join(''));
     if(!g.children.length)g.innerHTML='<div class="empty" style="grid-column:1/-1">No anime match.<br><span class="hint">Try fewer filters (a minimum score hides brand-new shows) or tap Reset filters.</span></div>';
